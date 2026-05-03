@@ -15,6 +15,10 @@ dependencies = ["PyGObject>=3.50"]
 [project.optional-dependencies]
 dev = ["pytest", "mypy", "patchelf"]
 
+[project.scripts]
+pyliite4-ui = "PyLiite4.tools.ui:main"
+pyliite4-resources = "PyLiite4.tools.resources:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

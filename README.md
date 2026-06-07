@@ -1,15 +1,288 @@
 # PyLiite4
 
-Python bindings for GTK 4, with signal objects and type hints.
+Complete, typed Python bindings for GTK 4 and libadwaita, packaged with GTK itself.
 
-This starts with PyGObject's own classes. The aim is to keep GTK's API while
-making signals and properties more comfortable to use from Python.
+PyLiite4 gives Python developers what PySide6 gives them for Qt: one install, typed APIs and the tools to build an
+application. The toolkit is GTK, used the GTK way. GTK's concepts and names are kept; this isn't a Qt emulation layer.
 
-## Development
+```python
+from PyLiite4.Gtk import Application, ApplicationWindow, Button
 
-Use Python 3.10 or newer with PyGObject and GTK 4 installed on your system.
-Install the checkout with `pip install -e .`.
+
+def on_click(button: Button) -> None:
+    button.set_label("Clicked")
+
+
+def on_activate(app: Application) -> None:
+    button = Button(label="Hello")
+    button.clicked.connect(on_click)
+    ApplicationWindow(application=app, child=button).present()
+
+
+app = Application(application_id="org.example.Hello")
+app.activate.connect(on_activate)
+app.run([])
+```
+
+## What you get
+
+- **Modules:** `GLib`, `GObject`, `Gio`, `GdkPixbuf`, `Pango`, `Graphene`, `Gdk`, `Gsk`, `Gtk`, `Adw`.
+- **Type stubs** for every class, method, property, signal and constructor keyword, generated from GTK's GIR files.
+  They also describe PyGObject's Python additions: `GLib.idle_add`, awaitable async methods, `Gio.ListStore[Item]`,
+  `GLib.Variant`, `Gio.Settings` as a mapping, and pycairo contexts for drawing.
+- **Signal objects** and **property attributes:** see below.
+- **`pyliite4-ui`** turns a GtkBuilder `.ui` file into typed Python: a template becomes a typed composite widget.
+- **`pyliite4-resources`** compiles a `.gresource.xml` file to a Python module. Importing it registers the resources.
+
+The classes are PyGObject's own, extended in place. Objects created by GTK, such as those from `Gtk.Builder`, have the
+same API, and PyGObject code and documentation still apply.
+
+## Signals
+
+```python
+handler = button.clicked.connect(on_click)      # returns the handler id
+button.clicked.disconnect(on_click)             # or pass the handler id
+button.clicked.emit()
+with button.clicked.blocked(handler):           # g_signal_handler_block
+    ...
+entry.notify["text"].connect(on_text_changed)   # a signal detail
+```
+
+Callbacks receive the emitting object first: `def on_click(button): ...`. Declare signals on your own classes with
+`changed = Signal(int)` on a `GObject.Object` subclass; `Signal` is `GObject.Signal`, and takes its `flags`,
+`return_type` and `accumulator`.
+
+A connected bound method doesn't keep its object alive, and the connection ends when the object goes away, as with
+`g_signal_connect_object()`. Lambdas and functions are held until you disconnect them.
+
+Where a name is both a method and a signal, the attribute does both: `widget.show()` and `widget.show.connect(fn)`.
+
+## Properties
+
+GObject properties are also attributes, so `button.label = "Save"` does the same as `button.set_label("Save")`, and
+`box.margin_top` reads the property. `button.props.label` and the getters and setters still work. Use
+`source.bind_property("active", target, "visible")` to keep two properties in step, and `notify["name"]` to follow one.
+
+A method or signal of the same name takes priority. In a subclass, assigning to a name that is a property sets the
+property, so `self.child = widget` on a `Gtk.Button` subclass changes the button's child. Declare the name on the class
+first to keep it as a plain attribute.
+
+## Writing a GTK application
+
+### The main loop, threads and asyncio
+
+GTK runs on one thread. A worker thread hands results back with `GLib.idle_add`, which runs a function on the main
+loop:
+
+```python
+def finished(text: str) -> bool:
+    label.set_label(text)
+    return GLib.SOURCE_REMOVE
+
+threading.Thread(target=lambda: GLib.idle_add(finished, compute())).start()
+```
+
+A signal emitted on a worker thread runs its handlers on that thread, so emit from the main loop instead.
+
+To use asyncio, call `use_asyncio()` before `app.run()`. Coroutines then run on GLib's main loop, Gio's async methods
+can be awaited by leaving out the callback, and `asyncio.to_thread` moves blocking work off it:
+
+```python
+async def load(app: Gtk.Application, path: str) -> None:
+    ok, data, etag = await Gio.File.new_for_path(path).load_contents_async(None)
+    summary = await asyncio.to_thread(parse, data)
+
+use_asyncio()
+app.activate.connect(lambda app: app.create_asyncio_task(load(app, "notes.txt")))
+app.run([])
+```
+
+`create_asyncio_task` keeps the application running until the task ends.
+
+### Custom widgets and drawing
+
+Subclass `Gtk.Widget` and override its virtual methods: `do_snapshot` draws, `do_measure` gives the size, and
+`do_size_allocate` places children. A snapshot takes render nodes directly, or a cairo context for one area. Import cairo from PyLiite4, as
+`from PyLiite4 import cairo`, since bundled wheels keep their copy of pycairo private:
+
+```python
+class Swatch(Gtk.Widget):
+    def do_measure(self, orientation: Gtk.Orientation, for_size: int) -> tuple[int, int, int, int]:
+        return 40, 60, -1, -1
+
+    def do_snapshot(self, snapshot: Gtk.Snapshot) -> None:
+        bounds = Graphene.Rect().init(0, 0, self.get_width(), self.get_height())
+        snapshot.append_color(self.colour, bounds)
+        cr = snapshot.append_cairo(bounds)
+        ...
+```
+
+Text is laid out with Pango: `self.create_pango_layout(text)` gives a layout to measure and to draw with
+`snapshot.append_layout()`. Call `queue_draw()` or `queue_resize()` when the drawing or size changes.
+
+### Lists
+
+Keep the data in a `Gio.ListStore` of `GObject.Object` items, and show it with `Gtk.ListView`, `Gtk.GridView` or
+`Gtk.ColumnView`. A factory makes and binds a widget for each visible row:
+
+```python
+store: Gio.ListStore[Fruit] = Gio.ListStore(item_type=Fruit)
+factory = Gtk.SignalListItemFactory()
+factory.setup.connect(lambda _, item: item.set_child(Gtk.Label()))
+factory.bind.connect(lambda _, item: item.get_child().set_label(item.get_item().name))
+view = Gtk.ListView(model=Gtk.SingleSelection(model=store), factory=factory)
+```
+
+Wrap the store in `Gtk.FilterListModel` or `Gtk.SortListModel` to filter or sort it. A store is a Python sequence:
+`len(store)`, `store[0]`, `for item in store` and `store[1] = item` all work.
+
+### Styling
+
+GTK styles widgets with CSS. Give a widget a class with `add_css_class("warning")`, and load your style sheet once for
+the display:
+
+```python
+provider = Gtk.CssProvider()
+provider.load_from_resource("/org/example/App/style.css")
+Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+```
+
+libadwaita follows the system's light, dark and high-contrast settings; use its named colours, such as
+`var(--accent-bg-color)`, rather than fixed ones. `Adw.StyleManager` reports the current scheme.
+
+### Input
+
+Attach event controllers to a widget: `Gtk.EventControllerKey`, `Gtk.GestureClick`, `Gtk.EventControllerMotion`,
+`Gtk.DropTarget` and others. Keyboard shortcuts are actions: add a `Gio.SimpleAction` to the application or window, and
+give it accelerators with `app.set_accels_for_action("win.save", ["<Control>s"])`.
+
+### UI files and templates
+
+Describe a composite widget in a `.ui` file with a `<template>`, then let `pyliite4-ui` type it:
+
+```bash
+pyliite4-ui window.ui -o window_ui.py
+```
+
+```python
+from window_ui import ExampleWindowChildren, template
+
+
+@template
+class ExampleWindow(ExampleWindowChildren, Adw.ApplicationWindow):
+    __gtype_name__ = "ExampleWindow"
+
+    def on_save_clicked(self, button: Gtk.Button) -> None:
+        self.status.set_label("Saved")
+```
+
+`ExampleWindowChildren` types the template's children, and `template` applies `Gtk.Template`. It binds every child
+and signal handler that the file names, and fails at import if the class has the wrong parent, `__gtype_name__` or
+handlers. A `.ui` file without a template becomes a class with a typed attribute per object id, built with
+`Gtk.Builder`.
+
+Ship `.ui` files, CSS and icons as GResources, compiled with `pyliite4-resources app.gresource.xml -o app_resources.py`,
+and load them by resource path.
+
+### Coming from PySide6
+
+| PySide6 | GTK |
+| --- | --- |
+| `QThread`, queued connections | `GLib.idle_add`, or asyncio with `use_asyncio()` |
+| `paintEvent`, `QPainter` | `do_snapshot` with `Gtk.Snapshot`, or cairo through `append_cairo` |
+| `sizeHint`, `QSizePolicy` | `do_measure`, `hexpand`/`vexpand`, `halign`/`valign` |
+| `QFontMetrics` | `Pango.Layout` |
+| Style sheets, `QPalette` | CSS classes and `Gtk.CssProvider`; libadwaita colours |
+| `eventFilter`, `keyPressEvent` | Event controllers |
+| `QAction`, `QShortcut` | `Gio.SimpleAction` and accelerators |
+| `QAbstractItemModel`, `QListWidget`, delegates | `Gio.ListStore`, list views and item factories |
+| `QSettings` | `Gio.Settings` with a schema |
+| `pyside6-uic` | `.ui` templates and `pyliite4-ui` |
+| `pyside6-rcc` | GResources and `pyliite4-resources` |
+| `QSignalBlocker` | `signal.blocked(handler)` |
+
+## Installing
+
+Bundled wheels contain GTK, libadwaita, PyGObject and the Adwaita icons, and need nothing else from the system except
+glibc, the C++ runtime and graphics drivers:
+
+```bash
+pip install PyLiite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
+```
+
+The plain package uses the system's GTK and PyGObject instead:
+
+```bash
+pip install .
+```
+
+### Platform support
+
+| | Status |
+| --- | --- |
+| Linux x86-64, bundled | Python 3.10 to 3.14, glibc 2.34 or newer (Ubuntu 22.04, Debian 12, RHEL 9 and later) |
+| Linux, system GTK | Python 3.10 or newer; PyGObject must be installable |
+| Windows, macOS | Not implemented |
+
+Bundled wheels include GStreamer plugins for free formats such as Ogg, Opus, Vorbis, Theora, VP8/9 and WAV, but no
+patent-encumbered codecs like H.264 or AAC. They also include translations and the IBus input-method client, which
+talks to the IBus daemon on the user's system. SVG images load through librsvg. Formats that need glycin, such as HEIF
+and JPEG XL, aren't supported.
 
 ## License
 
-LGPL-3.0-only. See LICENSE and COPYING.GPL3.
+PyLiite4 is licensed under the GNU Lesser General Public License, version 3 only (`LGPL-3.0-only`). See
+[LICENSE](LICENSE) and [COPYING.GPL3](COPYING.GPL3), whose terms the LGPL builds on.
+
+Bundled wheels also contain third-party libraries under their own licenses. Their copyright files are in
+`PyLiite4/_bundled/licenses/`.
+
+## Development
+
+```bash
+python3 tools/generate.py
+```
+
+regenerates `src/PyLiite4/<Namespace>.py` and `.pyi` from the GIR files, so the stubs match the GTK version installed
+when they were generated.
+
+```bash
+xvfb-run -a env -u WAYLAND_DISPLAY GDK_BACKEND=x11 PYTHONPATH=src python3 -m pytest
+```
+
+runs the tests in a virtual display. They need `pytest` and `mypy`.
+
+```bash
+python3 tools/build_wheel.py
+```
+
+builds a bundled wheel from this machine's GTK in `dist/`, usable only on this glibc or newer. It needs `patchelf`.
+
+### Release wheels
+
+Release wheels are built from source in a `manylinux_2_34` root, without a container engine. This needs `bwrap`, and
+`Xvfb` for testing:
+
+```bash
+tools/manylinux/fetch_root.py /path/to/root
+```
+
+```bash
+tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_stack.sh
+```
+
+```bash
+tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_wheels.sh cp310 cp311 cp312 cp313 cp314
+```
+
+```bash
+tools/manylinux/verify_in_root.sh /path/to/root dist/PyLiite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl cp314
+```
+
+The stack build records finished packages, so running it again resumes after a failure.
+
+```bash
+tools/verify_wheel.sh dist/PyLiite4-*.whl
+```
+
+installs that wheel in a clean venv and runs the tests in a `bwrap` sandbox with the system's GTK stack hidden.

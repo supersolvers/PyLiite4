@@ -70,6 +70,17 @@ meson_package harfbuzz https://github.com/harfbuzz/harfbuzz/releases/download/12
     -Dtests=disabled -Ddocs=disabled -Dgobject=enabled -Dintrospection=enabled -Dcairo=enabled -Dfreetype=enabled
 meson_package pango $GNOME/pango/1.57/pango-1.57.1.tar.xz -Dintrospection=enabled -Dbuild-testsuite=false \
     -Dbuild-examples=false -Ddocumentation=false -Dman-pages=false
+# AlmaLinux's libtiff links the GPL-only libjbig, so build one without JBIG support.
+if [ ! -f /src/stamps/tiff ]; then
+    echo "=== tiff ($(date +%T))"
+    tiff=$(fetch https://download.osgeo.org/libtiff/tiff-4.7.1.tar.xz)
+    cmake -S "$tiff" -B /src/build-tiff -G Ninja -DCMAKE_INSTALL_PREFIX="$PREFIX" -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_BUILD_TYPE=Release -Djbig=OFF -Dlerc=OFF -Dlibdeflate=OFF -Dcxx=OFF -Dtiff-tools=OFF \
+        -Dtiff-tests=OFF -Dtiff-contrib=OFF -Dtiff-docs=OFF > /src/tiff.setup.log 2>&1 \
+        || { tail -30 /src/tiff.setup.log; exit 1; }
+    ninja -C /src/build-tiff -j "$JOBS" install > /src/tiff.log 2>&1 || { tail -30 /src/tiff.log; exit 1; }
+    touch /src/stamps/tiff
+fi
 meson_package gdk-pixbuf $GNOME/gdk-pixbuf/2.44/gdk-pixbuf-2.44.8.tar.xz -Dintrospection=enabled -Dtests=false \
     -Dinstalled_tests=false -Dman=false -Ddocumentation=false -Dglycin=disabled -Dgif=enabled -Dpng=enabled \
     -Djpeg=enabled -Dtiff=enabled -Dothers=enabled

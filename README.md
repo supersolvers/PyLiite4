@@ -234,8 +234,18 @@ and JPEG XL, aren't supported.
 PyLiite4 is licensed under the GNU Lesser General Public License, version 3 only (`LGPL-3.0-only`). See
 [LICENSE](LICENSE) and [COPYING.GPL3](COPYING.GPL3), whose terms the LGPL builds on.
 
-Bundled wheels also contain third-party libraries under their own licenses. Their copyright files are in
-`PyLiite4/_bundled/licenses/`.
+Bundled wheels also contain about 95 other projects under their own licenses, among them GTK, GLib and
+GStreamer (LGPL), X11 and Cairo (MIT and LGPL or MPL) and the Rust crates that librsvg compiles in. Their license
+texts are in `PyLiite4/_bundled/licenses/`. `NOTICES.txt` there lists every project with its version, license and
+source archive, and `components.json` lists which bundled file comes from which project. The wheel metadata includes
+the same list as `THIRD-PARTY-NOTICES.txt`.
+
+None of the bundled libraries is GPL-only. Some packages also contain GPL programs, but the wheel takes only their
+LGPL, BSD or dual-licensed libraries. To keep it that way, the build fails when a project that mentions the GPL isn't
+on a reviewed list in `tools/third_party.py`.
+
+The source archive of every bundled project, at the exact version in the wheels, is published with each release,
+next to the wheels.
 
 ## Development
 
@@ -281,8 +291,20 @@ tools/manylinux/verify_in_root.sh /path/to/root dist/PyLiite4-0.1.0-cp314-cp314-
 
 The stack build records finished packages, so running it again resumes after a failure.
 
+Each wheel build traces every bundled file to the project it came from: the meson install logs for the stack built
+from source, the source RPMs for AlmaLinux packages, and PyPI and crates.io for Python packages and Rust crates. The
+build fails if a file has no project, a project has no license texts, or a project mentions the GPL and hasn't been
+reviewed. `build_wheels.sh` also copies every project's source archive, with `SHA256SUMS`, into `dist/sources/`,
+which is published with the release. Downloaded source RPMs and sdists are kept in `build/third-party/`.
+
 ```bash
 tools/verify_wheel.sh dist/PyLiite4-*.whl
 ```
 
 installs that wheel in a clean venv and runs the tests in a `bwrap` sandbox with the system's GTK stack hidden.
+
+```bash
+dbus-run-session -- tools/verify_wayland.sh dist/PyLiite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl
+```
+
+does the same on Wayland, with a headless `kwin_wayland` as the compositor.

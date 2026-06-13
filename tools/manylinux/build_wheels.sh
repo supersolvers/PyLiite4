@@ -12,5 +12,6 @@ for version in ${versions[*]}; do
         "/opt/python/$version-$version/bin/python" -m venv "$venv"
         "$venv/bin/pip" -q install PyGObject==3.56.2 pycairo patchelf tomli
     fi
-    PATH="$venv/bin:$PATH" "$venv/bin/python" /project/tools/build_wheel.py --prefix /opt/gtk --output /project/dist
+    PATH="$venv/bin:$PATH" "$venv/bin/python" /project/tools/build_wheel.py --prefix /opt/gtk --output /project/dist \
+        --sources /project/dist/sources
 done

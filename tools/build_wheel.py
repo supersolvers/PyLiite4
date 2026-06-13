@@ -6,7 +6,10 @@ systems with the same architecture and at least the same glibc. See
 tools/manylinux for building on an old distribution to reach more systems. Needs
 patchelf.
 
-Usage: tools/build_wheel.py [--output DIR] [--no-icons] [--prefix DIR]
+Every bundled file must belong to a project whose license texts tools/third_party.py
+can find, or the build fails. --sources collects those projects' source archives.
+
+Usage: tools/build_wheel.py [--output DIR] [--no-icons] [--prefix DIR] [--sources DIR]
 """
 
 import argparse
@@ -20,6 +23,8 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
+
+import third_party
 
 try:
     import tomllib
@@ -75,42 +80,26 @@ def set_runpath(path, runpath):
     subprocess.run(["patchelf", "--set-rpath", runpath, str(path)], check=True)
 
 
+# Where each bundled file was copied from: {bundled path: source file}.
+ORIGINS = {}
+# Files the build writes itself rather than copying.
+GENERATED = re.compile(r"(^|/)(loaders\.cache\.in|gschemas\.compiled|fonts\.conf)$")
+
+
+def bring(source, target):
+    """Copy a file into the bundle, to ``target`` or into the directory ``target``."""
+    target = target / source.name if target.is_dir() else target
+    shutil.copyfile(source, target)
+    shutil.copymode(source, target)
+    ORIGINS[target] = Path(source)
+    return target
+
+
 def copy_tree(source, target):
-    shutil.copytree(source, target, symlinks=False, dirs_exist_ok=True,
-                    ignore=shutil.ignore_patterns("__pycache__"))
-
-
-def write_licenses(libraries, bundle):
-    """Copy the copyright file of each Debian package we took a library from."""
-    target = bundle / "licenses"
-    target.mkdir()
-    if shutil.which("dpkg-query"):
-        packages = set()
-        for library in libraries:
-            result = subprocess.run(["dpkg-query", "-S", str(library)], capture_output=True, text=True)
-            if result.returncode:
-                result = subprocess.run(["dpkg-query", "-S", str(library).removeprefix("/usr")],
-                                        capture_output=True, text=True)
-            if result.returncode == 0:
-                packages.add(result.stdout.split(":")[0])
-        for package in packages:
-            copyright_file = Path("/usr/share/doc") / package / "copyright"
-            if copyright_file.exists():
-                shutil.copy(copyright_file, target / f"{package}.txt")
-    if shutil.which("rpm"):
-        for library in libraries:
-            result = subprocess.run(["rpm", "-qf", "--qf", "%{NAME}", str(library)], capture_output=True, text=True)
-            licenses = Path("/usr/share/licenses") / result.stdout
-            if result.returncode == 0 and licenses.is_dir():
-                copy_tree(licenses, target / result.stdout)
-    # Packages built from source keep their license files in the source tree.
-    for source in Path("/src").glob("*/"):
-        if source.name.startswith("build-") or source.name in ("archives", "stamps"):
-            continue
-        for license_file in [*source.glob("COPYING*"), *source.glob("LICENSE*")]:
-            if license_file.is_file():
-                (target / source.name).mkdir(exist_ok=True)
-                shutil.copy(license_file, target / source.name)
+    for path in source.rglob("*"):
+        if path.is_file() and "__pycache__" not in path.parts:
+            (target / path.relative_to(source)).parent.mkdir(parents=True, exist_ok=True)
+            bring(path, target / path.relative_to(source))
 
 
 def build_bundle(bundle, icons):
@@ -133,21 +122,20 @@ def build_bundle(bundle, icons):
     loaders = bundle / "lib" / "gdk-pixbuf" / "loaders"
     loaders.mkdir(parents=True)
     for loader in (pixbuf_root / "loaders").glob("*.so"):
-        shutil.copy(loader, loaders)
+        bring(loader, loaders)
     tools = bundle / "bin"
     tools.mkdir()
     for tool in ("glib-compile-resources", "glib-compile-schemas"):
-        shutil.copy(shutil.which(tool), tools)
+        bring(Path(shutil.which(tool)), tools)
     (bundle / "lib" / "gio" / "modules").mkdir(parents=True)
 
     # GdkPixbuf hands most image formats to these helper programs.
     glycin = []
-    for version in [*Path("/usr/libexec/glycin-loaders").glob("*")] if LIBDIR.parent != Path(PREFIX) else []:
+    for version in [] if PREFIX else Path("/usr/libexec/glycin-loaders").glob("*"):
         target = bundle / "libexec" / "glycin-loaders" / version.name
         target.mkdir(parents=True)
         for program in version.iterdir():
-            shutil.copy(program, target)
-            glycin.append(target / program.name)
+            glycin.append(bring(program, target))
         configs = bundle / "share" / "glycin-loaders" / version.name / "conf.d"
         configs.mkdir(parents=True)
         for config in Path(f"/usr/share/glycin-loaders/{version.name}/conf.d").glob("*.conf"):
@@ -155,30 +143,30 @@ def build_bundle(bundle, icons):
             # Glycin's sandbox only shows loaders under /usr unless told otherwise.
             text = re.sub(r"^(Exec=.*)$", r"\1\nExposeBaseDir=true", text, flags=re.M)
             (configs / f"{config.name}.in").write_text(text)
+            ORIGINS[configs / f"{config.name}.in"] = config
 
     im_modules = bundle / "lib" / "gtk-4.0" / "4.0.0" / "immodules"
     im_modules.mkdir(parents=True)
     for module in (LIBDIR / "gtk-4.0" / "4.0.0" / "immodules").glob("*.so"):
-        shutil.copy(module, im_modules)
+        bring(module, im_modules)
 
     plugins = bundle / "lib" / "gstreamer-1.0"
     plugins.mkdir()
     for plugin in GSTREAMER_PLUGINS:
         if (LIBDIR / "gstreamer-1.0" / f"libgst{plugin}.so").exists():
-            shutil.copy(LIBDIR / "gstreamer-1.0" / f"libgst{plugin}.so", plugins)
+            bring(LIBDIR / "gstreamer-1.0" / f"libgst{plugin}.so", plugins)
         else:
             print(f"warning: GStreamer plugin {plugin} is not available", file=sys.stderr)
     (bundle / "libexec").mkdir(exist_ok=True)
     scanner = bundle / "libexec" / "gst-plugin-scanner"
     candidates = [*LIBDIR.glob("gstreamer1.0/gstreamer-1.0/gst-plugin-scanner"),
                   *LIBDIR.parent.glob("libexec/gstreamer-1.0/gst-plugin-scanner")]
-    shutil.copy(candidates[0], scanner)
+    bring(candidates[0], scanner)
 
     launcher = LIBDIR.parent / "libexec" / "gio-launch-desktop"
     helpers = []
     if PREFIX and launcher.exists():
-        shutil.copy(launcher, bundle / "libexec")
-        helpers.append(bundle / "libexec" / launcher.name)
+        helpers.append(bring(launcher, bundle / "libexec"))
 
     # Follow dependencies from every file that gets loaded.
     pending = [LIBDIR / name for name in ROOT_LIBRARIES]
@@ -193,7 +181,7 @@ def build_bundle(bundle, icons):
     for name in ROOT_LIBRARIES:
         copied.setdefault(name, LIBDIR / name)
     for name, source in copied.items():
-        shutil.copyfile(source, lib / name)
+        bring(source, lib / name)
         set_runpath(lib / name, "$ORIGIN")
     for extension in python_extensions:
         depth = "/".join([".."] * len(extension.relative_to(bundle).parts[:-1]))
@@ -217,7 +205,7 @@ def build_bundle(bundle, icons):
     for name in TYPELIBS:
         source = LIBDIR / "girepository-1.0" / f"{name}.typelib"
         if source.exists():
-            shutil.copy(source, typelibs)
+            bring(source, typelibs)
         else:
             print(f"warning: typelib {name} is not available", file=sys.stderr)
 
@@ -231,7 +219,7 @@ def build_bundle(bundle, icons):
     schemas.mkdir(parents=True)
     for schema in (LIBDIR.parent / "share" / "glib-2.0" / "schemas" if PREFIX == str(LIBDIR.parent)
                    else Path("/usr/share/glib-2.0/schemas")).glob("org.gtk.*.gschema.xml"):
-        shutil.copy(schema, schemas)
+        bring(schema, schemas)
     subprocess.run(["glib-compile-schemas", str(schemas)], check=True)
 
     if PREFIX:
@@ -239,19 +227,31 @@ def build_bundle(bundle, icons):
             for catalog in (LIBDIR.parent / "share" / "locale").glob(f"*/LC_MESSAGES/{domain}.mo"):
                 target = bundle / "share" / "locale" / catalog.relative_to(LIBDIR.parent / "share" / "locale")
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(catalog, target)
+                bring(catalog, target)
         # Only used on systems without their own /etc/fonts/fonts.conf.
         fonts = bundle / "etc" / "fonts"
         fonts.mkdir(parents=True)
         (fonts / "fonts.conf").write_text(FALLBACK_FONTS_CONF)
 
     if icons:
-        for theme in ("Adwaita", "hicolor"):
-            if Path(f"/usr/share/icons/{theme}").exists():
-                copy_tree(Path(f"/usr/share/icons/{theme}"), bundle / "share" / "icons" / theme)
+        copy_tree(Path("/usr/share/icons/Adwaita"), bundle / "share" / "icons" / "Adwaita")
+        # hicolor is the fallback theme that applications install their own icons into; GTK needs only its index.
+        (bundle / "share" / "icons" / "hicolor").mkdir()
+        bring(Path("/usr/share/icons/hicolor/index.theme"), bundle / "share" / "icons" / "hicolor")
 
-    write_licenses([*copied.values(), *python_extensions], bundle)
     return copied
+
+
+def write_licenses(bundle, cache):
+    """Attribute every bundled file to its project and write their notices. Returns the projects."""
+    unrecorded = [str(path.relative_to(bundle)) for path in bundle.rglob("*")
+                  if path.is_file() and path not in ORIGINS and not GENERATED.search(str(path))]
+    if unrecorded:
+        raise RuntimeError("bundled files without a recorded origin:\n  " + "\n  ".join(sorted(unrecorded)))
+    origins = {str(path.relative_to(bundle)): source for path, source in ORIGINS.items()}
+    components = third_party.Attribution(PREFIX, cache).attribute(origins)
+    third_party.write_notices(components, bundle / "licenses")
+    return components
 
 
 def glibc_tag():
@@ -266,7 +266,7 @@ def build_wheel(package_dir, output):
     tag = f"{python}-{python}-{glibc_tag()}"
     info = f"{name}-{version}.dist-info"
     license_files = {path: (ROOT / path).read_text() for path in project["license-files"]}
-    license_headers = "".join(f"License-File: {path}\n" for path in license_files)
+    license_headers = "".join(f"License-File: {path}\n" for path in [*license_files, "THIRD-PARTY-NOTICES.txt"])
     metadata = (f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\nSummary: {project['description']}\n"
                 f"License-Expression: {project['license']}\n{license_headers}"
                 f"Requires-Python: =={sys.version_info.major}.{sys.version_info.minor}.*\n"
@@ -277,6 +277,7 @@ def build_wheel(package_dir, output):
         f"{info}/WHEEL": f"Wheel-Version: 1.0\nGenerator: PyLiite4 build_wheel\nRoot-Is-Purelib: false\nTag: {tag}\n",
         f"{info}/entry_points.txt": f"[console_scripts]\n{scripts}\n",
         **{f"{info}/licenses/{path}": text for path, text in license_files.items()},
+        f"{info}/licenses/THIRD-PARTY-NOTICES.txt": (package_dir / "_bundled" / "licenses" / "NOTICES.txt").read_text(),
     }
     output.mkdir(parents=True, exist_ok=True)
     wheel = output / f"{name}-{version}-{tag}.whl"
@@ -305,11 +306,16 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     parser.add_argument("--no-icons", action="store_true")
     parser.add_argument("--prefix", help="use a GTK stack installed here, generating stubs from it")
+    parser.add_argument("--sources", type=Path, help="copy the source archive of every bundled project here")
+    parser.add_argument("--cache", type=Path, default=ROOT / "build" / "third-party",
+                        help="where downloaded source packages are kept (default: build/third-party)")
     args = parser.parse_args()
     if args.prefix:
         global LIBDIR, PREFIX
         PREFIX = args.prefix
         LIBDIR = Path(args.prefix) / "lib"
+    if args.sources and not args.prefix:
+        parser.error("--sources needs --prefix: wheels built from this machine's packages aren't for release")
     if not shutil.which("patchelf"):
         parser.error("patchelf was not found")
     with tempfile.TemporaryDirectory() as directory:
@@ -319,6 +325,9 @@ def main():
             subprocess.run([sys.executable, ROOT / "tools" / "generate.py", "--gir-dir", f"{args.prefix}/share/gir-1.0",
                             "--output", package], check=True, stdout=subprocess.DEVNULL)
         libraries = build_bundle(package / "_bundled", not args.no_icons)
+        components = write_licenses(package / "_bundled", args.cache.resolve())
+        if args.sources:
+            third_party.collect_sources(components, args.sources)
         # pycairo is private to the bundle, so PyLiite4.cairo carries its stubs.
         cairo_stubs = package / "_bundled" / "python" / "cairo" / "__init__.pyi"
         if cairo_stubs.exists():

@@ -101,6 +101,15 @@ def test_input_method_module_is_loaded():
         assert loaded and all(path.startswith(str(bundle)) for path in loaded)
 
 
+def test_bundle_carries_its_notices():
+    bundle = Path(Gtk.__file__).parent / "_bundled"
+    if bundle.is_dir():
+        notices = (bundle / "licenses" / "NOTICES.txt").read_text()
+        assert "\ngtk 4." in notices and "\nPyGObject " in notices
+        # libjbig is GPL-only, and must not reach an LGPL application through libtiff.
+        assert not list((bundle / "lib").glob("libjbig*"))
+
+
 def test_fonts_are_found():
     assert Gtk.Label().get_pango_context().list_families()
 

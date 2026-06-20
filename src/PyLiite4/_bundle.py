@@ -12,6 +12,10 @@ import tempfile
 from pathlib import Path
 
 BUNDLE = Path(__file__).parent / "_bundled"
+# Where distributions keep their combined CA certificates: Debian and its derivatives, Arch and Gentoo; Fedora and
+# RHEL; openSUSE; Alpine.
+CA_BUNDLES = ["/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt", "/etc/ssl/ca-bundle.pem",
+              "/etc/ssl/cert.pem"]
 
 
 def _prepend(variable: str, value: Path, default: str = "") -> None:
@@ -57,7 +61,8 @@ def bind_translations() -> None:
     libc = ctypes.CDLL(None)
     libc.bindtextdomain.restype = ctypes.c_char_p
     libc.bindtextdomain.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-    for domain in ("gtk40", "gtk40-properties", "glib20", "gdk-pixbuf", "libadwaita"):
+    domains = {catalog.stem for catalog in locale.glob("*/LC_MESSAGES/*.mo")}
+    for domain in sorted(domains):
         libc.bindtextdomain(domain.encode(), str(locale).encode())
 
 
@@ -79,6 +84,12 @@ def setup() -> None:
     if fallback_fonts.exists() and not {"FONTCONFIG_FILE", "FONTCONFIG_PATH"} & set(os.environ):
         system_fonts = Path("/etc/fonts/fonts.conf")
         os.environ["FONTCONFIG_FILE"] = str(system_fonts if system_fonts.exists() else fallback_fonts)
+    # The bundled TLS module would look for certificates where the build machine keeps them.
+    if any((BUNDLE / "lib" / "gio" / "modules").glob("libgioopenssl.so")) and "SSL_CERT_FILE" not in os.environ:
+        for certificates in CA_BUNDLES:
+            if Path(certificates).exists():
+                os.environ["SSL_CERT_FILE"] = certificates
+                break
     launcher = BUNDLE / "libexec" / "gio-launch-desktop"
     if launcher.exists():
         os.environ["GIO_LAUNCH_DESKTOP"] = str(launcher)

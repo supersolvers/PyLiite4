@@ -14,14 +14,19 @@ from pathlib import Path
 SKIPPED = {"GLib.MainContextPusher", "GLib.MutexLocker", "GLib.RWLockReaderLocker", "GLib.RWLockWriterLocker",
            "GLib.RecMutexLocker", "GLib.RefString", "GLib.Error", "GObject.GType", "GObject.Property",
            "GObject.Signal"}
-NAMESPACES = ["GLib", "GObject", "Gio", "GdkPixbuf", "Pango", "Graphene", "Gdk", "Gsk", "Gtk", "Adw"]
+NAMESPACES = ["GLib", "GObject", "Gio", "GdkPixbuf", "Pango", "Graphene", "Gdk", "Gsk", "Gtk", "Adw", "GtkSource",
+              "Soup", "Xdp", "XdpGtk4", "Gst", "GstBase", "GstAudio", "GstVideo", "GstPbutils", "GstApp"]
 FILES = {"GLib": "GLib-2.0", "GObject": "GObject-2.0", "Gio": "Gio-2.0", "GdkPixbuf": "GdkPixbuf-2.0",
          "Pango": "Pango-1.0", "Graphene": "Graphene-1.0", "Gdk": "Gdk-4.0", "Gsk": "Gsk-4.0",
-         "Gtk": "Gtk-4.0", "Adw": "Adw-1"}
+         "Gtk": "Gtk-4.0", "Adw": "Adw-1", "GtkSource": "GtkSource-5", "Soup": "Soup-3.0", "Xdp": "Xdp-1.0",
+         "XdpGtk4": "XdpGtk4-1.0", "Gst": "Gst-1.0", "GstBase": "GstBase-1.0", "GstAudio": "GstAudio-1.0",
+         "GstVideo": "GstVideo-1.0", "GstPbutils": "GstPbutils-1.0", "GstApp": "GstApp-1.0"}
 DEPENDENCIES = {"GObject": ["GLib"], "Gio": ["GLib", "GObject"], "GdkPixbuf": ["GObject", "Gio"],
                 "Pango": ["GObject", "Gio"], "Graphene": ["GObject"],
                 "Gdk": ["Gio", "GdkPixbuf", "Pango"], "Gsk": ["Gdk", "Graphene"],
-                "Gtk": ["Gdk", "Gsk"], "Adw": ["Gtk"]}
+                "Gtk": ["Gdk", "Gsk"], "Adw": ["Gtk"], "GtkSource": ["Gtk"], "Soup": ["Gio"], "Xdp": ["Gio"],
+                "XdpGtk4": ["Xdp", "Gtk"], "Gst": ["GObject"], "GstBase": ["Gst"], "GstAudio": ["GstBase"],
+                "GstVideo": ["GstBase"], "GstPbutils": ["GstAudio", "GstVideo"], "GstApp": ["GstBase"]}
 
 CORE = "http://www.gtk.org/introspection/core/1.0"
 C = "http://www.gtk.org/introspection/c/1.0"

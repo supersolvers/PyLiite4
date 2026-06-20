@@ -26,7 +26,11 @@ app.run([])
 
 ## What you get
 
-- **Modules:** `GLib`, `GObject`, `Gio`, `GdkPixbuf`, `Pango`, `Graphene`, `Gdk`, `Gsk`, `Gtk`, `Adw`.
+- **Modules:** `GLib`, `GObject`, `Gio`, `GdkPixbuf`, `Pango`, `Graphene`, `Gdk`, `Gsk`, `Gtk`, `Adw`, and the
+  libraries GTK applications commonly add: `GtkSource` (GtkSourceView, a code editor), `Soup` (HTTP clients and
+  servers), `Xdp` and `XdpGtk4` (libportal, for desktop portals such as screenshots, the camera and file access),
+  and `Gst`, `GstBase`, `GstAudio`, `GstVideo`, `GstPbutils` and `GstApp` (GStreamer, with gst-python's
+  additions).
 - **Type stubs** for every class, method, property, signal and constructor keyword, generated from GTK's GIR files.
   They also describe PyGObject's Python additions: `GLib.idle_add`, awaitable async methods, `Gio.ListStore[Item]`,
   `GLib.Variant`, `Gio.Settings` as a mapping, and pycairo contexts for drawing.
@@ -226,8 +230,9 @@ pip install .
 
 Bundled wheels include GStreamer plugins for free formats such as Ogg, Opus, Vorbis, Theora, VP8/9 and WAV, but no
 patent-encumbered codecs like H.264 or AAC. They also include translations and the IBus input-method client, which
-talks to the IBus daemon on the user's system. SVG images load through librsvg. Formats that need glycin, such as HEIF
-and JPEG XL, aren't supported.
+talks to the IBus daemon on the user's system. HTTPS uses the bundled OpenSSL with the system's CA certificates, found
+at the usual path for Debian, Fedora, openSUSE or Alpine, or wherever `SSL_CERT_FILE` points. SVG images load through
+librsvg. Formats that need glycin, such as HEIF and JPEG XL, aren't supported.
 
 ## License
 

@@ -17,9 +17,9 @@ dnf -y -q --setopt=install_weak_deps=False install bison flex gperf gettext-deve
     libX11-devel libXext-devel libXrender-devel libXi-devel libXrandr-devel libXcursor-devel libXdamage-devel \
     libXfixes-devel libXinerama-devel libxkbcommon-devel libxcb-devel mesa-libEGL-devel mesa-libGL-devel \
     mesa-libgbm-devel libdrm-devel vulkan-headers vulkan-loader-devel libmount-devel cups-devel pixman-devel \
-    libogg-devel libvorbis-devel opus-devel libvpx-devel pulseaudio-libs-devel orc-devel lcms2-devel shared-mime-info glslc libyaml-devel libcurl-devel libxmlb-devel libxslt itstool docbook-style-xsl docbook-dtds cargo rust cargo-c iso-codes-devel python3 \
+    libogg-devel libvorbis-devel opus-devel libvpx-devel pulseaudio-libs-devel orc-devel lcms2-devel shared-mime-info glslc libyaml-devel libcurl-devel libpsl-devel sqlite-devel openssl-devel brotli-devel libxmlb-devel libxslt itstool docbook-style-xsl docbook-dtds cargo rust cargo-c iso-codes-devel python3 \
     || true
-dnf -y -q --setopt=install_weak_deps=False --enablerepo=crb install libtheora-devel || true
+dnf -y -q --setopt=install_weak_deps=False --enablerepo=crb install libtheora-devel libnghttp2-devel || true
 # g-ir-scanner puts /usr/lib64 first on the library path, where the toolset's linker would find an old libctf.
 for library in libctf.so.0 libctf-nobfd.so.0; do
     ln -sf "/opt/rh/gcc-toolset-14/root/usr/lib64/$library" "/usr/lib64/$library"
@@ -31,7 +31,8 @@ fetch() { # url -> prints the unpacked directory
     local archive="/src/archives/${1##*/}"
     [ -f "$archive" ] || curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 --max-time 300 -o "$archive" "$1"
     local directory
-    directory=$(tar tf "$archive" | head -1 | cut -d/ -f1)
+    # tar may die of SIGPIPE once head has its line, which pipefail would treat as a failure.
+    directory=$(tar tf "$archive" | head -1 | cut -d/ -f1 || true)
     [ -d "/src/$directory" ] || tar xf "$archive" -C /src --no-same-owner
     echo "/src/$directory"
 }
@@ -87,9 +88,9 @@ meson_package gdk-pixbuf $GNOME/gdk-pixbuf/2.44/gdk-pixbuf-2.44.8.tar.xz -Dintro
 meson_package graphene $GNOME/graphene/1.10/graphene-1.10.8.tar.xz -Dtests=false -Dintrospection=enabled \
     -Dinstalled_tests=false
 meson_package libepoxy https://github.com/anholt/libepoxy/archive/refs/tags/1.5.10.tar.gz -Dtests=false -Ddocs=false
-meson_package gstreamer $GST/gstreamer/gstreamer-1.26.5.tar.xz -Dintrospection=disabled -Dtests=disabled \
+meson_package gstreamer $GST/gstreamer/gstreamer-1.26.5.tar.xz -Dintrospection=enabled -Dtests=disabled \
     -Dexamples=disabled -Ddoc=disabled -Dtools=enabled -Dbash-completion=disabled -Dlibdw=disabled -Dlibunwind=disabled
-meson_package gst-plugins-base $GST/gst-plugins-base/gst-plugins-base-1.26.5.tar.xz -Dintrospection=disabled \
+meson_package gst-plugins-base $GST/gst-plugins-base/gst-plugins-base-1.26.5.tar.xz -Dintrospection=enabled \
     -Dtests=disabled -Dexamples=disabled -Ddoc=disabled -Dtools=disabled -Dcdparanoia=disabled -Dalsa=disabled \
     -Dpango=disabled -Dgl_api=opengl,gles2 -Dgl_platform=egl,glx -Dgl_winsys=egl,x11,wayland
 meson_package gst-plugins-good $GST/gst-plugins-good/gst-plugins-good-1.26.5.tar.xz -Dtests=disabled \
@@ -119,6 +120,18 @@ meson_package libadwaita $GNOME/libadwaita/1.9/libadwaita-1.9.4.tar.xz -Dintrosp
     -Dtests=false -Dexamples=false -Ddocumentation=false
 meson_package librsvg $GNOME/librsvg/2.60/librsvg-2.60.3.tar.xz -Dintrospection=disabled -Dpixbuf=enabled \
     -Dpixbuf-loader=enabled -Ddocs=disabled -Dvala=disabled -Dtests=false -Davif=disabled
+meson_package gtksourceview $GNOME/gtksourceview/5.20/gtksourceview-5.20.0.tar.xz -Dintrospection=enabled -Dvapi=false \
+    -Dbuild-testsuite=false -Ddocumentation=false
+# HTTP for Soup, with TLS through OpenSSL: it honours SSL_CERT_FILE, so the bundle can find each distribution's CAs.
+meson_package glib-networking $GNOME/glib-networking/2.80/glib-networking-2.80.1.tar.xz -Dgnutls=disabled \
+    -Dopenssl=enabled -Dlibproxy=disabled -Dgnome_proxy=disabled -Dinstalled_tests=false
+meson_package libsoup $GNOME/libsoup/3.6/libsoup-3.6.6.tar.xz -Dintrospection=enabled -Dvapi=disabled -Ddocs=disabled \
+    -Ddoc_tests=false -Dtests=false -Dautobahn=disabled -Dinstalled_tests=false -Dsysprof=disabled -Dgssapi=disabled \
+    -Dntlm=disabled -Dbrotli=enabled -Dtls_check=false -Dpkcs11_tests=disabled
+meson_package libportal https://github.com/flatpak/libportal/releases/download/0.9.1/libportal-0.9.1.tar.xz \
+    -Dbackend-gtk4=enabled -Dbackend-gtk3=disabled -Dbackend-qt5=disabled -Dbackend-qt6=disabled -Dintrospection=true \
+    -Dvapi=false -Ddocs=false -Dtests=false
+fetch $GST/gst-python/gst-python-1.26.5.tar.xz > /dev/null  # built per Python version by build_wheels.sh
 
 if [ ! -f /src/stamps/ibus ]; then
     echo "=== ibus ($(date +%T))"

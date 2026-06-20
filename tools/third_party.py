@@ -38,18 +38,23 @@ MESON_LICENSES = {
     "cairo": "LGPL-2.1-only OR MPL-1.1",
     "fribidi": "LGPL-2.1-or-later",
     "glib": "LGPL-2.1-or-later",
+    "glib-networking": "LGPL-2.1-or-later",
     "gobject-introspection": "LGPL-2.0-or-later AND GPL-2.0-or-later AND MIT",
+    "gst-python": "LGPL-2.1-or-later",
     "gstreamer": "LGPL-2.1-or-later",
     "gst-plugins-base": "LGPL-2.1-or-later",
     "gst-plugins-good": "LGPL-2.1-or-later",
     "gst-plugins-bad": "LGPL-2.1-or-later",
     "harfbuzz": "MIT-Modern-Variant",
+    "libportal": "LGPL-3.0-only",
     "librsvg": "LGPL-2.1-or-later",
     "pango": "LGPL-2.1-or-later",
     "wayland-protocols": "MIT",
 }
 # Projects that keep their license texts somewhere other than the top of their source tree.
 OTHER_TEXTS = {"freetype": {"docs/LICENSE.TXT", "docs/FTL.TXT", "docs/GPLv2.TXT"}, "zlib": {"README"}}
+# Projects with no license file at all, and the text in tools/license-texts that stands in for one.
+STAND_IN_TEXTS = {"sqlite": "SQLite-blessing.txt"}
 # Built with make rather than meson, so without an install log.
 OTHER_BUILDS = {"ibus": ("LGPL-2.1-or-later", ["lib/libibus-1.0.so*", "lib/gtk-4.0/4.0.0/immodules/libim-ibus.so"]),
                 "tiff": ("libtiff", ["lib/libtiff.so*"])}
@@ -177,7 +182,8 @@ class Attribution:
         info = json.loads((build / "meson-info" / "intro-projectinfo.json").read_text())
         source = Path(json.loads((build / "meson-info" / "meson-info.json").read_text())["directories"]["source"])
         declared = " AND ".join(info.get("license") or [])
-        name = "glib" if stamp == "glib-bootstrap" else stamp
+        # gst-python is built once for each Python version, as gst-python-cp313 and so on.
+        name = "glib" if stamp == "glib-bootstrap" else re.sub(r"-cp\d+$", "", stamp)
         license = MESON_LICENSES.get(name) or declared
         component = Component(name, info["version"], license, "built from source", [self.source_archive(source)],
                               tree_texts(source))
@@ -234,6 +240,8 @@ class Attribution:
                     texts[base] = srpm.extractfile(member).read()
                 elif ARCHIVE.search(base):
                     texts.update(archive_texts(srpm.extractfile(member).read(), OTHER_TEXTS.get(name, frozenset())))
+        if not texts and name in STAND_IN_TEXTS:
+            texts[STAND_IN_TEXTS[name]] = (TEXTS / STAND_IN_TEXTS[name]).read_bytes()
         return Component(name, version, self.rpm_licenses[source_rpm], "AlmaLinux 9 package", [target], texts)
 
     def _dpkg(self, package):

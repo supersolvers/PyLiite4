@@ -39,15 +39,21 @@ LIBDIR = Path(f"/usr/lib/{platform.machine()}-linux-gnu")
 ROOT_LIBRARIES = ["libgtk-4.so.1", "libadwaita-1.so.0", "libgirepository-2.0.so.0", "libgraphene-1.0.so.0",
                   "libgdk_pixbuf-2.0.so.0", "libpangocairo-1.0.so.0", "libpangoft2-1.0.so.0",
                   "libcairo-gobject.so.2", "libgmodule-2.0.so.0", "libharfbuzz.so.0", "libharfbuzz-gobject.so.0"]
+# Bundled when the build has them; a wheel built from this machine's packages may not.
+OPTIONAL_LIBRARIES = ["libgtksourceview-5.so.0", "libsoup-3.0.so.0", "libportal.so.1", "libportal-gtk4.so.1",
+                      "libgstreamer-1.0.so.0", "libgstbase-1.0.so.0", "libgstaudio-1.0.so.0", "libgstvideo-1.0.so.0",
+                      "libgstpbutils-1.0.so.0", "libgstapp-1.0.so.0"]
 TYPELIBS = ["GLib-2.0", "GLibUnix-2.0", "GObject-2.0", "GModule-2.0", "Gio-2.0", "GioUnix-2.0", "GdkPixbuf-2.0",
             "Pango-1.0", "PangoCairo-1.0", "PangoFT2-1.0", "PangoFc-1.0", "PangoOT-1.0", "HarfBuzz-0.0", "cairo-1.0",
             "freetype2-2.0", "fontconfig-2.0", "Graphene-1.0", "Gdk-4.0", "GdkWayland-4.0", "GdkX11-4.0", "xlib-2.0",
-            "Gsk-4.0", "Gtk-4.0", "Adw-1"]
+            "Gsk-4.0", "Gtk-4.0", "Adw-1", "GtkSource-5", "Soup-3.0", "Xdp-1.0", "XdpGtk4-1.0", "Gst-1.0",
+            "GstBase-1.0", "GstAudio-1.0", "GstVideo-1.0", "GstTag-1.0", "GstPbutils-1.0", "GstApp-1.0"]
 # Free formats and playback plumbing. Patent-encumbered codecs stay out of the wheel.
 GSTREAMER_PLUGINS = ["app", "audioconvert", "audioresample", "autodetect", "coreelements", "gio", "isomp4", "matroska", "ogg",
                      "opengl", "opus", "playback", "pulseaudio", "audiofx", "theora", "typefindfunctions", "videoconvertscale",
                      "volume", "vorbis", "vpx", "wavparse"]
-TRANSLATION_DOMAINS = ["gtk40", "gtk40-properties", "glib20", "gdk-pixbuf", "libadwaita"]
+TRANSLATION_DOMAINS = ["gtk40", "gtk40-properties", "glib20", "gdk-pixbuf", "libadwaita", "gtksourceview-5",
+                       "glib-networking", "libsoup-3.0", "libportal", "gstreamer-1.0", "gst-plugins-base-1.0"]
 FALLBACK_FONTS_CONF = """<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
@@ -127,7 +133,13 @@ def build_bundle(bundle, icons):
     tools.mkdir()
     for tool in ("glib-compile-resources", "glib-compile-schemas"):
         bring(Path(shutil.which(tool)), tools)
-    (bundle / "lib" / "gio" / "modules").mkdir(parents=True)
+    gio_modules = bundle / "lib" / "gio" / "modules"
+    gio_modules.mkdir(parents=True)
+    # TLS for GIO's network classes, which Soup uses for HTTPS.
+    for module in ("libgioopenssl.so", "libgiognutls.so"):
+        if (LIBDIR / "gio" / "modules" / module).exists():
+            bring(LIBDIR / "gio" / "modules" / module, gio_modules)
+            break
 
     # GdkPixbuf hands most image formats to these helper programs.
     glycin = []
@@ -169,16 +181,19 @@ def build_bundle(bundle, icons):
         helpers.append(bring(launcher, bundle / "libexec"))
 
     # Follow dependencies from every file that gets loaded.
-    pending = [LIBDIR / name for name in ROOT_LIBRARIES]
+    roots = ROOT_LIBRARIES + [name for name in OPTIONAL_LIBRARIES if (LIBDIR / name).exists()]
+    for name in sorted(set(OPTIONAL_LIBRARIES) - set(roots)):
+        print(f"warning: {name} is not available", file=sys.stderr)
+    pending = [LIBDIR / name for name in roots]
     pending += python_extensions + list(loaders.glob("*.so")) + list(tools.iterdir()) + glycin
-    pending += list(im_modules.glob("*.so")) + list(plugins.glob("*.so")) + [scanner] + helpers
+    pending += list(gio_modules.glob("*.so")) + list(im_modules.glob("*.so")) + list(plugins.glob("*.so")) + [scanner] + helpers
     copied = {}
     while pending:
         for name, source in ldd(pending.pop()).items():
             if name not in copied and not SYSTEM_LIBRARIES.match(name):
                 copied[name] = source
                 pending.append(source)
-    for name in ROOT_LIBRARIES:
+    for name in roots:
         copied.setdefault(name, LIBDIR / name)
     for name, source in copied.items():
         bring(source, lib / name)
@@ -192,6 +207,8 @@ def build_bundle(bundle, icons):
         set_runpath(tool, "$ORIGIN/../lib")
     for program in glycin:
         set_runpath(program, "$ORIGIN/../../../lib")
+    for module in gio_modules.glob("*.so"):
+        set_runpath(module, "$ORIGIN/../..")
     for module in im_modules.glob("*.so"):
         set_runpath(module, "$ORIGIN/../../..")
     for plugin in plugins.glob("*.so"):
@@ -232,6 +249,10 @@ def build_bundle(bundle, icons):
         fonts = bundle / "etc" / "fonts"
         fonts.mkdir(parents=True)
         (fonts / "fonts.conf").write_text(FALLBACK_FONTS_CONF)
+
+    sourceview = LIBDIR.parent / "share" / "gtksourceview-5" if PREFIX else Path("/usr/share/gtksourceview-5")
+    if sourceview.is_dir() and any(lib.glob("libgtksourceview-5.so*")):
+        copy_tree(sourceview, bundle / "share" / "gtksourceview-5")
 
     if icons:
         copy_tree(Path("/usr/share/icons/Adwaita"), bundle / "share" / "icons" / "Adwaita")

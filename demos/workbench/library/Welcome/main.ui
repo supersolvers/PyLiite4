@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkBox" id="welcome">
+    <property name="orientation">vertical</property>
+    <property name="valign">center</property>
+    <property name="halign">center</property>
+    <child>
+      <object class="GtkImage">
+        <property name="name">logo</property>
+        <property name="icon-name">re.sonny.Workbench</property>
+        <property name="pixel-size">196</property>
+        <property name="margin-bottom">30</property>
+        <style>
+          <class name="icon-dropshadow"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="label" translatable="yes">Welcome to Workbench</property>
+        <property name="margin-bottom">30</property>
+        <style>
+          <class name="title-1"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox" id="subtitle">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <property name="margin-bottom">30</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Learn and prototype with
+GNOME technologies</property>
+            <property name="justify">center</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="homogeneous">true</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">6</property>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">update-symbolic</property>
+                <property name="margin-end">12</property>
+                <property name="icon-size">normal</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Edit Style or UI to update the Preview</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">6</property>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">play-large-symbolic</property>
+                <property name="margin-end">12</property>
+                <property name="icon-size">normal</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Hit</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="accelerator">&lt;Control&gt;Return</property>
+                <property name="margin-start">12</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">to format and run Code</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">6</property>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">floppy-symbolic</property>
+                <property name="margin-end">12</property>
+                <property name="icon-size">normal</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Changes are automatically saved and restored</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">6</property>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">library-symbolic</property>
+                <property name="margin-end">12</property>
+                <property name="icon-size">normal</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Browse the Library for demos and examples</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">6</property>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">bookmark-outline-symbolic</property>
+                <property name="margin-end">12</property>
+                <property name="icon-size">normal</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Checkout the Bookmarks menu to learn and get help</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

@@ -61,6 +61,8 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
 
     if not window.get_visible():
         window.present()
-    else:
-        window.destroy()
-    return window
+        return window
+    # Unlike C's weak pointer, destroying doesn't clear this reference, so clear it here.
+    window.destroy()
+    window = None
+    return None

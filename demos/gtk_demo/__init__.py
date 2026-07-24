@@ -10,6 +10,7 @@ GResource with the Python sources in place of the C ones, so demos load their da
 
 import ast
 import hashlib
+import os
 import re
 import shutil
 import subprocess
@@ -48,7 +49,7 @@ def _keywords(title: str, description: str) -> list[str]:
     return [word.lower() for word in words]
 
 
-def demos() -> list[Demo]:
+def all_demos() -> list[Demo]:
     """Every demo, sorted by title, read from the modules without importing them."""
     found = []
     for path in sorted(DEMOS.glob("*.py")):
@@ -106,10 +107,15 @@ def register_resources() -> None:
         compiler = shutil.which("glib-compile-resources")
         if compiler is None:
             raise RuntimeError("glib-compile-resources was not found")
-        listing = cache / f"{target.stem}.gresource.xml"
+        # Other processes may be compiling the same resource, so work under names of this process's own.
+        listing = cache / f"{target.stem}.{os.getpid()}.gresource.xml"
+        temporary = cache / f"{target.name}.{os.getpid()}.tmp"
         listing.write_bytes(xml)
-        subprocess.run([compiler, f"--target={target}.tmp", f"--sourcedir={DATA}", str(listing)], check=True)
-        Path(f"{target}.tmp").replace(target)
-        listing.unlink()
+        try:
+            subprocess.run([compiler, f"--target={temporary}", f"--sourcedir={DATA}", str(listing)], check=True)
+            temporary.replace(target)
+        finally:
+            listing.unlink(missing_ok=True)
+            temporary.unlink(missing_ok=True)
     _registered = Gio.Resource.load(str(target))
     Gio.resources_register(_registered)

@@ -13,8 +13,10 @@ domain under CC0. Each one is a folder in ``library/``:
 - ``icons/`` (optional): icons the demo uses by name.
 """
 
+import importlib
 import json
 import runpy
+import shutil
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -79,34 +81,53 @@ def _preview_id(ui: Path) -> str:
     raise ValueError(f"{ui}: the first top-level object needs an id")
 
 
+def _session_copy(demo: Demo) -> Path:
+    """A fresh copy of the demo's folder to run from, as Workbench does, so demos that write files leave the
+    repository alone."""
+    folder = Path(GLib.get_user_cache_dir()) / "PyLiite4" / "workbench" / demo.name
+    shutil.rmtree(folder, ignore_errors=True)
+    shutil.copytree(demo.folder, folder, ignore=shutil.ignore_patterns("__pycache__"))
+    return folder
+
+
 def run(demo: Demo, application: Gtk.Application) -> Gtk.Window:
-    """Build a demo's interface, run its code and show its window."""
+    """Build a demo's interface, run its code and show its window.
+
+    Demos can register GObject types, which can't be registered twice, so run each one in a process of its own:
+    ``python -m demos.workbench --run NAME`` does that.
+    """
     global _css
     if demo.missing:
         raise RuntimeError(f"{demo.name} needs {', '.join(demo.missing)}, which PyLiite4 doesn't provide")
+    # GtkBuilder only knows a library's widgets once its namespace is loaded.
+    for namespace in demo.requires:
+        module = importlib.import_module(f"PyLiite4.{namespace}")
+        if namespace == "GtkSource":
+            module.init()
+    folder = _session_copy(demo)
     display = Gdk.Display.get_default()
     if _css is not None:
         Gtk.StyleContext.remove_provider_for_display(display, _css)
         _css = None
-    if (demo.folder / "main.css").exists():
+    if (folder / "main.css").exists():
         _css = Gtk.CssProvider()
-        _css.load_from_path(str(demo.folder / "main.css"))
+        _css.load_from_path(str(folder / "main.css"))
         Gtk.StyleContext.add_provider_for_display(display, _css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    if (demo.folder / "icons").is_dir():
+    if (folder / "icons").is_dir():
         theme = Gtk.IconTheme.get_for_display(display)
-        if str(demo.folder / "icons") not in theme.get_search_path():
-            theme.add_search_path(str(demo.folder / "icons"))
+        if str(folder / "icons") not in theme.get_search_path():
+            theme.add_search_path(str(folder / "icons"))
 
     builder = Gtk.Builder()
-    builder.add_from_file(str(demo.folder / "main.ui"))
-    preview = builder.get_object(_preview_id(demo.folder / "main.ui"))
+    builder.add_from_file(str(folder / "main.ui"))
+    preview = builder.get_object(_preview_id(folder / "main.ui"))
     if isinstance(preview, Gtk.Window):
         window = preview
         window.set_application(application)
     else:
         window = Adw.ApplicationWindow(application=application, title=demo.name, default_width=600,
                                        default_height=500, content=preview)
-    workbench.builder, workbench.window, workbench.folder = builder, window, demo.folder
-    runpy.run_path(str(demo.folder / "main.py"), run_name=f"workbench_{GLib.uuid_string_random()[:8]}")
+    workbench.builder, workbench.window, workbench.folder = builder, window, folder
+    runpy.run_path(str(folder / "main.py"), run_name=f"workbench_{GLib.uuid_string_random()[:8]}")
     window.present()
     return window

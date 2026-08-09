@@ -1,0 +1,7 @@
+{
+  "category": "controls",
+  "description": "Offer contextual actions",
+  "panels": ["ui", "preview"],
+  "autorun": true,
+  "requires": []
+}

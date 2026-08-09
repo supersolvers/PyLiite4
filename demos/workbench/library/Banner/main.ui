@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwToastOverlay" id="overlay">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwBanner" id="banner">
+            <property name="button-label" translatable="yes">Troubleshoot</property>
+            <property name="title" translatable="yes">An error occurred: Could not resolve host</property>
+            <property name="revealed">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwStatusPage">
+            <property name="title" translatable="yes">Banner</property>
+            <property name="description" translatable="yes">A bar with contextual information</property>
+            <property name="vexpand">true</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="halign">center</property>
+                <child>
+                  <object class="GtkButton" id="button_show_banner">
+                    <property name="halign">center</property>
+                    <property name="label" translatable="yes">Show Banner</property>
+                    <style>
+                      <class name="pill"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-top">24</property>
+                    <property name="margin-bottom">24</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLinkButton">
+                        <property name="label" translatable="yes">API Reference</property>
+                        <property name="uri">https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.6/class.Banner.html</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLinkButton">
+                        <property name="label" translatable="yes">Human Interface Guidelines</property>
+                        <property name="uri">https://developer.gnome.org/hig/patterns/feedback/banners.html</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

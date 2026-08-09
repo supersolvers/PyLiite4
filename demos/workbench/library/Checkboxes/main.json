@@ -1,0 +1,7 @@
+{
+  "category": "controls",
+  "description": "Allow users to control binary options or properties",
+  "panels": ["ui", "preview"],
+  "autorun": true,
+  "requires": []
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="drop_zone">
+    <property name="title" translatable="yes">Drop Zone</property>
+    <property name="description" translatable="yes">A versatile drop area for external content</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwClamp">
+            <property name="maximum-size">500</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <style>
+                  <class name="card"/>
+                </style>
+                <child>
+                  <object class="AdwBin" id="bin">
+                    <property name="height-request">150</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes">Drop Files or Text Here</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-top">24</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Drag-and-Drop in GTK</property>
+                <property name="uri">https://docs.gtk.org/gtk4/drag-and-drop.html#drop-targets</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Drop Target API Reference</property>
+                <property name="uri">https://docs.gtk.org/gtk4/class.DropTarget.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

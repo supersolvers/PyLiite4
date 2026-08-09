@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Progress Bar</property>
+    <property name="description" translatable="yes">Display the progress of a long running operation</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkProgressBar" id="first">
+            <property name="fraction">0.2</property>
+            <property name="show-text">true</property>
+            <property name="margin-bottom">24</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkProgressBar" id="second">
+            <property name="inverted">true</property>
+            <property name="pulse-step">0.25</property>
+            <property name="show-text">true</property>
+            <property name="text" translatable="yes"></property>
+            <property name="margin-bottom">24</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="progress_tracker">
+            <property name="label" translatable="yes"></property>
+            <property name="margin-bottom">12</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="play">
+            <property name="halign">center</property>
+            <property name="margin-bottom">24</property>
+            <property name="icon-name">media-playback-start-symbolic</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.ProgressBar.html</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">Human Interface Guidelines</property>
+            <property name="uri">https://developer.gnome.org/hig/patterns/feedback/progress-bars.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

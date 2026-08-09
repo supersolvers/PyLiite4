@@ -1,0 +1,9 @@
+{
+  "name": "Gamepad",
+  "category": "controls",
+  "description": "Respond to gamepads and controllers input",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "flatpak-finish-args": ["--device=input"],
+  "requires": ["Manette"]
+}

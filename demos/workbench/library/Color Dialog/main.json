@@ -1,0 +1,7 @@
+{
+  "category": "controls",
+  "description": "Show a dialog to select color",
+  "panels": ["code", "ui", "preview"],
+  "autorun": true,
+  "requires": []
+}

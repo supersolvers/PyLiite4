@@ -1,0 +1,7 @@
+{
+  "category": "controls",
+  "description": "A versatile drop area for external content",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "requires": []
+}

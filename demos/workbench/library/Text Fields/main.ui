@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwClamp" id="text_fields">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Text Fields</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">12</property>
+            <style>
+              <class name="title-1"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Single line widgets to enter text</property>
+            <property name="margin-bottom">12</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">Human Interface Guidelines</property>
+            <property name="uri">https://developer.gnome.org/hig/patterns/controls/text-fields.html</property>
+            <property name="margin-bottom">6</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Entry</property>
+            <property name="margin-top">12</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="heading"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">A simple but versatile widget that allows single line text entry and editing</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">12</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkFlowBox">
+            <property name="homogeneous">true</property>
+            <property name="row-spacing">18</property>
+            <property name="selection-mode">none</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Regular</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry">
+                    <property name="input-purpose">free-form</property>
+                    <property name="input-hints">no-spellcheck</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Placeholder Text</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry_placeholder">
+                    <property name="placeholder-text" translatable="yes">Text</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Icons</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry_icon">
+                    <property name="primary-icon-name">help-about-symbolic</property>
+                    <property name="primary-icon-activatable">true</property>
+                    <property name="primary-icon-tooltip-text" translatable="yes">Click on Me</property>
+                    <property name="secondary-icon-name">preferences-system-notifications-symbolic</property>
+                    <property name="secondary-icon-tooltip-text" translatable="yes">No Click on Me</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Progress Bar</property>
+                    <property name="margin-bottom">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry_progress">
+                    <property name="progress-fraction">0</property>
+                    <property name="primary-icon-name">media-playback-start-symbolic</property>
+                    <property name="primary-icon-tooltip-text" translatable="yes">Play Animation</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+            <property name="margin-top">18</property>
+            <property name="margin-bottom">18</property>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Tutorial</property>
+                <property name="uri">https://developer.gnome.org/documentation/tutorials/beginners/components/entry.html</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">API Reference</property>
+                <property name="uri">https://docs.gtk.org/gtk4/class.Entry.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="margin-bottom">18</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Completion Entry</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="heading"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">An entry widget with support for completion</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">12</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry_completion">
+            <property name="margin-bottom">12</property>
+            <property name="placeholder-text" translatable="yes">Try typing “apple”</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.EntryCompletion.html</property>
+            <property name="margin-top">18</property>
+            <property name="margin-bottom">18</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="margin-bottom">18</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Password Entry</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="heading"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">An entry with dedicated control for entering secrets and passwords</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">12</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkPasswordEntry" id="entry_password">
+            <property name="show-peek-icon">true</property>
+            <property name="placeholder-text" translatable="yes">Password</property>
+            <property name="margin-bottom">12</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkPasswordEntry" id="entry_confirm_password">
+            <property name="show-peek-icon">true</property>
+            <property name="placeholder-text" translatable="yes">Confirm password</property>
+            <property name="margin-bottom">12</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_password"/>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">18</property>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Tutorial</property>
+                <property name="uri">https://developer.gnome.org/documentation/tutorials/beginners/components/password_entry.html</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">API Reference</property>
+                <property name="uri">https://docs.gtk.org/gtk4/class.PasswordEntry.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="margin-bottom">18</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Style Classes</property>
+            <property name="margin-bottom">12</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="heading"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="homogeneous">true</property>
+            <property name="margin-bottom">18</property>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">Accent</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
+                <style>
+                  <class name="accent"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">Warning</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
+                <style>
+                  <class name="warning"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="homogeneous">true</property>
+            <property name="margin-bottom">18</property>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">Error</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
+                <style>
+                  <class name="error"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">Success</property>
+                <property name="margin-start">6</property>
+                <property name="margin-end">6</property>
+                <style>
+                  <class name="success"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">18</property>
+            <style>
+              <class name="linked"/>
+            </style>
+            <property name="halign">center</property>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">Street name and number</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">City</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry">
+                <property name="placeholder-text" translatable="yes">Country</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

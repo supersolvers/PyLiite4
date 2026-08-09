@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="color_dialog">
+    <property name="title" translatable="yes">Color Dialog</property>
+    <property name="description" translatable="yes">Show a dialog to select a color</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <property name="spacing">42</property>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Dialog Button</property>
+                <property name="margin-bottom">12</property>
+                <style>
+                  <class name="title-4"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkColorDialogButton" id="color_dialog_button">
+                <property name="halign">center</property>
+                <property name="margin-bottom">12</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">API Reference</property>
+                <property name="uri">https://docs.gtk.org/gtk4/class.ColorDialogButton.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Dialog With Custom Button</property>
+                <property name="margin-bottom">12</property>
+                <style>
+                  <class name="title-4"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="custom_button">
+                <property name="label" translatable="yes">Select Color…</property>
+                <property name="margin-start">42</property>
+                <property name="margin-end">42</property>
+                <property name="margin-bottom">12</property>
+                <style>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">API Reference</property>
+                <property name="uri">https://docs.gtk.org/gtk4/class.ColorDialog.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

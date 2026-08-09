@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Gamepad</property>
+    <property name="description" translatable="yes">Respond to gamepads and controllers input</property>
+    <property name="icon-name">gamepad-symbolic</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <property name="spacing">24</property>
+        <child>
+          <object class="GtkStack" id="stack">
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Press Run</property>
+                <style>
+                  <class name="title-2"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">connect</property>
+                <property name="child">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Please connect a controller</property>
+                    <style>
+                      <class name="title-2"/>
+                    </style>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">watch</property>
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes">Press buttons on the controller and watch the Console</property>
+                        <style>
+                          <class name="title-2"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_rumble">
+                        <property name="label" translatable="yes">Rumble</property>
+                        <property name="halign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://gnome.pages.gitlab.gnome.org/libmanette/</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

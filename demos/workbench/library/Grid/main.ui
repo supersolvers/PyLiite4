@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Grid</property>
+    <property name="description" translatable="yes">Arrange widgets in rows and columns</property>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkGrid">
+            <child>
+              <object class="GtkButton" id="button00">
+                <property name="name">button00</property>
+                <layout>
+                  <property name="row">0</property>
+                  <property name="column">0</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">circle-outline-thick-symbolic</property>
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button01">
+                <property name="name">button01</property>
+                <layout>
+                  <property name="row">0</property>
+                  <property name="column">1</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button02">
+                <property name="name">button02</property>
+                <layout>
+                  <property name="row">0</property>
+                  <property name="column">2</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button10">
+                <property name="name">button10</property>
+                <layout>
+                  <property name="row">1</property>
+                  <property name="column">0</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button11">
+                <property name="name">button11</property>
+                <layout>
+                  <property name="row">1</property>
+                  <property name="column">1</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button12">
+                <property name="name">button12</property>
+                <layout>
+                  <property name="row">1</property>
+                  <property name="column">2</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button20">
+                <property name="name">button20</property>
+                <layout>
+                  <property name="row">2</property>
+                  <property name="column">0</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button21">
+                <property name="name">button21</property>
+                <layout>
+                  <property name="row">2</property>
+                  <property name="column">1</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button22">
+                <property name="name">button22</property>
+                <layout>
+                  <property name="row">2</property>
+                  <property name="column">2</property>
+                </layout>
+                <property name="hexpand">false</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="pixel-size">100</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="cell"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

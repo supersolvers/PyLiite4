@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwWindow" id="toolbar_view_demo">
+    <property name="width-request">360</property>
+    <property name="height-request">640</property>
+    <property name="default-width">640</property>
+    <property name="default-height">640</property>
+    <child>
+      <object class="AdwToolbarView" id="toolbar_view">
+        <property name="extend-content-to-bottom-edge" bind-source="extend_bottom" bind-property="active" bind-flags="sync-create"/>
+        <property name="extend-content-to-top-edge" bind-source="extend_top" bind-property="active" bind-flags="sync-create"/>
+        <binding name="top-bar-style">
+          <lookup name="selected">barstyle_select</lookup>
+        </binding>
+        <binding name="bottom-bar-style">
+          <lookup name="selected">barstyle_select</lookup>
+        </binding>
+        <property name="reveal-top-bars" bind-source="reveal_topbar" bind-property="active" bind-flags="sync-create"/>
+        <property name="reveal-bottom-bars" bind-source="reveal_bottombar" bind-property="active" bind-flags="sync-create"/>
+        <child type="top">
+          <object class="AdwHeaderBar" id="header_bar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle">
+                <property name="title" translatable="yes">Header Bar</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child type="bottom">
+          <object class="GtkActionBar" id="action_bar">
+            <property name="revealed">true</property>
+            <property name="valign">end</property>
+            <child type="start">
+              <object class="GtkButton" id="start_widget">
+                <property name="icon-name">call-start-symbolic</property>
+              </object>
+            </child>
+            <child type="center">
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Action Bar</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="end_widget">
+                <property name="icon-name">view-more-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="AdwStatusPage">
+            <child>
+              <object class="GtkBox">
+                <property name="halign">center</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">18</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Toolbar View</property>
+                    <style>
+                      <class name="title-1"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="wrap">true</property>
+                    <property name="label" translatable="yes">A widget containing a page, as well as top and/or bottom bars</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLinkButton">
+                    <property name="label" translatable="yes">API Reference</property>
+                    <property name="uri">https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.6/class.ToolbarView.html</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkListBox" id="list_box">
+                    <style>
+                      <class name="boxed-list"/>
+                    </style>
+                    <property name="selection-mode">none</property>
+                    <child>
+                      <object class="AdwComboRow" id="barstyle_select">
+                        <property name="title" translatable="yes">Style</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item translatable="yes">Flat</item>
+                              <item translatable="yes">Raised</item>
+                              <item translatable="yes">Raised-Border</item>
+                            </items>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="reveal_topbar">
+                        <property name="title" translatable="yes">Reveal Top Bar</property>
+                        <property name="active">true</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="reveal_bottombar">
+                        <property name="title" translatable="yes">Reveal Bottom Bar</property>
+                        <property name="active">true</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="extend_top">
+                        <property name="title" translatable="yes">Extend Content Behind Top Bar</property>
+                        <property name="active">false</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="extend_bottom">
+                        <property name="title" translatable="yes">Extend Content Behind Bottom Bar</property>
+                        <property name="active">false</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </child>
+  </object>
+</interface>

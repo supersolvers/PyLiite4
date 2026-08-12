@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="center_box">
+    <property name="title" translatable="yes">Center Box</property>
+    <property name="description" translatable="yes">Displays three child widgets, while keeping the middle one centered</property>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="spacing">24</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwClamp">
+            <property name="maximum-size" bind-source="width_adjustment" bind-property="value" bind-flags="sync-create"/>
+            <property name="child">
+              <object class="GtkCenterBox">
+                <property name="shrink-center-last">true</property>
+                <child type="start">
+                  <object class="GtkSwitch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+                <child type="center">
+                  <object class="GtkEntry"/>
+                </child>
+                <child type="end">
+                  <object class="GtkCheckButton"/>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScale" id="width_scale">
+            <property name="orientation">horizontal</property>
+            <property name="halign">center</property>
+            <property name="width-request">120</property>
+            <property name="adjustment">
+              <object class="GtkAdjustment" id="width_adjustment">
+                <property name="lower">200</property>
+                <property name="upper">500</property>
+                <property name="value">325</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.CenterBox.html</property>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

@@ -1,0 +1,7 @@
+{
+  "category": "layout",
+  "description": "A widget constraining its child to a given size",
+  "panels": ["ui", "preview"],
+  "autorun": true,
+  "requires": []
+}

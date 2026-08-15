@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Map</property>
+    <property name="description" translatable="yes">Display an interactive map</property>
+    <child>
+      <object class="AdwClamp">
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox" id="controls">
+                <property name="spacing">6</property>
+                <property name="halign">center</property>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkBox">
+                        <child>
+                          <object class="GtkEntry" id="entry_latitude">
+                            <property name="input-purpose">digits</property>
+                            <property name="placeholder-text" translatable="yes">Latitude</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="entry_longitude">
+                            <property name="input-purpose">digits</property>
+                            <property name="placeholder-text" translatable="yes">Longitude</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="button_go">
+                            <property name="label" translatable="yes">Go</property>
+                          </object>
+                        </child>
+                        <style>
+                          <class name="linked"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator"/>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkToggleButton" id="button_move">
+                        <property name="active">true</property>
+                        <property name="icon-name">move-tool-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">Move Map</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkToggleButton" id="button_marker">
+                        <property name="group">button_move</property>
+                        <property name="icon-name">map-marker-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">Place Marker</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="linked"/>
+                    </style>
+                  </object>
+                </child>
+                <style>
+                  <class name="toolbar"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="ShumateSimpleMap" id="map_widget">
+                <property name="height-request">360</property>
+                <property name="show-zoom-buttons">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">API Reference</property>
+                <property name="uri">https://gnome.pages.gitlab.gnome.org/libshumate/index.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="ShumateMarker" id="marker">
+    <child>
+      <object class="GtkImage">
+        <property name="icon-name">map-marker-symbolic</property>
+        <style>
+          <class name="map-marker"/>
+        </style>
+      </object>
+    </child>
+  </object>
+</interface>

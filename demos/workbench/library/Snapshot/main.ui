@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="snapshot">
+    <property name="title" translatable="yes">Snapshot</property>
+    <child>
+      <object class="GtkBox" id="box">
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkLabel" id="label">
+            <property name="label" translatable="yes">Drag the knight with your mouse</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Snapshot API Reference</property>
+                <property name="uri">https://docs.gtk.org/gtk4/class.Snapshot.html</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Custom Widgets</property>
+                <property name="uri">https://blog.gtk.org/2020/04/24/custom-widgets-in-gtk-4-drawing/ </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">Drawing Model</property>
+                <property name="uri">https://docs.gtk.org/gtk4/drawing-model.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

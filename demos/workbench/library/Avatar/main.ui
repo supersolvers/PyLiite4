@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="avatar">
+    <property name="title" translatable="yes">Avatar</property>
+    <property name="description" translatable="yes">Display a round avatar for image or initials</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="AdwAvatar">
+            <property name="size">96</property>
+            <property name="show-initials">true</property>
+            <property name="text" translatable="yes">Jay Doe</property>
+            <property name="margin-bottom">6</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Initials</property>
+            <property name="margin-bottom">30</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwAvatar" id="avatar_image">
+            <property name="size">96</property>
+            <property name="margin-bottom">6</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="label" translatable="yes">Image…</property>
+            <property name="margin-bottom">30</property>
+            <style>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="AdwAvatar">
+            <property name="size">96</property>
+            <property name="margin-bottom">6</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="yes">Fallback</property>
+            <property name="margin-bottom">30</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.6/class.Avatar.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

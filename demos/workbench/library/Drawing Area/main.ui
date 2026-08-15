@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="drawing_area_demo">
+    <property name="title" translatable="yes">Drawing Area</property>
+    <property name="description" translatable="yes">Programmatically draw onto a surface</property>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">center</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkDrawingArea" id="drawing_area">
+            <property name="content-width">300</property>
+            <property name="content-height">300</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScale" id="scale">
+            <property name="orientation">horizontal</property>
+            <property name="draw-value">true</property>
+            <property name="adjustment">
+              <object class="GtkAdjustment">
+                <property name="lower">-25</property>
+                <property name="upper">25</property>
+                <property name="value">0</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="margin-top">48</property>
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.DrawingArea.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

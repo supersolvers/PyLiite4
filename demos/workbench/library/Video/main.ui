@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="page">
+    <property name="title" translatable="yes">Video</property>
+    <property name="description" translatable="yes">Display video with media controls</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkVideo" id="video">
+            <property name="autoplay">true</property>
+            <property name="loop">true</property>
+            <property name="width-request">540</property>
+            <property name="height-request">540</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.Video.html</property>
+            <property name="margin-top">12</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

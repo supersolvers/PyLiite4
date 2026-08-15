@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkBox" id="main">
+    <property name="orientation">vertical</property>
+    <property name="halign">center</property>
+    <property name="valign">center</property>
+    <property name="spacing">12</property>
+    <child>
+      <object class="GtkLabel" id="label">
+        <property name="label" bind-source="entry" bind-property="text" bind-flags="sync-create"/>
+        <style>
+          <class name="title-1"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="label" translatable="yes">Colored with Pango attributes</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkEntry" id="entry">
+        <property name="margin-top">12</property>
+        <property name="text" translatable="yes">Hello, Rainbow!</property>
+        <property name="halign">center</property>
+      </object>
+    </child>
+  </object>
+</interface>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Pango Markup</property>
+    <property name="description" translatable="yes">Style text using markup</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <property name="spacing">12</property>
+        <child>
+          <object class="GtkLabel" id="label">
+            <property name="label" translatable="yes">&lt;span foreground='blue' size='x-large'&gt;Blue text&lt;/span&gt; is &lt;i&gt;cool&lt;/i&gt;!</property>
+            <property name="use-markup">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label2">
+            <property name="label" translatable="yes">&lt;i&gt;Italic text&lt;/i&gt; and &lt;b&gt;Bold text&lt;/b&gt;</property>
+            <property name="use-markup">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label3">
+            <property name="label" translatable="yes">&lt;s&gt;Strikethrough text&lt;/s&gt; and &lt;u&gt;Underlined text&lt;/u&gt;</property>
+            <property name="use-markup">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label4">
+            <property name="label" translatable="yes">&lt;span font_family='Monospace' weight='bold' size='large'&gt;Monospace Bold Large&lt;/span&gt;</property>
+            <property name="use-markup">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label5">
+            <property name="label" translatable="yes">&lt;span strikethrough='true' strikethrough_color='red'&gt;Strikethrough Red&lt;/span&gt; and &lt;span underline='double' underline_color='green'&gt;Double Underline Green&lt;/span&gt;</property>
+            <property name="use-markup">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label6">
+            <property name="label" translatable="yes">&lt;span background='red' text_transform='uppercase' line_height='1.5'&gt;Background Red, Uppercase, Line Height 1.5&lt;/span&gt;</property>
+            <property name="use-markup">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">Reference</property>
+            <property name="uri">https://docs.gtk.org/Pango/pango_markup.html#pango-markup</property>
+            <property name="margin-top">12</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

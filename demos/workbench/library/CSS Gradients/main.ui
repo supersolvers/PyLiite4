@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="css_gradients">
+    <property name="title" translatable="yes">CSS Gradients</property>
+    <property name="description" translatable="yes">Generate an image that smoothly fades from one color to another</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="AdwBin">
+            <property name="halign">center</property>
+            <property name="margin-bottom">18</property>
+            <child>
+              <object class="GtkGrid">
+                <property name="row-spacing">18</property>
+                <property name="column-spacing">18</property>
+                <property name="margin-top">18</property>
+                <property name="margin-bottom">18</property>
+                <property name="margin-start">18</property>
+                <property name="margin-end">18</property>
+                <child>
+                  <object class="GtkFrame">
+                    <layout>
+                      <property name="row">0</property>
+                      <property name="column">0</property>
+                    </layout>
+                    <style>
+                      <class name="linear"/>
+                      <class name="circular"/>
+                      <class name="gradient-card"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame">
+                    <layout>
+                      <property name="row">0</property>
+                      <property name="column">1</property>
+                    </layout>
+                    <style>
+                      <class name="radial"/>
+                      <class name="gradient-card"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame">
+                    <layout>
+                      <property name="row">0</property>
+                      <property name="column">2</property>
+                    </layout>
+                    <style>
+                      <class name="conic"/>
+                      <class name="gradient-card"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame">
+                    <layout>
+                      <property name="row">1</property>
+                      <property name="column">0</property>
+                    </layout>
+                    <style>
+                      <class name="repeating-linear"/>
+                      <class name="circular"/>
+                      <class name="gradient-card"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame">
+                    <layout>
+                      <property name="row">1</property>
+                      <property name="column">1</property>
+                    </layout>
+                    <style>
+                      <class name="repeating-radial"/>
+                      <class name="gradient-card"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <style>
+              <class name="card"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkListBox">
+            <property name="selection-mode">none</property>
+            <property name="margin-bottom">12</property>
+            <style>
+              <class name="boxed-list"/>
+            </style>
+            <child>
+              <object class="AdwActionRow">
+                <child type="suffix">
+                  <object class="GtkFrame">
+                    <property name="valign">center</property>
+                    <property name="width-request">312</property>
+                    <property name="height-request">140</property>
+                    <property name="margin-top">18</property>
+                    <property name="margin-bottom">18</property>
+                    <property name="margin-end">6</property>
+                    <style>
+                      <class name="background-gradient"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwComboRow" id="combo_row_gradient_type">
+                <property name="title" translatable="yes">Gradient type</property>
+                <property name="model">
+                  <object class="GtkStringList" id="list">
+                    <items>
+                      <item translatable="yes">Linear</item>
+                      <item translatable="yes">Radial</item>
+                      <item translatable="yes">Conic</item>
+                    </items>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="spin_row_angle">
+                <property name="title" translatable="yes">Angle</property>
+                <property name="climb-rate">0.2</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0</property>
+                    <property name="upper">360</property>
+                    <property name="value">90</property>
+                    <property name="step-increment">10</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">First Color Stop</property>
+                <property name="activatable-widget">button_color_1</property>
+                <child type="suffix">
+                  <object class="GtkColorDialogButton" id="button_color_1">
+                    <property name="valign">center</property>
+                    <property name="dialog">color_dialog</property>
+                    <property name="rgba">#e01b24</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Second Color Stop</property>
+                <property name="activatable-widget">button_color_2</property>
+                <child type="suffix">
+                  <object class="GtkColorDialogButton" id="button_color_2">
+                    <property name="valign">center</property>
+                    <property name="dialog">color_dialog</property>
+                    <property name="rgba">#3584e4</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Third Color Stop</property>
+                <property name="activatable-widget">button_color_3</property>
+                <child type="suffix">
+                  <object class="GtkColorDialogButton" id="button_color_3">
+                    <property name="valign">center</property>
+                    <property name="dialog">color_dialog</property>
+                    <property name="rgba">#f6d32d</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwExpanderRow">
+                <property name="title" translatable="yes">Generated CSS</property>
+                <child>
+                  <object class="GtkOverlay" id="overlay">
+                    <child type="overlay">
+                      <object class="GtkButton" id="button_copy_css">
+                        <property name="margin-bottom">6</property>
+                        <property name="margin-end">6</property>
+                        <property name="valign">end</property>
+                        <property name="halign">end</property>
+                        <property name="tooltip-text" translatable="yes">Copy</property>
+                        <property name="icon-name">edit-copy-symbolic</property>
+                        <style>
+                          <class name="flat"/>
+                        </style>
+                      </object>
+                    </child>
+                    <!-- GtkSource.View source_view, with its GtkSource.Buffer gtksource_buffer, is built in main.py:
+                         GtkSource's types are registered only once main.py imports it. -->
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">Using CSS Gradients</property>
+            <property name="uri">https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Using_CSS_gradients</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">Specifications</property>
+            <property name="uri">https://www.w3.org/TR/css-images-3/#gradients</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkColorDialog" id="color_dialog"/>
+</interface>

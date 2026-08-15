@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="emoji_chooser_demo">
+    <property name="title" translatable="yes">Emoji Chooser</property>
+    <property name="description" translatable="yes">Display a popover to select emojis</property>
+    <child>
+      <object class="GtkBox">
+        <property name="spacing">24</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkMenuButton" id="button">
+            <property name="halign">center</property>
+            <property name="label" translatable="yes">😀️</property>
+            <property name="popover">
+              <object class="GtkEmojiChooser" id="emoji_chooser"/>
+            </property>
+            <style>
+              <class name="pill"/>
+              <class name="emoji"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.EmojiChooser.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

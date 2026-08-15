@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="editable_label">
+    <property name="title" translatable="yes">Editable Label</property>
+    <property name="description" translatable="yes">A text widget with an editing mode</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <property name="spacing">18</property>
+        <child>
+          <object class="GtkEditableLabel" id="edit_label">
+            <property name="text" translatable="yes">Lorem ipsum dolor sit amet, consectetur adipiscing elit</property>
+            <property name="editing" bind-source="edit_switch" bind-property="active" bind-flags="sync-create"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Editable</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <style>
+                  <class name="spacer"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSwitch" id="edit_switch">
+                <property name="halign">center</property>
+                <property name="active" bind-source="edit_label" bind-property="editing" bind-flags="sync-create"/>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.EditableLabel.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

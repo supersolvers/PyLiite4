@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="using_icons">
+    <property name="title" translatable="yes">Using Icons</property>
+    <property name="description" translatable="yes">Learn how to use icons for UI</property>
+    <property name="icon-name">cafe-symbolic</property>
+    <child>
+      <object class="AdwClamp">
+        <child>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <style>
+                  <class name="card"/>
+                </style>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Several widgets such as &lt;tt&gt;GtkImage&lt;/tt&gt; and &lt;tt&gt;GtkButton&lt;/tt&gt; accept an &lt;tt&gt;icon-name&lt;/tt&gt; property. Icons must be properly registered to be referenced by name. 
+
+To includes icons in a project, select “Reveal in Files” in Workbench menu and save them in the icons folder. Make sure to press “Run” to register the new icons.
+
+You can find icons using the &lt;a href="https://flathub.org/apps/org.gnome.design.IconLibrary"&gt;Icon Library app&lt;/a&gt; which also explain how to register icons in GNOME applications.
+
+Learn more about UI icons in the &lt;a href="https://developer.gnome.org/hig/guidelines/ui-icons.html"&gt;Human Interface Guidelines&lt;/a&gt;.</property>
+                    <property name="wrap">true</property>
+                    <property name="selectable">true</property>
+                    <property name="use-markup">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

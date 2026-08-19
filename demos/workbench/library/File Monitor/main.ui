@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwToastOverlay" id="overlay">
+    <property name="child">
+      <object class="AdwStatusPage">
+        <property name="title" translatable="yes">File Monitor</property>
+        <property name="description" translatable="yes">Monitors a file or directory for changes</property>
+        <property name="icon-name">emblem-documents-symbolic</property>
+        <property name="child">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="halign">center</property>
+            <property name="spacing">18</property>
+            <child>
+              <object class="GtkLabel" id="file_name">
+                <property name="label" translatable="yes">No File</property>
+                <style>
+                  <class name="title-4"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkFrame">
+                <property name="height-request">96</property>
+                <property name="width-request">96</property>
+                <property name="child">
+                  <object class="GtkScrolledWindow">
+                    <property name="child">
+                      <object class="GtkTextView" id="edit_entry">
+                        <property name="right-margin">12</property>
+                        <property name="left-margin">12</property>
+                        <property name="top-margin">12</property>
+                        <property name="bottom-margin">12</property>
+                        <property name="wrap-mode">char</property>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <style>
+                  <class name="linked"/>
+                </style>
+                <child>
+                  <object class="GtkButton" id="view_file">
+                    <property name="label" translatable="yes">View File</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="delete_file">
+                    <property name="label" translatable="yes">Delete File</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="edit_file">
+                <property name="label" translatable="yes">Apply Changes</property>
+                <style>
+                  <class name="suggested-action"/>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="label" translatable="yes">API Reference</property>
+                <property name="uri">https://docs.gtk.org/gio/method.File.monitor.html</property>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </property>
+  </object>
+</interface>

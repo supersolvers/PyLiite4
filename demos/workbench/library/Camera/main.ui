@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="camera">
+    <property name="title" translatable="yes">Camera</property>
+    <property name="description" translatable="yes">Access the camera</property>
+    <property name="margin-top">48</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkPicture" id="output">
+            <property name="margin-bottom">30</property>
+            <property name="width-request">360</property>
+            <property name="height-request">240</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="label" translatable="yes">Access Camera</property>
+            <property name="margin-bottom">42</property>
+            <property name="halign">center</property>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://libportal.org/method.Portal.access_camera.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

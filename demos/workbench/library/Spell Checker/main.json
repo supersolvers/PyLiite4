@@ -1,0 +1,7 @@
+{
+  "category": "platform",
+  "description": "Simple spell checker using libspelling",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "requires": ["GtkSource", "Spelling"]
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Memory Monitor</property>
+    <property name="description" translatable="yes">Monitor system memory</property>
+    <child>
+      <object class="GtkLinkButton">
+        <property name="label" translatable="yes">API Reference</property>
+        <property name="uri">https://docs.gtk.org/gio/iface.MemoryMonitor.html</property>
+      </object>
+    </child>
+  </object>
+</interface>

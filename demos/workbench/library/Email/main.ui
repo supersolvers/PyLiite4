@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="email">
+    <property name="title" translatable="yes">Email</property>
+    <property name="description" translatable="yes">Trigger an email</property>
+    <property name="margin-top">48</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkEntry" id="entry">
+            <property name="input-purpose">email</property>
+            <property name="placeholder-text" translatable="yes">Email address</property>
+            <property name="margin-bottom">18</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="label" translatable="yes">Send Email</property>
+            <property name="margin-bottom">42</property>
+            <property name="halign">center</property>
+            <style>
+              <class name="suggested-action"/>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://libportal.org/method.Portal.compose_email.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="select_folder">
+    <property name="title" translatable="yes">Select Folder</property>
+    <property name="description" translatable="yes">Select folders using a file dialog</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">24</property>
+        <child>
+          <object class="GtkButton" id="button_single">
+            <property name="halign">center</property>
+            <property name="label" translatable="yes">Select Folder…</property>
+            <style>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_multiple">
+            <property name="halign">center</property>
+            <property name="label" translatable="yes">Select Multiple Folders…</property>
+            <style>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.FileDialog.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

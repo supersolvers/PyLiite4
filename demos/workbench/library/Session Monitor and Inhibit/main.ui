@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="session_monitor_and_inhibit">
+    <property name="title" translatable="yes">Session Monitor and Inhibit</property>
+    <property name="description" translatable="yes">Monitor the login session state and inhibit session state changes</property>
+    <child>
+      <object class="AdwClamp">
+        <property name="maximum-size">380</property>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="AdwEntryRow" id="entry">
+                <property name="title" translatable="yes">Reason</property>
+                <style>
+                  <class name="card"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="margin-top">12</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Actions to inhibit that can end user’s session</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkListBox">
+                <property name="selection-mode">none</property>
+                <child>
+                  <object class="AdwSwitchRow" id="switch_row_logout">
+                    <property name="title" translatable="yes">Logout</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwSwitchRow" id="switch_row_idle">
+                    <property name="title" translatable="yes">Idle</property>
+                  </object>
+                </child>
+                <style>
+                  <class name="boxed-list"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="margin-top">12</property>
+                <property name="homogeneous">true</property>
+                <child>
+                  <object class="GtkButton" id="button_start">
+                    <property name="halign">center</property>
+                    <property name="label" translatable="yes">Start Session</property>
+                    <style>
+                      <class name="suggested-action"/>
+                      <class name="pill"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_stop">
+                    <property name="halign">center</property>
+                    <property name="label" translatable="yes">Stop Session</property>
+                    <property name="sensitive">false</property>
+                    <style>
+                      <class name="destructive-action"/>
+                      <class name="pill"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="margin-top">24</property>
+                <property name="orientation">vertical</property>
+                <property name="halign">center</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">API References</property>
+                    <style>
+                      <class name="title-2"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkLinkButton">
+                        <property name="label" translatable="yes">Session Monitor</property>
+                        <property name="uri">https://libportal.org/method.Portal.session_monitor_start.html</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLinkButton">
+                        <property name="label" translatable="yes">Session Inhibit</property>
+                        <property name="uri">https://libportal.org/method.Portal.session_inhibit.html</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

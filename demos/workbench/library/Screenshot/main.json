@@ -1,0 +1,7 @@
+{
+  "category": "platform",
+  "description": "Take a picture of the screen",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "requires": ["Xdp", "XdpGtk4"]
+}

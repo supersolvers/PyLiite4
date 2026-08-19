@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="save_file">
+    <property name="title" translatable="yes">Save File</property>
+    <property name="description" translatable="yes">Save a file using a file dialog</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">24</property>
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="halign">center</property>
+            <property name="label" translatable="yes">Save…</property>
+            <style>
+              <class name="pill"/>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://docs.gtk.org/gtk4/class.FileDialog.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

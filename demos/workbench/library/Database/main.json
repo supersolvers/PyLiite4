@@ -1,0 +1,7 @@
+{
+  "category": "platform",
+  "description": "Search, load and store data using SQLite",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "requires": ["Gom"]
+}

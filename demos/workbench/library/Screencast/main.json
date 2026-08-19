@@ -1,0 +1,7 @@
+{
+  "category": "platform",
+  "description": "Capture your display",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "requires": ["Gst", "Xdp", "XdpGtk4"]
+}

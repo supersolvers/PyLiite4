@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwStatusPage" id="color_picker">
+    <property name="title" translatable="yes">Color Picker</property>
+    <property name="description" translatable="yes">Pick color from anywhere on-screen</property>
+    <property name="margin-top">48</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="label" translatable="yes">Select Color</property>
+            <property name="margin-bottom">42</property>
+            <property name="halign">center</property>
+            <style>
+              <class name="suggested-action"/>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://libportal.org/method.Portal.pick_color.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

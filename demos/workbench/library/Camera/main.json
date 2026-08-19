@@ -1,0 +1,7 @@
+{
+  "category": "platform",
+  "description": "Access the camera",
+  "panels": ["code", "preview"],
+  "autorun": true,
+  "requires": ["Gst", "Xdp", "XdpGtk4"]
+}

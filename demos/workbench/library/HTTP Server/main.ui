@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">HTTP Server</property>
+    <property name="description" translatable="yes">Interact with HTTP clients and browsers</property>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">center</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <child>
+          <object class="GtkToggleButton" id="button_server">
+            <property name="label" translatable="yes">Start Server</property>
+            <property name="halign">center</property>
+            <style>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-top">12</property>
+            <property name="orientation">vertical</property>
+            <property name="visible" bind-source="button_server" bind-property="active" bind-flags="sync-create"/>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Visit</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton" id="linkbutton">
+                <property name="label" bind-source="linkbutton" bind-property="uri" bind-flags="sync-create"/>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_greetings">
+            <property name="justify">center</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <requires lib="webkitgtk" version="6.0"/>
+  <object class="AdwClamp" id="web_view_demo">
+    <property name="maximum-size">700</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">12</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Web View</property>
+                <style>
+                  <class name="title-1"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Load and display webpages and HTML</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="controls">
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkButton" id="button_back">
+                <property name="icon-name">arrow1-left-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Back</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_forward">
+                <property name="icon-name">arrow1-right-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Forward</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="url_bar">
+                <property name="input-purpose">url</property>
+                <property name="hexpand">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_reload">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Reload</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_stop">
+                <property name="icon-name">process-stop-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Stop</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkFrame">
+            <property name="margin-top">18</property>
+            <property name="margin-bottom">18</property>
+            <child>
+              <object class="WebKitWebView" id="web_view">
+                <property name="zoom-level">0.8</property>
+                <property name="vexpand">true</property>
+                <property name="hexpand">true</property>
+                <style>
+                  <class name="view"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="margin-bottom">12</property>
+            <property name="label" translatable="yes">API Reference</property>
+            <property name="uri">https://webkitgtk.org/reference/webkit2gtk/stable/class.WebView.html</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

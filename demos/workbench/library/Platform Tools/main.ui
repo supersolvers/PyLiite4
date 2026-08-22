@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">Platform Tools</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="halign">center</property>
+            <child>
+              <object class="GtkButton" id="adwaita-1-demo">
+                <property name="label" translatable="yes">Adwaita Demo</property>
+                <property name="action-name">app.platform_tools</property>
+                <property name="action-target">'adwaita-1-demo'</property>
+                <style>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <style>
+                  <class name="caption"/>
+                </style>
+                <property name="margin-bottom">30</property>
+                <property name="label" translatable="yes">Source Code</property>
+                <property name="uri">https://gitlab.gnome.org/GNOME/libadwaita/-/tree/1.5.0/demo</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="gtk4-demo">
+                <property name="label" translatable="yes">GTK Demo</property>
+                <property name="action-name">app.platform_tools</property>
+                <property name="action-target">'gtk4-demo'</property>
+                <style>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <style>
+                  <class name="caption"/>
+                </style>
+                <property name="margin-bottom">30</property>
+                <property name="label" translatable="yes">Source Code</property>
+                <property name="uri">https://gitlab.gnome.org/GNOME/gtk/-/tree/4.14.2/demos/gtk-demo</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="gtk4-widget-factory">
+                <property name="label" translatable="yes">GTK Widget Factory</property>
+                <property name="action-name">app.platform_tools</property>
+                <property name="action-target">'gtk4-widget-factory'</property>
+                <style>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <style>
+                  <class name="caption"/>
+                </style>
+                <property name="margin-bottom">30</property>
+                <property name="label" translatable="yes">Source Code</property>
+                <property name="uri">https://gitlab.gnome.org/GNOME/gtk/-/tree/4.14.2/demos/widget-factory</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">As with most GTK applications, you can use the keyboard shortcut
+to open the Inspector and select an object to see what it is made of:</property>
+                <property name="justify">center</property>
+                <style>
+                  <class name="body"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="halign">center</property>
+                <property name="accelerator">&lt;Control&gt;&lt;Shift&gt;I</property>
+                <property name="margin-top">6</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton">
+                <property name="margin-top">6</property>
+                <property name="halign">center</property>
+                <property name="label" translatable="yes">The GTK Inspector</property>
+                <property name="uri">https://developer.gnome.org/documentation/tools/inspector.html</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

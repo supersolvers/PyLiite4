@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">HTTP Image</property>
+    <property name="description" translatable="yes">Load and display an image from an HTTP URL</property>
+    <property name="valign">start</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkPicture" id="picture">
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="can-shrink">true</property>
+            <property name="content-fit">scale-down</property>
+            <property name="margin-bottom">30</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

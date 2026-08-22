@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwStatusPage" id="preview">
+    <property name="title" translatable="yes">HTTP Request</property>
+    <property name="description" translatable="yes">Make a request to an API</property>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">24</property>
+        <child>
+          <object class="GtkLabel" id="article_title">
+            <style>
+              <class name="title-4"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolled_window">
+            <property name="height-request">200</property>
+            <property name="width-request">400</property>
+            <property name="has-frame">true</property>
+            <property name="child">
+              <object class="GtkTextView" id="article_text_view">
+                <property name="top-margin">6</property>
+                <property name="bottom-margin">6</property>
+                <property name="left-margin">12</property>
+                <property name="right-margin">12</property>
+                <property name="wrap-mode">word</property>
+                <property name="editable">false</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLinkButton">
+            <property name="label" translatable="yes">Documentation</property>
+            <property name="uri">https://libsoup.gnome.org/libsoup-3.0/index.html</property>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

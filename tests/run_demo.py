@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from PyLiite4 import Gio, GLib, Gtk  # noqa: E402
+from PyLiite4 import Adw, Gio, GLib, Gtk  # noqa: E402
 
 SECONDS = 1.5
 problems: list[str] = []
@@ -31,7 +31,7 @@ def open_demo(app: Gtk.Application, suite: str, name: str | None) -> Gtk.Window 
     if suite == "gtk_demo":
         from demos import gtk_demo
         gtk_demo.register_resources()
-        demo = next(demo for demo in gtk_demo.demos() if demo.name == name)
+        demo = next(demo for demo in gtk_demo.all_demos() if demo.name == name)
         parent = Gtk.ApplicationWindow(application=app, title="GTK Demo")
         parent.present()
         widget = demo.run(parent)
@@ -52,7 +52,8 @@ def main() -> int:
     suite, name = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else None)
     sys.excepthook = record_exception
     GLib.log_set_writer_func(record_log, None)
-    app = Gtk.Application(application_id="org.example.PyLiite4Demos", flags=Gio.ApplicationFlags.NON_UNIQUE)
+    # An Adw.Application, so libadwaita's style sheet is loaded as in the demos' own launchers.
+    app = Adw.Application(application_id="org.example.PyLiite4Demos", flags=Gio.ApplicationFlags.NON_UNIQUE)
     shown = {}
 
     def activated(app):

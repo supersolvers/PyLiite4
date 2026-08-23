@@ -22,9 +22,16 @@ python -m demos.workbench
 | `workbench/` | Workbench's demo library, from https://github.com/workbenchdev/Workbench | CC0-1.0 (public domain) |
 
 The ports are distributed under PyLiite4's LGPL-3.0-only, as the originals' "or later" terms allow. GTK Demo's data
-files in `gtk_demo/data/` are GTK's own, unchanged.
+files in `gtk_demo/data/` are GTK's own, unchanged, and the libadwaita demo's `.ui` files, style sheet and icons are
+libadwaita's. The images, sounds and video in Workbench demo folders come from Workbench's demo library.
 
-`tests/test_demos.py` opens every demo in its own process and fails on any Python exception or GLib critical.
+Demos that use a library PyLiite4 doesn't bundle (WebKit, Shumate, Spelling, Manette, Gom, Gly) are ported but listed
+as unable to run. Workbench's Video demo plays an H.264 file, which bundled wheels can't decode.
+
+`tests/test_demos.py` opens every demo in its own process and fails on any Python exception or GLib critical. It
+runs them on a private D-Bus session with portals off and forces GDK's X11 backend, so under `xvfb-run` nothing
+reaches the desktop. GTK Demo's sliding puzzle is a known failure: playing video while GDK uses GL crashes in
+GStreamer's GL thread, with the system's GTK and GStreamer too.
 
 ## How the ports are written
 
@@ -51,6 +58,14 @@ Only what C or JavaScript needs and Python doesn't is dropped: reference countin
 - Data is loaded by the same resource paths as in C. `demos.gtk_demo.register_resources()` builds the GResource from
   `data/demo.gresource.xml`, swapping each `.c` file for its Python module, so the launcher's Source tab shows Python.
 
+### Adwaita Demo
+
+- One module per C file in `adwaita_demo/`, named with `-` replaced by `_`; page folders such as `bottom-sheets`
+  become `bottom_sheets`, and keep their original resource paths through aliases.
+- Templates stay templates, typed with `pyliite4-ui`: each `.ui` file has a generated `*_ui.py` next to it.
+- `adwaita_demo/__init__.py` builds the GResource from the original `adwaita-demo.gresources.xml`, and provides
+  `open_window()`, `page_names()` and `show_page()` for the tests.
+
 ### Workbench
 
 - One folder per demo in `workbench/library/`, named as in Workbench, holding `main.py`, `main.ui`, `main.json` and,
@@ -59,6 +74,7 @@ Only what C or JavaScript needs and Python doesn't is dropped: reference countin
   it's the preview. Keep Blueprint's other ids, and its `translatable` strings.
 - `main.py` is Workbench's Python version, or a port of the JavaScript one where there's no Python version. It
   starts with `from demos.workbench import workbench`, and uses `workbench.builder`, `workbench.window` and
-  `workbench.resolve()` as Workbench demos do.
+  `workbench.resolve()` as Workbench demos do. Like Workbench, the library browser runs each demo in a process of its
+  own (`python -m demos.workbench --run NAME`), from a fresh copy of its folder in the user cache directory.
 - `main.json` is Workbench's, plus `"requires"`: the namespaces beyond GTK and libadwaita that the demo needs, such as
   `["Soup"]`. Demos needing WebKit, Shumate, Spelling, Manette, Gom or Gly are kept, but listed as unable to run.

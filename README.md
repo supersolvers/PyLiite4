@@ -205,6 +205,12 @@ and load them by resource path.
 | `pyside6-rcc` | GResources and `pyliite4-resources` |
 | `QSignalBlocker` | `signal.blocked(handler)` |
 
+## Demos
+
+`demos/` holds Python ports of GTK Demo (111 demos), libadwaita's demo (21 pages) and Workbench's demo library (116),
+each tested by `tests/test_demos.py`. Run `python -m demos.gtk_demo`, `python -m demos.adwaita_demo` or `python -m
+demos.workbench` from the repository root; see `demos/README.md`.
+
 ## Installing
 
 Bundled wheels contain GTK, libadwaita, PyGObject and the Adwaita icons, and need nothing else from the system except

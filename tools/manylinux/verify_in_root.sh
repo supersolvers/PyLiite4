@@ -13,7 +13,8 @@ trap 'kill $xvfb' EXIT
 sleep 1
 bwrap --bind "$root" / --dev /dev --proc /proc --tmpfs /tmp --tmpfs /opt/gtk --ro-bind /etc/resolv.conf /etc/resolv.conf \
     --ro-bind "$wheel" /tmp/wheel/"${wheel##*/}" --ro-bind "$project/tests" /tmp/run/tests \
-    --ro-bind "$project/examples" /tmp/run/examples --ro-bind /tmp/.X11-unix /tmp/.X11-unix \
+    --ro-bind "$project/examples" /tmp/run/examples --ro-bind "$project/demos" /tmp/run/demos \
+    --ro-bind /tmp/.X11-unix /tmp/.X11-unix \
     --unshare-user --uid 0 --gid 0 --clearenv --setenv HOME /tmp/home --setenv LANG C.UTF-8 \
     --setenv PATH /usr/bin:/bin --setenv DISPLAY ":$display" --setenv GDK_BACKEND x11 --setenv NO_AT_BRIDGE 1 \
     --chdir /tmp/run bash -c "ldd --version | head -1

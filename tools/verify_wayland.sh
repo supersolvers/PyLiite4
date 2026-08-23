@@ -22,7 +22,7 @@ cleanup() {
 }
 trap cleanup EXIT
 python3 -m venv "$work/venv"; "$work/venv/bin/pip" -q install "$wheel" pytest mypy
-cp -r "$project/tests" "$project/examples" "$work/"
+cp -r "$project/tests" "$project/examples" "$project/demos" "$work/"
 socket=pyliite4-wl-$$
 env -u DISPLAY -u WAYLAND_DISPLAY kwin_wayland --virtual --width 1024 --height 768 --socket "$socket" >"$work/kwin.log" 2>&1 &
 kwin=$!

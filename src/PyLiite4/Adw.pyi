@@ -21,6 +21,7 @@ from PyLiite4 import Gio
 from PyLiite4 import Graphene
 from PyLiite4 import Gsk
 from PyLiite4 import Gtk
+from PyLiite4 import HarfBuzz
 from PyLiite4 import Pango
 
 _GTypeLike = GObject.GType | _builtins.type

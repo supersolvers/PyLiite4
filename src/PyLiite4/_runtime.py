@@ -19,7 +19,7 @@ import gi  # type: ignore
 
 from gi.repository import GObject  # type: ignore
 
-from PyLiite4 import _bundle
+from PyLiite4 import _bundle, _fixes
 
 F = TypeVar("F", bound=Callable[..., Any])
 M = TypeVar("M", bound=Callable[..., Any])
@@ -232,6 +232,7 @@ def bind(namespace: dict[str, Any], gi_name: str, version: str, names: tuple[str
     module = getattr(__import__("gi.repository", fromlist=[gi_name]), gi_name)
     # Libraries set their translation directory when they load.
     _bundle.bind_translations()
+    _fixes.apply(gi_name, module)
 
     for class_name, attributes in signal_methods.items():
         cls = getattr(module, class_name, None)

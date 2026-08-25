@@ -36,6 +36,7 @@ ARCHIVE = re.compile(r"\.(tar(\.(gz|xz|bz2|zst))?|tgz|tbz2)$")
 # Meson projects that don't declare a license, or declare an old name for it.
 MESON_LICENSES = {
     "cairo": "LGPL-2.1-only OR MPL-1.1",
+    "freetype": "FTL OR GPL-2.0-or-later",
     "fribidi": "LGPL-2.1-or-later",
     "glib": "LGPL-2.1-or-later",
     "glib-networking": "LGPL-2.1-or-later",
@@ -52,7 +53,8 @@ MESON_LICENSES = {
     "wayland-protocols": "MIT",
 }
 # Projects that keep their license texts somewhere other than the top of their source tree.
-OTHER_TEXTS = {"freetype": {"docs/LICENSE.TXT", "docs/FTL.TXT", "docs/GPLv2.TXT"}, "zlib": {"README"}}
+OTHER_TEXTS = {"freetype": {"LICENSE.TXT", "docs/LICENSE.TXT", "docs/FTL.TXT", "docs/GPLv2.TXT"},
+               "zlib": {"README"}}
 # Projects with no license file at all, and the text in tools/license-texts that stands in for one.
 STAND_IN_TEXTS = {"sqlite": "SQLite-blessing.txt"}
 # Built with make rather than meson, so without an install log.
@@ -103,9 +105,10 @@ def license_texts(members, extra=frozenset()):
     return found
 
 
-def tree_texts(directory):
-    return license_texts((path.relative_to(directory).parts, path.read_bytes)
-                         for path in [*directory.iterdir(), *directory.glob("LICENSES/*")] if path.is_file())
+def tree_texts(directory, extra=frozenset()):
+    paths = [*directory.iterdir(), *directory.glob("LICENSES/*"), *(directory / name for name in extra)]
+    return license_texts(((path.relative_to(directory).parts, path.read_bytes) for path in paths if path.is_file()),
+                         extra)
 
 
 def archive_texts(data, extra=frozenset()):
@@ -186,7 +189,7 @@ class Attribution:
         name = "glib" if stamp == "glib-bootstrap" else re.sub(r"-cp\d+$", "", stamp)
         license = MESON_LICENSES.get(name) or declared
         component = Component(name, info["version"], license, "built from source", [self.source_archive(source)],
-                              tree_texts(source))
+                              tree_texts(source, OTHER_TEXTS.get(name, frozenset())))
         if (source / "Cargo.lock").exists():
             component.parts = self.crates(source / "Cargo.lock")
         return component

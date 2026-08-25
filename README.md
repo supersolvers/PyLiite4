@@ -26,8 +26,8 @@ app.run([])
 
 ## What you get
 
-- **Modules:** `GLib`, `GObject`, `Gio`, `GdkPixbuf`, `Pango`, `Graphene`, `Gdk`, `Gsk`, `Gtk`, `Adw`, and the
-  libraries GTK applications commonly add: `GtkSource` (GtkSourceView, a code editor), `Soup` (HTTP clients and
+- **Modules:** `GLib`, `GObject`, `Gio`, `GdkPixbuf`, `Pango`, `PangoCairo`, `HarfBuzz`, `Graphene`, `Gdk`, `Gsk`,
+  `Gtk`, `Adw`, `Rsvg` (librsvg, for SVG), and the libraries GTK applications commonly add: `GtkSource` (GtkSourceView, a code editor), `Soup` (HTTP clients and
   servers), `Xdp` and `XdpGtk4` (libportal, for desktop portals such as screenshots, the camera and file access),
   and `Gst`, `GstBase`, `GstAudio`, `GstVideo`, `GstPbutils` and `GstApp` (GStreamer, with gst-python's
   additions).
@@ -40,6 +40,17 @@ app.run([])
 
 The classes are PyGObject's own, extended in place. Objects created by GTK, such as those from `Gtk.Builder`, have the
 same API, and PyGObject code and documentation still apply.
+
+PyLiite4 also corrects APIs that crash, corrupt memory or can't be called through PyGObject as it stands:
+
+- Signals in `.ui` files connect as GTK's C code connects them, including `object=` and swapped handlers, which
+  PyGObject passes wrongly or refuses.
+- `Gio.File.replace_contents_async()` no longer writes freed memory, and `Gsk.RoundedRect.init()` and its variants
+  return a usable rectangle.
+- `Gtk.CustomLayout.new()` keeps its callbacks alive; `Pango.extents_to_pixels()` no longer crashes.
+- `Gsk.Path.get_start_point()`, `get_end_point()`, `get_closest_point()` and `Gsk.PathMeasure.get_point()` return
+  `Gsk.PathPoint`s, which PyGObject can't allocate.
+- `Gtk.Expression.evaluate(this)` returns the value, and `Pango.SCALE_*` exist.
 
 ## Signals
 
@@ -180,9 +191,11 @@ class ExampleWindow(ExampleWindowChildren, Adw.ApplicationWindow):
         self.status.set_label("Saved")
 ```
 
-`ExampleWindowChildren` types the template's children, and `template` applies `Gtk.Template`. It binds every child
-and signal handler that the file names, and fails at import if the class has the wrong parent, `__gtype_name__` or
-handlers. A `.ui` file without a template becomes a class with a typed attribute per object id, built with
+`ExampleWindowChildren` types every object in the file that has an id, and `template` applies `Gtk.Template`. It binds
+them and every signal handler and expression closure that the file names, and fails at import if the class has the
+wrong parent, `__gtype_name__` or handlers. With `--resource /org/example/App/window.ui` the template is loaded from
+that GResource path rather than embedded in the module. As in C, a handler with `object=` gets that object after the
+signal's arguments, or, when swapped, first, and an expression closure gets the object it's evaluated for first. A `.ui` file without a template becomes a class with a typed attribute per object id, built with
 `Gtk.Builder`.
 
 Ship `.ui` files, CSS and icons as GResources, compiled with `pyliite4-resources app.gresource.xml -o app_resources.py`,
@@ -204,6 +217,24 @@ and load them by resource path.
 | `pyside6-uic` | `.ui` templates and `pyliite4-ui` |
 | `pyside6-rcc` | GResources and `pyliite4-resources` |
 | `QSignalBlocker` | `signal.blocked(handler)` |
+
+### Known PyGObject limitations
+
+These come from PyGObject or from GTK's annotations, and PyLiite4 doesn't work around them yet:
+
+- A `Gtk.Template` widget with signal handlers that GTK creates itself, for example from a GType in a `.ui` file or
+  with `GObject.new()`, can crash when it's collected. Create such widgets from Python.
+- A Python `Gtk.LayoutManager` set with `set_layout_manager_type()` gets the wrong `self`; call `set_layout_manager()`
+  with an instance instead.
+- A Python object kept only by GTK, such as an item in a `Gio.ListStore`, can lose its Python wrapper, and with it
+  any `weakref` to it. Its attributes survive.
+- Data passed to `connect()` is held strongly. Passing an object that owns the emitter makes a reference cycle
+  that keeps both alive; pass `obj.weak_ref()` instead.
+- Signals with out arguments, such as `Gtk.SpinButton::input`, can't be handled from Python.
+- `Gdk.Surface.destroy()` drops a reference it doesn't own, and `Pango.GlyphString.glyphs` reads past its first
+  glyph; avoid both.
+- `Gdk.ContentProvider.get_value()` can't be called; variadic C functions such as
+  `gtk_widget_class_add_binding_action()` aren't available (use `add_shortcut()`).
 
 ## Demos
 

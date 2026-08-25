@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Generate the PyLiite4 namespace modules and stubs from GObject Introspection data.
 
-Usage: tools/generate.py [--gir-dir DIR] [--output DIR]
+Usage: tools/generate.py [--gir-dir DIR ...] [--output DIR]
+
+The checked-in modules come from this machine's GIR files where it has them, and the bundled stack's for the rest:
+
+    tools/generate.py --gir-dir /usr/share/gir-1.0 --gir-dir ~/.cache/pyliite4-manylinux/opt/gtk/share/gir-1.0
 """
 
 import argparse
@@ -14,19 +18,22 @@ from pathlib import Path
 SKIPPED = {"GLib.MainContextPusher", "GLib.MutexLocker", "GLib.RWLockReaderLocker", "GLib.RWLockWriterLocker",
            "GLib.RecMutexLocker", "GLib.RefString", "GLib.Error", "GObject.GType", "GObject.Property",
            "GObject.Signal"}
-NAMESPACES = ["GLib", "GObject", "Gio", "GdkPixbuf", "Pango", "Graphene", "Gdk", "Gsk", "Gtk", "Adw", "GtkSource",
+NAMESPACES = ["GLib", "GObject", "Gio", "GdkPixbuf", "HarfBuzz", "Pango", "PangoCairo", "Graphene", "Gdk", "Gsk", "Gtk",
+              "Adw", "Rsvg", "GtkSource",
               "Soup", "Xdp", "XdpGtk4", "Gst", "GstBase", "GstAudio", "GstVideo", "GstPbutils", "GstApp"]
 FILES = {"GLib": "GLib-2.0", "GObject": "GObject-2.0", "Gio": "Gio-2.0", "GdkPixbuf": "GdkPixbuf-2.0",
          "Pango": "Pango-1.0", "Graphene": "Graphene-1.0", "Gdk": "Gdk-4.0", "Gsk": "Gsk-4.0",
          "Gtk": "Gtk-4.0", "Adw": "Adw-1", "GtkSource": "GtkSource-5", "Soup": "Soup-3.0", "Xdp": "Xdp-1.0",
          "XdpGtk4": "XdpGtk4-1.0", "Gst": "Gst-1.0", "GstBase": "GstBase-1.0", "GstAudio": "GstAudio-1.0",
-         "GstVideo": "GstVideo-1.0", "GstPbutils": "GstPbutils-1.0", "GstApp": "GstApp-1.0"}
+         "GstVideo": "GstVideo-1.0", "GstPbutils": "GstPbutils-1.0", "GstApp": "GstApp-1.0",
+         "HarfBuzz": "HarfBuzz-0.0", "PangoCairo": "PangoCairo-1.0", "Rsvg": "Rsvg-2.0"}
 DEPENDENCIES = {"GObject": ["GLib"], "Gio": ["GLib", "GObject"], "GdkPixbuf": ["GObject", "Gio"],
-                "Pango": ["GObject", "Gio"], "Graphene": ["GObject"],
+                "Pango": ["GObject", "Gio", "HarfBuzz"], "Graphene": ["GObject"],
                 "Gdk": ["Gio", "GdkPixbuf", "Pango"], "Gsk": ["Gdk", "Graphene"],
                 "Gtk": ["Gdk", "Gsk"], "Adw": ["Gtk"], "GtkSource": ["Gtk"], "Soup": ["Gio"], "Xdp": ["Gio"],
                 "XdpGtk4": ["Xdp", "Gtk"], "Gst": ["GObject"], "GstBase": ["Gst"], "GstAudio": ["GstBase"],
-                "GstVideo": ["GstBase"], "GstPbutils": ["GstAudio", "GstVideo"], "GstApp": ["GstBase"]}
+                "GstVideo": ["GstBase"], "GstPbutils": ["GstAudio", "GstVideo"], "GstApp": ["GstBase"],
+                "HarfBuzz": ["GObject"], "PangoCairo": ["Pango"], "Rsvg": ["GdkPixbuf", "Gio"]}
 
 CORE = "http://www.gtk.org/introspection/core/1.0"
 C = "http://www.gtk.org/introspection/c/1.0"
@@ -44,6 +51,7 @@ SCALARS = {
 GOBJECT_EXTRAS = """\
 class GType:
     name: _str
+    pytype: _Any
     def __init__(self, type_: _Any) -> None: ...
 
 class GEnum(_builtin_int):
@@ -122,8 +130,10 @@ class Error(_builtins.Exception):
     def new_literal(domain: _Any, message: _str, code: _int) -> Error: ...
 """
 # PyGObject replaces these functions with Python versions whose signatures differ from the C ones.
-OVERRIDDEN = {"GLib.idle_add", "GLib.timeout_add", "GLib.timeout_add_seconds"}
+OVERRIDDEN = {"GLib.idle_add", "GLib.timeout_add", "GLib.timeout_add_seconds", "GLib.markup_escape_text"}
 GLIB_FUNCTION_EXTRAS = """\
+glib_version: _tuple[_int, _int, _int]
+def markup_escape_text(text: _str, length: _int = ...) -> _str: ...
 def idle_add(function: _Callable[..., _bool | None], *user_data: _Any, priority: _int = ...) -> _int: ...
 def timeout_add(interval: _int, function: _Callable[..., _bool | None], *user_data: _Any,
                 priority: _int = ...) -> _int: ...
@@ -132,6 +142,13 @@ def timeout_add_seconds(interval: _int, function: _Callable[..., _bool | None], 
 """
 # Members that PyGObject's overrides add to classes, keyed by class.
 CLASS_EXTRAS = {
+    # PyLiite4's corrections in _fixes.py.
+    "Gtk.Expression": """\
+    def evaluate(self, this_: GObject.Object | None = ..., value: GObject.Value | None = ...) -> _Any: ...
+""",
+    "Gtk.Image": """\
+    def set_from_gicon(self, icon: Gio.Icon | None) -> None: ...
+""",
     "GLib.Variant": """\
     def __init__(self, format_string: _str, value: _Any) -> None: ...
     def unpack(self) -> _Any: ...
@@ -186,7 +203,12 @@ CLASS_EXTRAS = {
 }
 # Generic list models: Gio.ListStore[Item] holds Items.
 BASES = {"Gio.ListModel": ["GObject.GInterface", "_Generic[_ItemT]"], "Gio.ListStore": ["GObject.Object", "ListModel[_ItemT]"]}
-NAMESPACE_EXTRAS = {"Gio": '_ItemT = _TypeVar("_ItemT", bound=GObject.Object)\n_T = _TypeVar("_T")\n'}
+NAMESPACE_EXTRAS = {
+    "Gio": '_ItemT = _TypeVar("_ItemT", bound=GObject.Object)\n_T = _TypeVar("_T")\n',
+    # C macros, which PyLiite4 adds (see _fixes.py).
+    "Pango": "".join(f"SCALE_{name}: _float\n" for name in
+                     ("XX_SMALL", "X_SMALL", "SMALL", "MEDIUM", "LARGE", "X_LARGE", "XX_LARGE")),
+}
 # pycairo's classes, which GTK's drawing functions take and return.
 CAIRO = {"Context", "Surface", "FontOptions", "Region", "Matrix", "Pattern", "ScaledFont", "FontFace", "RectangleInt"}
 GTK_EXTRAS = """\
@@ -232,9 +254,12 @@ def callable_usable(element):
     return element.get("introspectable", "1") != "0" and not element.get("moved-to") and not element.get("shadowed-by")
 
 
-def find_gir(gir_dir, name):
+def find_gir(gir_dirs, name):
     # Debian keeps architecture-specific files such as GLib's in a multiarch directory.
-    for directory in [gir_dir, *Path("/usr/lib").glob("*/gir-1.0")]:
+    multiarch = list(Path("/usr/lib").glob("*/gir-1.0"))
+    directories = [d for gir_dir in gir_dirs for d in [gir_dir, *(multiarch if gir_dir == Path("/usr/share/gir-1.0")
+                                                                 else [])]]
+    for directory in directories:
         if (directory / f"{name}.gir").exists():
             return directory / f"{name}.gir"
     raise FileNotFoundError(f"{name}.gir")
@@ -259,11 +284,11 @@ class ClassInfo:
 
 
 class Generator:
-    def __init__(self, gir_dir):
+    def __init__(self, gir_dirs):
         self.roots = {}
         self.versions = {}
         for namespace in NAMESPACES:
-            root = ET.parse(find_gir(gir_dir, FILES[namespace])).getroot()
+            root = ET.parse(find_gir(gir_dirs, FILES[namespace])).getroot()
             ns = root.find(f"{{{CORE}}}namespace")
             self.roots[namespace] = ns
             self.versions[namespace] = ns.get("version")
@@ -409,7 +434,9 @@ class Generator:
                     name = "self_"
                 inputs.append((name, annotation, nullable(param)))
             if direction in ("out", "inout"):
-                outputs.append(f"{annotation} | None" if nullable(param) and annotation != "_Any" else annotation)
+                # For an out argument, allow-none and optional mean the caller may skip it, not that it's None.
+                maybe_none = param.get("nullable") == "1" and annotation != "_Any"
+                outputs.append(f"{annotation} | None" if maybe_none else annotation)
         return inputs, outputs, varargs
 
     def signature(self, element, namespace, first=None, name_override=None, prefix="", keep=None, required=False,
@@ -571,7 +598,20 @@ class Generator:
             lines.append("    @property")
             lines.append(f"    def {attribute}(self) -> _SignalMethod[{kind}, {method_kind}]: ...")
         lines += self.callable_lines(info.element, namespace, seen, info.qualified)
+        lines += self.class_struct_lines(info, namespace, seen)
         lines += self.attribute_properties(info, own_props, seen)
+        return lines
+
+    def class_struct_lines(self, info, namespace, seen):
+        """Methods of the class struct, such as GtkWidgetClass's, which PyGObject puts on the class."""
+        struct = info.element.get(f"{{{GLIB}}}type-struct")
+        record = next((e for e in self.roots[namespace] if tag(e) == "record" and e.get("name") == struct), None)
+        lines = []
+        for method in core(record, "method") if record is not None else []:
+            name = escape(method.get("name"))
+            if callable_usable(method) and name not in seen:
+                seen.add(name)
+                lines += ["    @classmethod", f"    {self.signature(method, namespace, 'cls')}"]
         return lines
 
     def attribute_properties(self, info, types, seen):
@@ -746,10 +786,11 @@ class Generator:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gir-dir", type=Path, default=Path("/usr/share/gir-1.0"))
+    parser.add_argument("--gir-dir", type=Path, action="append",
+                        help="where to find GIR files; repeat to search several, in order (default: /usr/share/gir-1.0)")
     parser.add_argument("--output", type=Path, default=Path(__file__).parent.parent / "src" / "PyLiite4")
     args = parser.parse_args()
-    generator = Generator(args.gir_dir)
+    generator = Generator(args.gir_dir or [Path("/usr/share/gir-1.0")])
     for namespace in NAMESPACES:
         (args.output / f"{namespace}.py").write_text(generator.module(namespace))
         (args.output / f"{namespace}.pyi").write_text(generator.stub(namespace))

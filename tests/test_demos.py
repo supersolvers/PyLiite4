@@ -2,8 +2,10 @@
 
 import os
 import shutil
+import signal
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -28,8 +30,19 @@ def run(*arguments):
     if env.get("GDK_BACKEND") != "wayland":
         env.pop("WAYLAND_DISPLAY", None)
         env["GDK_BACKEND"] = "x11"
-    result = subprocess.run(command, capture_output=True, text=True, timeout=60, env=env)
-    assert result.returncode == 0, result.stderr[-4000:]
+    # Some demos start processes of their own, and a private bus starts services; they all live in the demo's
+    # session, which ends with it. Output goes to a file, so a leftover can't hold a pipe open.
+    with tempfile.TemporaryFile("w+") as log:
+        process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
+        try:
+            returncode = process.wait(timeout=60)
+        finally:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        log.seek(0)
+        assert returncode == 0, log.read()[-4000:]
 
 
 # Demos that crash outside the port, with the reason.

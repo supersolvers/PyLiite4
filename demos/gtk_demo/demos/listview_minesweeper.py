@@ -227,14 +227,8 @@ def close_request(win: Gtk.Window) -> bool:
 def do(do_widget: Gtk.Widget) -> Gtk.Widget:
     global window
     if window is None:
-        # PyGObject's builder scope passes a signal's "object" in place of the emitter rather than after its
-        # arguments, and not at all when it is an empty list model, so the handlers look it up themselves.
-        builder = Gtk.Builder()
-        builder.set_scope(Gtk.Builder.BuilderScope({
-            "minesweeper_cell_clicked_cb": lambda gridview, pos: minesweeper_cell_clicked_cb(
-                gridview, pos, builder.get_object("game")),
-            "minesweeper_new_game_cb": lambda button: minesweeper_new_game_cb(button, builder.get_object("game")),
-        }))
+        builder = Gtk.Builder({"minesweeper_cell_clicked_cb": minesweeper_cell_clicked_cb,
+                               "minesweeper_new_game_cb": minesweeper_new_game_cb})
         builder.add_from_resource("/listview_minesweeper/listview_minesweeper.ui")
         window = builder.get_object("window")
         window.set_display(do_widget.get_display())

@@ -122,3 +122,49 @@ def test_resources_reports_failure(tmp_path):
     source = tmp_path / "bad.gresource.xml"
     source.write_text('<gresources><gresource prefix="/x"><file>missing</file></gresource></gresources>')
     assert resources.main([str(source), "-o", str(tmp_path / "o.py")]) != 0
+
+
+RESOURCE_TEMPLATE = """<?xml version="1.0"?>
+<interface>
+  <template class="PyLiite4TestCounter" parent="GtkBox">
+    <child>
+      <object class="GtkLabel" id="count">
+        <binding name="label">
+          <closure type="gchararray" function="describe">
+            <lookup name="value">adjustment</lookup>
+          </closure>
+        </binding>
+      </object>
+    </child>
+  </template>
+  <object class="GtkAdjustment" id="adjustment">
+    <property name="upper">10</property>
+  </object>
+</interface>
+"""
+
+
+def test_ui_template_from_resource_with_outside_objects_and_closures(tmp_path):
+    (tmp_path / "counter.ui").write_text(RESOURCE_TEMPLATE)
+    (tmp_path / "counter.gresource.xml").write_text(
+        '<gresources><gresource prefix="/test/pyliite4"><file>counter.ui</file></gresource></gresources>')
+    assert resources.main([str(tmp_path / "counter.gresource.xml"), "-o", str(tmp_path / "counter_res.py")]) == 0
+    load(tmp_path / "counter_res.py")
+    target = tmp_path / "counter_ui.py"
+    assert ui.main([str(tmp_path / "counter.ui"), "-o", str(target), "--resource", "/test/pyliite4/counter.ui"]) == 0
+    code = target.read_text()
+    assert "_UI =" not in code and "resource_path=RESOURCE" in code
+    assert "adjustment: Gtk.Adjustment" in code and "'describe'" in code
+    module = load(target)
+
+    @module.template
+    class Counter(module.PyLiite4TestCounterChildren, Gtk.Box):
+        __gtype_name__ = "PyLiite4TestCounter"
+
+        # As in C, an expression closure gets the object it's evaluated for (here the template) first.
+        def describe(self, _this: Gtk.Box, value: float) -> str:
+            return f"{value:.0f} of 10"
+
+    counter = Counter()
+    counter.adjustment.set_value(3)
+    assert counter.count.get_label() == "3 of 10"

@@ -47,7 +47,7 @@ TYPELIBS = ["GLib-2.0", "GLibUnix-2.0", "GObject-2.0", "GModule-2.0", "Gio-2.0",
             "Pango-1.0", "PangoCairo-1.0", "PangoFT2-1.0", "PangoFc-1.0", "PangoOT-1.0", "HarfBuzz-0.0", "cairo-1.0",
             "freetype2-2.0", "fontconfig-2.0", "Graphene-1.0", "Gdk-4.0", "GdkWayland-4.0", "GdkX11-4.0", "xlib-2.0",
             "Gsk-4.0", "Gtk-4.0", "Adw-1", "GtkSource-5", "Soup-3.0", "Xdp-1.0", "XdpGtk4-1.0", "Gst-1.0",
-            "GstBase-1.0", "GstAudio-1.0", "GstVideo-1.0", "GstTag-1.0", "GstPbutils-1.0", "GstApp-1.0"]
+            "GstBase-1.0", "GstAudio-1.0", "GstVideo-1.0", "GstTag-1.0", "GstPbutils-1.0", "GstApp-1.0", "Rsvg-2.0"]
 # Free formats and playback plumbing. Patent-encumbered codecs stay out of the wheel.
 GSTREAMER_PLUGINS = ["app", "audioconvert", "audioresample", "autodetect", "coreelements", "gio", "isomp4", "matroska", "ogg",
                      "opengl", "opus", "playback", "pulseaudio", "audiofx", "theora", "typefindfunctions", "videoconvertscale",

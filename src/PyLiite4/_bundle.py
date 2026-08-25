@@ -83,7 +83,10 @@ def setup() -> None:
     fallback_fonts = BUNDLE / "etc" / "fonts" / "fonts.conf"
     if fallback_fonts.exists() and not {"FONTCONFIG_FILE", "FONTCONFIG_PATH"} & set(os.environ):
         system_fonts = Path("/etc/fonts/fonts.conf")
-        os.environ["FONTCONFIG_FILE"] = str(system_fonts if system_fonts.exists() else fallback_fonts)
+        config = system_fonts if system_fonts.exists() else fallback_fonts
+        os.environ["FONTCONFIG_FILE"] = str(config)
+        # fonts.conf includes conf.d, where the family aliases such as "Sans" live, by a path relative to this.
+        os.environ["FONTCONFIG_PATH"] = str(config.parent)
     # The bundled TLS module would look for certificates where the build machine keeps them.
     if any((BUNDLE / "lib" / "gio" / "modules").glob("libgioopenssl.so")) and "SSL_CERT_FILE" not in os.environ:
         for certificates in CA_BUNDLES:

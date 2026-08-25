@@ -270,11 +270,9 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
     if window is None:
         GObject.type_ensure(GtkFishbowl.__gtype__)
 
-        # PyGObject's builder scope calls a handler with object="bowl" with the bowl alone, as if it were swapped,
-        # rather than with the button and the bowl as GTK does.
         scope = {
-            "fishbowl_prev_button_clicked_cb": lambda bowl: fishbowl_prev_button_clicked_cb(None, bowl),
-            "fishbowl_next_button_clicked_cb": lambda bowl: fishbowl_next_button_clicked_cb(None, bowl),
+            "fishbowl_prev_button_clicked_cb": fishbowl_prev_button_clicked_cb,
+            "fishbowl_next_button_clicked_cb": fishbowl_next_button_clicked_cb,
             "fishbowl_changes_toggled_cb": fishbowl_changes_toggled_cb,
             "format_header_cb": format_header_cb,
         }

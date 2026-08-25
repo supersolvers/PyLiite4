@@ -64,6 +64,9 @@ meson_package gobject-introspection $GNOME/gobject-introspection/1.86/gobject-in
     -Dbuild_introspection_data=true
 meson_package glib $GNOME/glib/2.86/glib-2.86.5.tar.xz \
     -Dintrospection=enabled -Dtests=false -Dman-pages=disabled -Ddocumentation=false -Dsysprof=disabled -Dselinux=disabled
+# AlmaLinux's FreeType 2.10 corrupts memory reading the metrics variations of current variable fonts.
+meson_package freetype https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz -Dharfbuzz=disabled \
+    -Dbrotli=enabled -Dbzip2=disabled -Dpng=enabled -Dzlib=enabled -Dtests=disabled
 meson_package fribidi https://github.com/fribidi/fribidi/releases/download/v1.0.16/fribidi-1.0.16.tar.xz \
     -Ddocs=false -Dtests=false
 meson_package cairo https://www.cairographics.org/releases/cairo-1.18.4.tar.xz -Dtests=disabled -Dgtk_doc=false
@@ -118,7 +121,7 @@ meson_package appstream https://github.com/ximion/appstream/archive/refs/tags/v1
     -Dsystemd=false -Dgir=false -Ddocs=false -Dapidocs=false -Dinstall-docs=false -Dvapi=false -Dqt=false -Dcompose=false
 meson_package libadwaita $GNOME/libadwaita/1.9/libadwaita-1.9.4.tar.xz -Dintrospection=enabled -Dvapi=false \
     -Dtests=false -Dexamples=false -Ddocumentation=false
-meson_package librsvg $GNOME/librsvg/2.60/librsvg-2.60.3.tar.xz -Dintrospection=disabled -Dpixbuf=enabled \
+meson_package librsvg $GNOME/librsvg/2.60/librsvg-2.60.3.tar.xz -Dintrospection=enabled -Dpixbuf=enabled \
     -Dpixbuf-loader=enabled -Ddocs=disabled -Dvala=disabled -Dtests=false -Davif=disabled
 meson_package gtksourceview $GNOME/gtksourceview/5.20/gtksourceview-5.20.0.tar.xz -Dintrospection=enabled -Dvapi=false \
     -Dbuild-testsuite=false -Ddocumentation=false

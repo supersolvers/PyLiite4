@@ -201,6 +201,28 @@ signal's arguments, or, when swapped, first, and an expression closure gets the 
 Ship `.ui` files, CSS and icons as GResources, compiled with `pyliite4-resources app.gresource.xml -o app_resources.py`,
 and load them by resource path.
 
+### Testing
+
+`PyLiite4.testing` is a pytest plugin, installed with PyLiite4 and off until `pytest --gtk` or `gtk = true` under
+`[tool.pytest.ini_options]` turns it on. Each run then gets a private Xvfb display and D-Bus session, no portals,
+in-memory settings and temporary XDG directories, so tests never reach the desktop. A test fails if it logs a GLib
+warning or if one of its callbacks raises. The `gtkbot` fixture shows widgets and destroys them afterwards:
+
+```python
+def test_save(gtkbot):
+    window = gtkbot.show(MyWindow())
+    gtkbot.input.type(gtkbot.find(window, Gtk.Entry), "notes.txt")
+    gtkbot.input.click(gtkbot.find(window, Gtk.Button, label="Save"))
+    gtkbot.wait_until(lambda: Path("notes.txt").exists())
+```
+
+`gtkbot.input` sends real pointer and keyboard events through XTest, so they go through event controllers,
+gestures and focus as a user's would. GTK 4 has no API of its own to inject events. It needs libXtst, and runs only
+on the plugin's Xvfb. `gtkbot.click()`, `activate()`, `type_text()` and `press_key()` go through signals, actions and
+shortcuts instead, which is quicker but skips event handling. The plugin also has `wait_until()`,
+`expect_signal()`, `wait_signal()`, `find()` and `gtk_log` for expected warnings. Accessibility is recorded
+in-process, so `Gtk.test_accessible_has_role()` and its kin work.
+
 ### Coming from PySide6
 
 | PySide6 | GTK |
@@ -217,6 +239,9 @@ and load them by resource path.
 | `pyside6-uic` | `.ui` templates and `pyliite4-ui` |
 | `pyside6-rcc` | GResources and `pyliite4-resources` |
 | `QSignalBlocker` | `signal.blocked(handler)` |
+| `QTest.mouseClick`, `keyClick`, `keyClicks` | `gtkbot.input.click`, `key`, `type` |
+| `QSignalSpy`, `qtbot.waitSignal` | `gtkbot.expect_signal`, `wait_signal` |
+| `qtbot.waitUntil`, `qWait` | `gtkbot.wait_until`, `wait` |
 
 ### Known PyGObject limitations
 

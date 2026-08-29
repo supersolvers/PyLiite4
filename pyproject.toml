@@ -19,6 +19,9 @@ dev = ["pytest", "mypy", "patchelf"]
 pyliite4-ui = "PyLiite4.tools.ui:main"
 pyliite4-resources = "PyLiite4.tools.resources:main"
 
+[project.entry-points.pytest11]
+pyliite4 = "PyLiite4.testing"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

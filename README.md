@@ -165,6 +165,17 @@ Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, G
 libadwaita follows the system's light, dark and high-contrast settings; use its named colours, such as
 `var(--accent-bg-color)`, rather than fixed ones. `Adw.StyleManager` reports the current scheme.
 
+Fonts the application ships go into a GResource like its other files, and `register_font()` from
+`PyLiite4.Extras` makes them usable without installing anything. It returns the families, which CSS `font-family`
+then finds:
+
+```python
+families = register_font(Gio.File.new_for_uri("resource:///org/example/App/fonts/Inter.ttf"))
+```
+
+It also takes the font's bytes or a path. Text already laid out in those families is laid out again, so it can be
+called at any time, though startup is the natural place.
+
 ### Input
 
 Attach event controllers to a widget: `Gtk.EventControllerKey`, `Gtk.GestureClick`, `Gtk.EventControllerMotion`,
@@ -231,6 +242,7 @@ in-process, so `Gtk.test_accessible_has_role()` and its kin work.
 | `paintEvent`, `QPainter` | `do_snapshot` with `Gtk.Snapshot`, or cairo through `append_cairo` |
 | `sizeHint`, `QSizePolicy` | `do_measure`, `hexpand`/`vexpand`, `halign`/`valign` |
 | `QFontMetrics` | `Pango.Layout` |
+| `QFontDatabase.addApplicationFont`, `addApplicationFontFromData` | `PyLiite4.Extras.register_font` |
 | Style sheets, `QPalette` | CSS classes and `Gtk.CssProvider`; libadwaita colours |
 | `eventFilter`, `keyPressEvent` | Event controllers |
 | `QAction`, `QShortcut` | `Gio.SimpleAction` and accelerators |

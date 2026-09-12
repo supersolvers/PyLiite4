@@ -182,6 +182,18 @@ Attach event controllers to a widget: `Gtk.EventControllerKey`, `Gtk.GestureClic
 `Gtk.DropTarget` and others. Keyboard shortcuts are actions: add a `Gio.SimpleAction` to the application or window, and
 give it accelerators with `app.set_accels_for_action("win.save", ["<Control>s"])`.
 
+A widget's tooltip (`set_tooltip_text()`) appears only while the pointer rests on it. To show one when the
+application decides, after a click or while a link is hovered, use `show_tip()` from `PyLiite4.Extras`:
+
+```python
+show_tip(switch, "Switched on")                     # below the widget
+show_tip(view, "https://example.org", (x, y))       # at a point in it
+```
+
+It looks like a GTK tooltip, takes no focus, and hides after a while, when the pointer moves off the widget, or on a
+key press or click. Its text is also announced to screen readers. The application has one such tip, as in Qt;
+`Tip` is the widget itself, for keeping one of your own.
+
 ### UI files and templates
 
 Describe a composite widget in a `.ui` file with a `<template>`, then let `pyliite4-ui` type it:
@@ -232,7 +244,8 @@ gestures and focus as a user's would. GTK 4 has no API of its own to inject even
 on the plugin's Xvfb. `gtkbot.click()`, `activate()`, `type_text()` and `press_key()` go through signals, actions and
 shortcuts instead, which is quicker but skips event handling. The plugin also has `wait_until()`,
 `expect_signal()`, `wait_signal()`, `find()` and `gtk_log` for expected warnings. Accessibility is recorded
-in-process, so `Gtk.test_accessible_has_role()` and its kin work.
+in-process, so `Gtk.test_accessible_has_role()` and its kin work, and `gtkbot.announcements` lists what the test
+announced to screen readers.
 
 ### Coming from PySide6
 
@@ -245,6 +258,7 @@ in-process, so `Gtk.test_accessible_has_role()` and its kin work.
 | `QFontDatabase.addApplicationFont`, `addApplicationFontFromData` | `PyLiite4.Extras.register_font` |
 | Style sheets, `QPalette` | CSS classes and `Gtk.CssProvider`; libadwaita colours |
 | `eventFilter`, `keyPressEvent` | Event controllers |
+| `QToolTip.showText` | `PyLiite4.Extras.show_tip` |
 | `QAction`, `QShortcut` | `Gio.SimpleAction` and accelerators |
 | `QAbstractItemModel`, `QListWidget`, delegates | `Gio.ListStore`, list views and item factories |
 | `QSettings` | `Gio.Settings` with a schema |

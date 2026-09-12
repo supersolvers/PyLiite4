@@ -1375,12 +1375,14 @@ def gtk_app(gtk_app_class: type[Gtk.Application], _gtk_session: None) -> Iterato
 class GtkBot:
     """The helpers, plus clean-up: windows shown through it, or opened during the test, are destroyed after it.
 
-    Returned by the ``gtkbot`` fixture. ``input`` is the ``RealInput`` for real pointer and keyboard events.
+    Returned by the ``gtkbot`` fixture. ``input`` is the ``RealInput`` for real pointer and keyboard events, and
+    ``announcements`` what the test announced to screen readers.
     """
 
     def __init__(self) -> None:
-        from PyLiite4 import Gtk
+        from PyLiite4 import Gtk, _fixes
 
+        _fixes.announcements.clear()
         self._existing = {id(window) for window in Gtk.Window.list_toplevels()}
         self._windows: list[Gtk.Window] = []
         self._input: RealInput | None = None
@@ -1391,6 +1393,13 @@ class GtkBot:
         if self._input is None:
             self._input = real_input()
         return self._input
+
+    @property
+    def announcements(self) -> list[str]:
+        """The messages announced to screen readers during the test (``Gtk.Accessible.announce``), oldest first."""
+        from PyLiite4 import _fixes
+
+        return [message for message, _priority in _fixes.announcements]
 
     def add(self, window: Gtk.Window) -> None:
         """Destroy ``window`` after the test."""

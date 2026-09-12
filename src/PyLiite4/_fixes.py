@@ -183,6 +183,23 @@ def _gtk(Gtk: Any) -> None:
     set_from_gicon = Gtk.Image.set_from_gicon
     Gtk.Image.set_from_gicon = lambda self, icon: self.clear() if icon is None else set_from_gicon(self, icon)
 
+    # GTK's test accessibility backend (GTK_A11Y=test) has no announce function, which announce() calls anyway, so
+    # it crashes. Under that backend, keep the announcements instead, for tests to read (PyLiite4.testing does).
+    announce = Gtk.Accessible.announce
+
+    def accessible_announce(self: Any, message: str, priority: Any) -> None:
+        context = self.get_at_context()
+        if context is not None and type(context).__name__ == "GtkTestATContext":
+            announcements.append((message, priority))
+            return
+        announce(self, message, priority)
+
+    Gtk.Accessible.announce = accessible_announce
+
+
+# Announcements made under GTK's test accessibility backend, as (message, priority), oldest first.
+announcements: list[tuple[str, Any]] = []
+
 
 def _fix_builder_scope(Gtk: Any) -> None:
     """Connect signals from .ui files the way GTK's own C scope does.

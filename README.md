@@ -194,6 +194,18 @@ It looks like a GTK tooltip, takes no focus, and hides after a while, when the p
 key press or click. Its text is also announced to screen readers. The application has one such tip, as in Qt;
 `Tip` is the widget itself, for keeping one of your own.
 
+For a settings page that lets people choose shortcuts, `ShortcutRecorder` from `PyLiite4.Extras` is a button that
+shows a shortcut and records a new one when clicked, as in GNOME Settings. Escape cancels and Backspace clears.
+Its `accelerator` property is in the form `set_accels_for_action()` takes, and handlers of its `validate` signal can
+refuse a shortcut that's already taken:
+
+```python
+recorder = ShortcutRecorder(accelerator="<Control>s")
+recorder.validate.connect(lambda recorder, accelerator: accelerator not in taken)
+recorder.notify["accelerator"].connect(
+    lambda recorder, _: app.set_accels_for_action("win.save", [recorder.accelerator] if recorder.accelerator else []))
+```
+
 ### UI files and templates
 
 Describe a composite widget in a `.ui` file with a `<template>`, then let `pyliite4-ui` type it:
@@ -259,6 +271,7 @@ announced to screen readers.
 | Style sheets, `QPalette` | CSS classes and `Gtk.CssProvider`; libadwaita colours |
 | `eventFilter`, `keyPressEvent` | Event controllers |
 | `QToolTip.showText` | `PyLiite4.Extras.show_tip` |
+| `QKeySequenceEdit` | `PyLiite4.Extras.ShortcutRecorder` |
 | `QAction`, `QShortcut` | `Gio.SimpleAction` and accelerators |
 | `QAbstractItemModel`, `QListWidget`, delegates | `Gio.ListStore`, list views and item factories |
 | `QSettings` | `Gio.Settings` with a schema |

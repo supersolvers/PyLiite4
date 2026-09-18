@@ -4,6 +4,7 @@
   ``QFontDatabase.addApplicationFont``.
 - ``Tip`` and ``show_tip()``: a tooltip shown when the application decides, at a widget or a spot in it, like
   ``QToolTip.showText``.
+- ``ShortcutRecorder``: a button that records the next key combination pressed, like ``QKeySequenceEdit``.
 """
 
 from __future__ import annotations
@@ -12,9 +13,9 @@ import ctypes
 import os
 from typing import Any
 
-from PyLiite4 import Gdk, Gio, GLib, GObject, Gtk, Pango
+from PyLiite4 import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango
 
-__all__ = ["Tip", "hide_tip", "register_font", "show_tip"]
+__all__ = ["ShortcutRecorder", "Tip", "hide_tip", "register_font", "show_tip"]
 
 # The fonts register_font() added, as paths fontconfig reads: their own, or /proc/self/fd/N for a memfd that stays
 # open as long as the process runs.
@@ -142,7 +143,17 @@ popover.pyliite4-tip > contents {
   padding: 6px 10px;
 }
 """
-_tip_css_displays: list[Gdk.Display] = []
+_installed_css: list[tuple[Gdk.Display, str]] = []
+
+
+def _install_css(display: Gdk.Display, css: str, priority: int) -> None:
+    """Add ``css`` for ``display`` at ``priority``, once."""
+    if (display, css) in _installed_css:
+        return
+    provider = Gtk.CssProvider()
+    provider.load_from_string(css)
+    Gtk.StyleContext.add_provider_for_display(display, provider, priority)
+    _installed_css.append((display, css))
 
 
 class Tip(Gtk.Popover):
@@ -194,12 +205,7 @@ class Tip(Gtk.Popover):
         if not widget.get_mapped():
             raise ValueError(f"can't show a tip at {widget!r}: it isn't shown")
         self.popdown()
-        display = widget.get_display()
-        if display not in _tip_css_displays:
-            provider = Gtk.CssProvider()
-            provider.load_from_string(_TIP_CSS)
-            Gtk.StyleContext.add_provider_for_display(display, provider, Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS + 1)
-            _tip_css_displays.append(display)
+        _install_css(widget.get_display(), _TIP_CSS, Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS + 1)
         if self.get_parent() is not widget:
             self._leave_parent()
             self.set_parent(widget)
@@ -295,3 +301,167 @@ def hide_tip() -> None:
     """Hide the tip ``show_tip()`` showed, if it is up."""
     if _shared_tip is not None:
         _shared_tip.popdown()
+
+
+# Recording shortcuts
+
+# Keys that only modify another, which a shortcut can't consist of.
+_MODIFIER_KEYVALS = {Gdk.keyval_from_name(name) for name in (
+    "Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "Meta_L", "Meta_R", "Super_L", "Super_R",
+    "Hyper_L", "Hyper_R", "ISO_Level3_Shift", "ISO_Level5_Shift", "Caps_Lock", "Num_Lock", "Mode_switch")}
+
+
+# Keycaps for Adw.ShortcutLabel when libadwaita's style sheet isn't loaded, after GTK's own for its deprecated
+# shortcut label, in the text colour so they suit any theme. Just above GTK's theme, as for tips.
+_KEYCAP_CSS = """
+shortcut-label > box { border-spacing: 6px; }
+shortcut-label > box > label.keycap {
+  min-width: 20px;
+  min-height: 25px;
+  padding: 0 6px 2px;
+  border: 1px solid alpha(currentColor, 0.25);
+  border-radius: 5px;
+  background-color: alpha(currentColor, 0.05);
+  box-shadow: inset 0 -2px alpha(currentColor, 0.12);
+  font-size: smaller;
+}
+"""
+
+
+def _all_true(_hint: Any, _accumulated: bool, handler_return: bool, *_data: Any) -> tuple[bool, bool]:
+    # Go on while handlers accept; the first that rejects decides.
+    return handler_return, handler_return
+
+
+class ShortcutRecorder(Gtk.Button):
+    """A button showing a shortcut, which records a new one when clicked: the equivalent of ``QKeySequenceEdit``.
+
+    It works like the shortcut editor in GNOME Settings. Clicking it shows ``prompt``, and the next key combination
+    pressed becomes ``accelerator``, in the form ``Gtk.accelerator_name()`` gives and
+    ``Gtk.Application.set_accels_for_action()`` takes. Escape cancels, Backspace clears it to ``""``, and moving the
+    focus away cancels. While it records, the window's own shortcuts and, where the desktop allows, the system's
+    don't act on the keys.
+
+    A printable key without a modifier, which would stop that character being typed, isn't accepted unless
+    ``require-modifier`` is false. Handlers of ``validate(accelerator) -> bool`` can refuse others, a shortcut already
+    in use say; the recorder then keeps recording. Follow ``notify::accelerator`` for changes and
+    ``notify::recording`` for the start and end of recording.
+    """
+
+    __gtype_name__ = "PyLiite4ShortcutRecorder"
+    __gsignals__ = {
+        "validate": (GObject.SignalFlags.RUN_LAST, bool, (str,), _all_true),
+    }
+
+    accelerator = GObject.Property(type=str, default="", nick="Accelerator",
+                                   blurb="The shortcut, as Gtk.accelerator_name() writes it, or empty for none")
+    prompt = GObject.Property(type=str, default="Press a shortcut…", nick="Prompt",
+                              blurb="Shown while recording")
+    placeholder = GObject.Property(type=str, default="Disabled", nick="Placeholder",
+                                   blurb="Shown when there is no shortcut")
+    require_modifier = GObject.Property(type=bool, default=True, nick="Require modifier",
+                                        blurb="Whether a printable key needs a modifier")
+
+    def __init__(self, **properties: Any) -> None:
+        super().__init__(**properties)
+        self.add_css_class("pyliite4-shortcut-recorder")
+        # Before the keycaps are first styled: GTK doesn't restyle them for a style sheet added later.
+        display = Gdk.Display.get_default()
+        if display is not None and not Adw.is_initialized():
+            _install_css(display, _KEYCAP_CSS, Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS + 1)
+        self._recording = False
+        self._label = Adw.ShortcutLabel(halign=Gtk.Align.CENTER)
+        self.bind_property("accelerator", self._label, "accelerator", GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property("placeholder", self._label, "disabled-text", GObject.BindingFlags.SYNC_CREATE)
+        prompt = Gtk.Label()
+        self.bind_property("prompt", prompt, "label", GObject.BindingFlags.SYNC_CREATE)
+        self._stack = Gtk.Stack()
+        self._stack.add_named(self._label, "shortcut")
+        self._stack.add_named(prompt, "prompt")
+        self.set_child(self._stack)
+        self._keys = Gtk.EventControllerKey(propagation_phase=Gtk.PropagationPhase.CAPTURE)
+        self._keys.connect("key-pressed", self._key_pressed)
+        self._focus = Gtk.EventControllerFocus()
+        self._focus.connect("leave", lambda _controller: self.cancel())
+        self.add_controller(self._focus)
+        self._watching: Gtk.Widget | None = None
+        self.connect("clicked", lambda _button: self.cancel() if self._recording else self.record())
+
+    @GObject.Property(type=bool, default=False, flags=GObject.ParamFlags.READABLE, nick="Recording",
+                      blurb="Whether the next key combination pressed is being recorded")
+    def recording(self) -> bool:
+        return self._recording
+
+    def do_validate(self, accelerator: str) -> bool:
+        return True
+
+    def record(self) -> None:
+        """Start recording, as a click does."""
+        if self._recording or not self.get_mapped():
+            return
+        root = self.get_root()
+        if not isinstance(root, Gtk.Widget):
+            return
+        self.grab_focus()
+        # On the window, in the capture phase: ahead of its shortcuts, mnemonics and the focus widget's bindings.
+        root.add_controller(self._keys)
+        self._watching = root
+        surface = root.get_native().get_surface() if root.get_native() is not None else None
+        if isinstance(surface, Gdk.Toplevel):
+            surface.inhibit_system_shortcuts(None)
+        self._set_recording(True)
+        self.announce(self.prompt, Gtk.AccessibleAnnouncementPriority.MEDIUM)
+
+    def cancel(self) -> None:
+        """Stop recording and keep the shortcut as it was."""
+        if not self._recording:
+            return
+        if self._watching is not None:
+            self._watching.remove_controller(self._keys)
+            native = self._watching.get_native()
+            surface = native.get_surface() if native is not None else None
+            if isinstance(surface, Gdk.Toplevel):
+                surface.restore_system_shortcuts()
+            self._watching = None
+        self._set_recording(False)
+
+    def clear(self) -> None:
+        """Remove the shortcut."""
+        self.accelerator = ""
+
+    def _set_recording(self, recording: bool) -> None:
+        self._recording = recording
+        self._stack.set_visible_child_name("prompt" if recording else "shortcut")
+        self.notify("recording")
+
+    def _key_pressed(self, _controller: Gtk.EventControllerKey, keyval: int, _keycode: int,
+                     state: Gdk.ModifierType) -> bool:
+        if keyval in _MODIFIER_KEYVALS:
+            return True
+        modifiers = Gdk.ModifierType(state & Gtk.accelerator_get_default_mod_mask())
+        lower = Gdk.keyval_to_lower(keyval)
+        # As GNOME Settings does: an upper-case key means Shift, written as Shift and the lower-case key.
+        if lower != keyval:
+            modifiers = Gdk.ModifierType(modifiers | Gdk.ModifierType.SHIFT_MASK)
+        if lower == Gdk.keyval_from_name("ISO_Left_Tab"):
+            lower = Gdk.keyval_from_name("Tab")
+        if not modifiers and lower == Gdk.keyval_from_name("Escape"):
+            self.cancel()
+            return True
+        if not modifiers and lower == Gdk.keyval_from_name("BackSpace"):
+            self.cancel()
+            self.clear()
+            return True
+        if self.require_modifier and not modifiers & ~Gdk.ModifierType.SHIFT_MASK and Gdk.keyval_to_unicode(lower):
+            self.error_bell()
+            return True
+        if not Gtk.accelerator_valid(lower, modifiers):
+            self.error_bell()
+            return True
+        accelerator = Gtk.accelerator_name(lower, modifiers)
+        if not self.emit("validate", accelerator):
+            return True
+        self.cancel()
+        self.accelerator = accelerator
+        self.announce(Gtk.accelerator_get_label(lower, modifiers), Gtk.AccessibleAnnouncementPriority.MEDIUM)
+        return True

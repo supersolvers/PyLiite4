@@ -176,6 +176,25 @@ families = register_font(Gio.File.new_for_uri("resource:///org/example/App/fonts
 It also takes the font's bytes or a path. Text already laid out in those families is laid out again, so it can be
 called at any time, though startup is the natural place.
 
+### Formatted text
+
+`Gtk.TextView` formats text with tags but reads no document format. `RichView` from `PyLiite4.Extras` is a read-only
+text view that does: `set_markup()` takes an HTML subset, roughly Qt's rich text, along with Pango markup's own tags.
+It covers paragraphs, headings, lists, quotes, preformatted blocks, rules, tables, links, and bold, italic, struck,
+monospace and coloured text:
+
+```python
+view = RichView()
+view.set_markup("<h3>Results</h3><p>See <a href='https://example.org'>the report</a>.</p>")
+view.activate_link.connect(lambda view, uri: open_in_app(uri))   # return True to keep it from opening
+```
+
+Unknown tags show as text, `<script>` and the like are dropped, and links whose scheme isn't in `link-schemes`
+(http, https and mailto by default) are plain text. Calling `set_markup()` again re-renders only from the first block
+that changed, so a reply streamed in a little at a time keeps the reader's selection. Copying gives tables as
+tab-separated text. Colours follow the theme: links take libadwaita's accent colour. For a height cap, put the view
+in a `Gtk.ScrolledWindow` with `propagate-natural-height` and `max-content-height`.
+
 ### Input
 
 Attach event controllers to a widget: `Gtk.EventControllerKey`, `Gtk.GestureClick`, `Gtk.EventControllerMotion`,
@@ -267,6 +286,7 @@ announced to screen readers.
 | `paintEvent`, `QPainter` | `do_snapshot` with `Gtk.Snapshot`, or cairo through `append_cairo` |
 | `sizeHint`, `QSizePolicy` | `do_measure`, `hexpand`/`vexpand`, `halign`/`valign` |
 | `QFontMetrics` | `Pango.Layout` |
+| `QTextBrowser.setHtml`, `anchorClicked`, `highlighted` | `PyLiite4.Extras.RichView.set_markup`, `activate-link`, `hover-link` |
 | `QFontDatabase.addApplicationFont`, `addApplicationFontFromData` | `PyLiite4.Extras.register_font` |
 | Style sheets, `QPalette` | CSS classes and `Gtk.CssProvider`; libadwaita colours |
 | `eventFilter`, `keyPressEvent` | Event controllers |

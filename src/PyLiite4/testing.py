@@ -506,18 +506,37 @@ def _xid(surface: Gdk.Surface) -> int:
         return int(GdkX11.X11Surface.get_xid(surface))
 
 
+@dataclass(frozen=True)
+class _Received:
+    """What RealInput needs of an event GTK received, kept after the event itself is gone."""
+
+    kind: str
+    position: tuple[float, float] | None
+    button: int
+    keycode: int
+
+    @classmethod
+    def of(cls, event: Gdk.Event) -> _Received:
+        from PyLiite4 import Gdk
+
+        found, x, y = event.get_position()
+        return cls(event.get_event_type().value_name.removeprefix("GDK_"), (x, y) if found else None,
+                   event.get_button() if isinstance(event, Gdk.ButtonEvent) else 0,
+                   event.get_keycode() if isinstance(event, Gdk.KeyEvent) else 0)
+
+
 class RealInput:
     """Real pointer and keyboard input, the equivalent of ``QTest``'s mouse and key functions.
 
-    Each call sends X events through XTest and then handles them, so when it returns GTK has delivered them to the
-    widgets, through their event controllers, gestures, focus handling and key bindings, as a user's input would be.
+    Each call sends X events through XTest and handles them until GTK has received them, so when it returns they have
+    gone through the widgets' event controllers, gestures, focus handling and key bindings, as a user's input would.
     What those handlers start later, such as a popover opening, needs ``wait_until()``.
 
     Positions are in the widget's own coordinates, its centre by default. ``modifiers`` are written like an
     accelerator, ``"<Control><Shift>"``. Buttons are numbered as in GDK: 1 is primary, 2 middle, 3 secondary.
 
     Raises ``InteractionError`` when a user couldn't do it: the widget is hidden, insensitive, or under another
-    widget at that point.
+    widget at that point; and when GTK doesn't receive the input.
     """
 
     def __init__(self) -> None:
@@ -531,13 +550,16 @@ class RealInput:
             raise InteractionError(f"refusing real input on display {name}, which isn't the plugin's private Xvfb: "
                                    "it would move that display's own pointer. Set PYLIITE4_TESTING_REAL_INPUT=1 to "
                                    "allow it")
+        self._display = display
         self._x = _XLib(name)
         self._buttons: set[int] = set()
 
     # Where things are
 
-    def _locate(self, widget: Gtk.Widget, at: tuple[float, float] | None, action: str) -> tuple[int, int]:
-        """The root window position of ``at`` in ``widget``, checked to be where the widget gets the pointer."""
+    def _locate(self, widget: Gtk.Widget, at: tuple[float, float] | None,
+                action: str) -> tuple[int, int, float, float]:
+        """The root window position of ``at`` in ``widget``, and the position in its surface, checked to be where the
+        widget gets the pointer."""
         from PyLiite4 import Graphene, Gtk
 
         _require_interactive(widget, action)
@@ -559,12 +581,13 @@ class RealInput:
             raise InteractionError(f"can't {action} {widget!r} at {x:g}, {y:g}: "
                                    f"{_describe(picked) if picked else 'nothing'} is there")
         offset_x, offset_y = native.get_surface_transform()
+        surface_x, surface_y = inside.x + offset_x, inside.y + offset_y
         scale = surface.get_scale()
         root_x, root_y, child = ctypes.c_int(), ctypes.c_int(), ctypes.c_ulong()
         self._x.x11.XTranslateCoordinates(self._x.display, _xid(surface), self._x.root,
-                                          round((inside.x + offset_x) * scale), round((inside.y + offset_y) * scale),
+                                          round(surface_x * scale), round(surface_y * scale),
                                           ctypes.byref(root_x), ctypes.byref(root_y), ctypes.byref(child))
-        return root_x.value, root_y.value
+        return root_x.value, root_y.value, surface_x, surface_y
 
     def _focus(self, widget: Gtk.Widget) -> None:
         """Give ``widget``'s window the keyboard, and ``widget`` the focus unless it is the window."""
@@ -578,7 +601,7 @@ class RealInput:
             assert surface is not None
             # 1 is RevertToPointerRoot; with no window manager, nothing else gives a window the keyboard.
             self._x.x11.XSetInputFocus(self._x.display, _xid(surface), 1, 0)
-            self._settle()
+            self._deliver(root, [], lambda: None)
             wait_until(root.is_active, message=f"{root!r} didn't get the keyboard focus")
         if widget is not root:
             focus = root.get_focus()
@@ -587,16 +610,91 @@ class RealInput:
                     raise InteractionError(f"can't type into {widget!r}: it can't take the focus")
                 iterate()
 
-    def _settle(self) -> None:
-        """Wait until GDK has received what was sent, then handle it."""
+    # Getting input to GTK
+
+    def _frame(self, native: Gtk.Widget) -> None:
+        """Run a frame of ``native``'s surface, which is when GDK delivers the pointer motion it holds back."""
         from PyLiite4 import Gdk
 
-        self._x.sync()
-        # A round trip on GDK's own connection: events sent before it are queued once it returns.
-        display = Gdk.Display.get_default()
-        assert display is not None
-        display.sync()
-        iterate()
+        clock = native.get_frame_clock()
+        if clock is None:
+            return
+        painted: list[bool] = []
+        handler = clock.connect("after-paint", lambda _clock: painted.append(True))
+        try:
+            clock.request_phase(Gdk.FrameClockPhase(Gdk.FrameClockPhase.FLUSH_EVENTS
+                                                    | Gdk.FrameClockPhase.AFTER_PAINT))
+            try:
+                wait_until(lambda: painted, timeout=1)
+            except WaitTimeout:
+                pass
+        finally:
+            clock.disconnect(handler)
+
+    def _deliver(self, widget: Gtk.Widget, expected: list[Callable[[_Received], bool]],
+                 send: Callable[[], None]) -> None:
+        """Send events with ``send()``, then handle what arrives until ``widget``'s window has received events that
+        meet each of ``expected``, in order.
+
+        The X server makes XTest's events on its own time, so a round trip doesn't mean they have reached GDK; and
+        GDK delivers motion at the next frame. What arrives is watched rather than assumed.
+        """
+        from PyLiite4 import Gtk
+
+        native = widget if isinstance(widget, Gtk.Native) else widget.get_native()
+        assert isinstance(native, Gtk.Widget)
+        seen: list[_Received] = []
+
+        def received(controller: Gtk.EventControllerLegacy, _event: object) -> bool:
+            # PyGObject passes the signal's event as None; the controller still has it, for now only.
+            event = controller.get_current_event()
+            if event is not None:
+                seen.append(_Received.of(event))
+            return False
+
+        watcher = Gtk.EventControllerLegacy(propagation_phase=Gtk.PropagationPhase.CAPTURE)
+        watcher.connect("event", received)
+        native.add_controller(watcher)
+        try:
+            send()
+            self._x.sync()
+            deadline = time.monotonic() + 5
+            while True:
+                # A round trip on GDK's own connection: what the server sent before it is queued after it.
+                self._display.sync()
+                iterate()
+                remaining = list(expected)
+                for event in seen:
+                    if remaining and remaining[0](event):
+                        remaining.pop(0)
+                if not remaining:
+                    break
+                if time.monotonic() > deadline:
+                    raise InteractionError(f"GTK didn't receive the input sent to {widget!r}")
+                self._frame(native)
+            self._frame(native)
+            iterate()
+        finally:
+            native.remove_controller(watcher)
+
+    @staticmethod
+    def _pointer_at(x: float, y: float) -> Callable[[_Received], bool]:
+        return lambda event: event.kind in ("MOTION_NOTIFY", "ENTER_NOTIFY") and event.position is not None \
+            and abs(event.position[0] - x) < 1.5 and abs(event.position[1] - y) < 1.5
+
+    @staticmethod
+    def _button(press: bool, button: int) -> Callable[[_Received], bool]:
+        kind = "BUTTON_PRESS" if press else "BUTTON_RELEASE"
+        return lambda event: event.kind == kind and event.button == button
+
+    @staticmethod
+    def _key(press: bool, keycode: int) -> Callable[[_Received], bool]:
+        kind = "KEY_PRESS" if press else "KEY_RELEASE"
+        return lambda event: event.kind == kind and event.keycode == keycode
+
+    @staticmethod
+    def _scrolled(event: _Received) -> bool:
+        return event.kind == "SCROLL"
 
     def _modifiers(self, modifiers: str) -> list[int]:
         from PyLiite4 import Gdk, Gtk
@@ -612,24 +710,29 @@ class RealInput:
         for keysym in keysyms if press else reversed(keysyms):
             self._x.xtst.XTestFakeKeyEvent(self._x.display, self._x.keycode(keysym)[0], press, 0)
 
+    def _buttons_with(self, keys: list[int], events: list[tuple[int, bool]]) -> Callable[[], None]:
+        def send() -> None:
+            self._keys(keys, True)
+            for button, press in events:
+                self._x.xtst.XTestFakeButtonEvent(self._x.display, button, press, 0)
+            self._keys(keys, False)
+        return send
+
     # The pointer
 
     def move(self, widget: Gtk.Widget, at: tuple[float, float] | None = None) -> None:
         """Move the pointer over ``widget``."""
-        x, y = self._locate(widget, at, "move to")
-        self._x.xtst.XTestFakeMotionEvent(self._x.display, -1, x, y, 0)
-        self._settle()
+        x, y, surface_x, surface_y = self._locate(widget, at, "move to")
+        self._deliver(widget, [self._pointer_at(surface_x, surface_y)],
+                      lambda: self._x.xtst.XTestFakeMotionEvent(self._x.display, -1, x, y, 0))
 
     def press(self, widget: Gtk.Widget, button: int = 1, at: tuple[float, float] | None = None,
               modifiers: str = "") -> None:
         """Move to ``widget`` and press ``button``, leaving it down until ``release()``."""
         keys = self._modifiers(modifiers)
         self.move(widget, at)
-        self._keys(keys, True)
-        self._x.xtst.XTestFakeButtonEvent(self._x.display, button, True, 0)
-        self._keys(keys, False)
+        self._deliver(widget, [self._button(True, button)], self._buttons_with(keys, [(button, True)]))
         self._buttons.add(button)
-        self._settle()
 
     def release(self, widget: Gtk.Widget | None = None, button: int = 1, at: tuple[float, float] | None = None,
                 modifiers: str = "") -> None:
@@ -637,34 +740,31 @@ class RealInput:
         keys = self._modifiers(modifiers)
         if widget is not None:
             self.move(widget, at)
-        self._keys(keys, True)
-        self._x.xtst.XTestFakeButtonEvent(self._x.display, button, False, 0)
-        self._keys(keys, False)
+        send = self._buttons_with(keys, [(button, False)])
+        if widget is not None:
+            self._deliver(widget, [self._button(False, button)], send)
+        else:
+            send()
+            self._x.sync()
+            self._display.sync()
+            iterate()
         self._buttons.discard(button)
-        self._settle()
 
     def click(self, widget: Gtk.Widget, button: int = 1, at: tuple[float, float] | None = None,
               modifiers: str = "") -> None:
         """Press and release ``button`` over ``widget``, like ``QTest.mouseClick``."""
         keys = self._modifiers(modifiers)
         self.move(widget, at)
-        self._keys(keys, True)
-        self._x.xtst.XTestFakeButtonEvent(self._x.display, button, True, 0)
-        self._x.xtst.XTestFakeButtonEvent(self._x.display, button, False, 0)
-        self._keys(keys, False)
-        self._settle()
+        self._deliver(widget, [self._button(True, button), self._button(False, button)],
+                      self._buttons_with(keys, [(button, True), (button, False)]))
 
     def double_click(self, widget: Gtk.Widget, button: int = 1, at: tuple[float, float] | None = None,
                      modifiers: str = "") -> None:
         """Click twice in quick succession, like ``QTest.mouseDClick``."""
         keys = self._modifiers(modifiers)
         self.move(widget, at)
-        self._keys(keys, True)
-        for _ in range(2):
-            self._x.xtst.XTestFakeButtonEvent(self._x.display, button, True, 0)
-            self._x.xtst.XTestFakeButtonEvent(self._x.display, button, False, 0)
-        self._keys(keys, False)
-        self._settle()
+        self._deliver(widget, [self._button(True, button), self._button(False, button)] * 2,
+                      self._buttons_with(keys, [(button, True), (button, False)] * 2))
 
     def drag(self, source: Gtk.Widget, target: Gtk.Widget | None = None, *, start: tuple[float, float] | None = None,
              end: tuple[float, float] | None = None, button: int = 1, steps: int = 10) -> None:
@@ -673,28 +773,28 @@ class RealInput:
         The steps cross GTK's drag threshold the way a hand does, so drag gestures and drag-and-drop both start.
         """
         target = target or source
-        x0, y0 = self._locate(source, start, "drag from")
-        x1, y1 = self._locate(target, end, "drag to")
-        self._x.xtst.XTestFakeMotionEvent(self._x.display, -1, x0, y0, 0)
-        self._x.xtst.XTestFakeButtonEvent(self._x.display, button, True, 0)
-        self._settle()
+        x0, y0, _, _ = self._locate(source, start, "drag from")
+        x1, y1, _, _ = self._locate(target, end, "drag to")
+        self.move(source, start)
+        self._deliver(source, [self._button(True, button)], self._buttons_with([], [(button, True)]))
         for step in range(1, steps + 1):
-            self._x.xtst.XTestFakeMotionEvent(self._x.display, -1, round(x0 + (x1 - x0) * step / steps),
-                                              round(y0 + (y1 - y0) * step / steps), 0)
-            self._settle()
+            x, y = round(x0 + (x1 - x0) * step / steps), round(y0 + (y1 - y0) * step / steps)
+
+            def send(x: int = x, y: int = y) -> None:
+                self._x.xtst.XTestFakeMotionEvent(self._x.display, -1, x, y, 0)
+            # Not required to arrive at the window: once drag-and-drop starts, the drag's own surface gets them.
+            self._deliver(source, [], send)
             wait(0.01)
-        self._x.xtst.XTestFakeButtonEvent(self._x.display, button, False, 0)
-        self._settle()
+        self._deliver(source, [], self._buttons_with([], [(button, False)]))
 
     def scroll(self, widget: Gtk.Widget, dy: int = 1, dx: int = 0, at: tuple[float, float] | None = None) -> None:
         """Turn the wheel over ``widget``: positive ``dy`` scrolls down, positive ``dx`` right, one notch each."""
         self.move(widget, at)
+        events = []
         for amount, back, forward in ((dy, 4, 5), (dx, 6, 7)):
-            for _ in range(abs(amount)):
-                wheel = forward if amount > 0 else back
-                self._x.xtst.XTestFakeButtonEvent(self._x.display, wheel, True, 0)
-                self._x.xtst.XTestFakeButtonEvent(self._x.display, wheel, False, 0)
-        self._settle()
+            wheel = forward if amount > 0 else back
+            events += [(wheel, True), (wheel, False)] * abs(amount)
+        self._deliver(widget, [self._scrolled] if events else [], self._buttons_with([], events))
 
     # The keyboard
 
@@ -717,17 +817,25 @@ class RealInput:
         keys, keyval = self._parse(accelerator)
         self._focus(widget)
         code, shifted = self._x.keycode(keyval)
-        self._keys(keys + ([0xFFE1] if shifted and 0xFFE1 not in keys else []), True)
-        self._x.xtst.XTestFakeKeyEvent(self._x.display, code, True, 0)
-        self._settle()
+        # A remapped keycode must reach GDK's keymap before the key does.
+        self._deliver(widget, [], lambda: None)
+        held = keys + ([0xFFE1] if shifted and 0xFFE1 not in keys else [])
+
+        def send() -> None:
+            self._keys(held, True)
+            self._x.xtst.XTestFakeKeyEvent(self._x.display, code, True, 0)
+        self._deliver(widget, [self._key(True, code)], send)
 
     def key_up(self, widget: Gtk.Widget, accelerator: str) -> None:
         """Release a key combination pressed with ``key_down()``."""
         keys, keyval = self._parse(accelerator)
         code, shifted = self._x.keycode(keyval)
-        self._x.xtst.XTestFakeKeyEvent(self._x.display, code, False, 0)
-        self._keys(keys + ([0xFFE1] if shifted and 0xFFE1 not in keys else []), False)
-        self._settle()
+        held = keys + ([0xFFE1] if shifted and 0xFFE1 not in keys else [])
+
+        def send() -> None:
+            self._x.xtst.XTestFakeKeyEvent(self._x.display, code, False, 0)
+            self._keys(held, False)
+        self._deliver(widget, [self._key(False, code)], send)
 
     def type(self, widget: Gtk.Widget, text: str) -> None:
         """Type ``text`` into ``widget`` key by key, like ``QTest.keyClicks``. Newlines press Return and tabs Tab."""
@@ -739,21 +847,25 @@ class RealInput:
             keyval = Gdk.keyval_from_name(name) if name else Gdk.unicode_to_keyval(ord(character))
             code, shifted = self._x.keycode(keyval)
             # The keymap may have changed for this character: let GDK see it before the key does.
-            self._settle()
-            if shifted:
-                self._keys([0xFFE1], True)
-            self._x.xtst.XTestFakeKeyEvent(self._x.display, code, True, 0)
-            self._x.xtst.XTestFakeKeyEvent(self._x.display, code, False, 0)
-            if shifted:
-                self._keys([0xFFE1], False)
-            self._settle()
+            self._deliver(widget, [], lambda: None)
+
+            def send(code: int = code, shifted: bool = shifted) -> None:
+                if shifted:
+                    self._keys([0xFFE1], True)
+                self._x.xtst.XTestFakeKeyEvent(self._x.display, code, True, 0)
+                self._x.xtst.XTestFakeKeyEvent(self._x.display, code, False, 0)
+                if shifted:
+                    self._keys([0xFFE1], False)
+            self._deliver(widget, [self._key(True, code), self._key(False, code)], send)
 
     def release_all(self) -> None:
         """Release any button still pressed, so the next test starts clean."""
         for button in sorted(self._buttons):
             self._x.xtst.XTestFakeButtonEvent(self._x.display, button, False, 0)
         self._buttons.clear()
-        self._settle()
+        self._x.sync()
+        self._display.sync()
+        iterate()
 
 
 _real_input: RealInput | None = None

@@ -13,7 +13,7 @@ import keyword
 import weakref
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, overload
 
 import gi  # type: ignore
 
@@ -54,8 +54,12 @@ class BoundSignal(Generic[F]):
     def __repr__(self) -> str:
         return f"<signal {self._full_name!r} of {self.instance!r}>"
 
-    def connect(self, callback: F, *user_data: Any, after: bool = False) -> int:
-        """Connect a callback and return its handler id."""
+    @overload
+    def connect(self, callback: F, *, after: bool = False) -> int: ...
+    @overload
+    def connect(self, callback: Callable[..., Any], first: Any, /, *user_data: Any, after: bool = False) -> int: ...
+    def connect(self, callback: Any, *user_data: Any, after: bool = False) -> int:
+        """Connect a callback and return its handler id. Extra arguments are passed to it after the signal's."""
         connect = self.instance.connect_after if after else self.instance.connect
         if not inspect.ismethod(callback):
             handler = connect(self._full_name, callback, *user_data)
@@ -264,7 +268,10 @@ def use_asyncio() -> asyncio.AbstractEventLoop:
     """
     from gi.events import GLibEventLoopPolicy  # type: ignore
 
+    from PyLiite4 import _fixes
+
     loop: asyncio.AbstractEventLoop = GLibEventLoopPolicy().get_event_loop()
+    _fixes.fix_asyncio(loop)
     return loop
 
 

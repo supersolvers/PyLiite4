@@ -123,9 +123,12 @@ TIPS = """
         assert tip.get_parent() is second and tip.get_child().get_label() == "There"
 
 
-    def test_not_on_a_hidden_widget(gtkbot):
-        with pytest.raises(ValueError, match="isn't shown"):
-            show_tip(Gtk.Button(), "Nowhere")
+    def test_nothing_on_a_hidden_widget(gtkbot):
+        # Handlers that react to changes can call it without checking.
+        first, _ = two_buttons(gtkbot)
+        tip = show_tip(first, "Up", timeout=0)
+        gtkbot.wait_until(tip.get_mapped)
+        assert not show_tip(Gtk.Button(), "Nowhere").get_visible()
 
 
     def test_its_widget_can_go_while_it_is_up(gtkbot):

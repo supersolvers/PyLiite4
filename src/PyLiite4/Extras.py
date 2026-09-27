@@ -12,10 +12,15 @@ from __future__ import annotations
 
 import ctypes
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from PyLiite4 import Adw, Gdk, Gio, GLib, GObject, Graphene, Gtk, Pango
 from PyLiite4 import _rich
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from PyLiite4._runtime import BoundSignal
 
 __all__ = ["RichView", "ShortcutRecorder", "Tip", "hide_tip", "register_font", "show_tip"]
 
@@ -203,10 +208,11 @@ class Tip(Gtk.Popover):
     def popup_at(self, widget: Gtk.Widget, rect: Gdk.Rectangle | tuple[int, int] | tuple[int, int, int, int] |
                  None = None) -> None:
         """Show the tip at ``widget``, or at ``rect`` in its coordinates: a ``Gdk.Rectangle``, ``(x, y, width,
-        height)`` or a point ``(x, y)``. Raises ``ValueError`` if the widget isn't shown."""
-        if not widget.get_mapped():
-            raise ValueError(f"can't show a tip at {widget!r}: it isn't shown")
+        height)`` or a point ``(x, y)``. Nothing happens if the widget isn't shown, as a tip there couldn't be seen;
+        handlers that react to changes can call it without checking."""
         self.popdown()
+        if not widget.get_mapped():
+            return
         _install_css(widget.get_display(), _TIP_CSS, Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS + 1)
         if self.get_parent() is not widget:
             self._leave_parent()
@@ -287,8 +293,8 @@ def show_tip(widget: Gtk.Widget, text: str, rect: Gdk.Rectangle | tuple[int, int
     """Show ``text`` as a tooltip at ``widget``, or at ``rect`` in it, now: ``QToolTip.showText(pos, text, widget)``.
 
     The application has one such tip, as in Qt: showing another moves it. ``timeout`` is in milliseconds, -1 for a
-    time from the text's length, 0 to keep it up until the pointer leaves, a key is pressed or ``hide_tip()``. Returns
-    the ``Tip``. See ``Tip`` for how it behaves.
+    time from the text's length, 0 to keep it up until the pointer leaves, a key is pressed or ``hide_tip()``. Nothing
+    is shown if the widget isn't. Returns the ``Tip``. See ``Tip`` for how it behaves.
     """
     global _shared_tip
     if _shared_tip is None:
@@ -354,6 +360,8 @@ class ShortcutRecorder(Gtk.Button):
     __gsignals__ = {
         "validate": (GObject.SignalFlags.RUN_LAST, bool, (str,), _all_true),
     }
+    if TYPE_CHECKING:
+        validate: BoundSignal[Callable[[ShortcutRecorder, str], bool]]
 
     accelerator = GObject.Property(type=str, default="", nick="Accelerator",
                                    blurb="The shortcut, as Gtk.accelerator_name() writes it, or empty for none")
@@ -593,6 +601,9 @@ class RichView(Gtk.TextView):
         "activate-link": (GObject.SignalFlags.RUN_LAST, bool, (str,), GObject.signal_accumulator_true_handled),
         "hover-link": (GObject.SignalFlags.RUN_LAST, None, (str,)),
     }
+    if TYPE_CHECKING:
+        activate_link: BoundSignal[Callable[[RichView, str], bool]]
+        hover_link: BoundSignal[Callable[[RichView, str | None], None]]
 
     link_schemes = GObject.Property(type=GObject.TYPE_STRV, nick="Link schemes",
                                     blurb="The URI schemes links may have; others are shown as text")

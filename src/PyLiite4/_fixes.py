@@ -19,6 +19,55 @@ def apply(name: str, module: Any) -> None:
         module._pyliite4_fixed = True
 
 
+def fix_asyncio(loop: Any) -> None:
+    """Let asyncio cancel a task that awaits one of Gio's async methods.
+
+    asyncio's Task.cancel() calls cancel(msg) on what the task awaits, and PyGObject's awaitable, gi._gi.Async, takes
+    no argument, so cancelling raises TypeError instead; and once Gio's operation is cancelled, the coroutine would get
+    Gio's "cancelled" GLib.Error rather than CancelledError. GLib's loop makes its tasks as gi.events.GLibTask, on
+    asyncio's C Task, which keeps cancelling's state out of reach; this gives the loop a task on asyncio's Python Task
+    instead, which cancels such an awaitable the way it accepts and then raises CancelledError in the coroutine, as
+    cancelling does.
+    """
+    import asyncio
+
+    from gi import _gi  # type: ignore
+    from gi.repository import GLib
+
+    class GLibTask(asyncio.tasks._PyTask):  # type: ignore[name-defined, misc]
+        """gi.events.GLibTask, cancellable while it awaits Gio."""
+
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            super().__init__(*args, **kwargs)
+            self._glib_idle_priority = GLib.PRIORITY_DEFAULT
+
+        def set_priority(self, priority: int) -> None:
+            """Set the GLib priority used to iterate the task's coroutine."""
+            self._glib_idle_priority = priority
+
+        def get_priority(self) -> int:
+            """Get the GLib priority used to iterate the task's coroutine."""
+            return int(self._glib_idle_priority)
+
+        def cancel(self, msg: Any = None) -> bool:
+            waiter = self._fut_waiter
+            if not isinstance(waiter, _gi.Async):
+                return bool(super().cancel(msg))
+            # As asyncio's own cancel(), with the awaitable cancelled the way it accepts.
+            self._log_traceback = False
+            if self.done():
+                return False
+            self._num_cancels_requested += 1
+            waiter.cancel()
+            self._must_cancel = True
+            self._cancel_message = msg
+            return True
+
+    if not getattr(loop, "_pyliite4_tasks", False):
+        loop.set_task_factory(lambda loop, coro, **kwargs: GLibTask(coro, loop=loop, **kwargs))
+        loop._pyliite4_tasks = True
+
+
 def _gio(Gio: Any) -> None:
     from gi.repository import GLib  # type: ignore
 

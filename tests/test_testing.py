@@ -308,3 +308,69 @@ def test_real_input_refuses_other_displays(tmp_path):
                 gtkbot.input.click(button)
     """}, "--gtk", "--gtk-display=inherit")
     assert result.returncode == 0, result.stdout[-4000:]
+
+
+ASYNCIO = """
+    import asyncio
+
+    import pytest
+    from PyLiite4 import Gio, GLib, Soup
+
+
+    def test_application_tasks_run_while_waiting(gtkbot, gtk_app):
+        # Gio's async methods awaited, as under Gio.Application.run(): here a request to a loopback server.
+        server = Soup.Server()
+        server.add_handler("/hello", lambda server, message, path, query, *rest: (
+            message.set_status(200, None), message.set_response("text/plain", Soup.MemoryUse.COPY, b"hi")))
+        server.listen_local(0, Soup.ServerListenOptions.IPV4_ONLY)
+        uri = server.get_uris()[0].to_string() + "hello"
+
+        async def fetch():
+            await asyncio.sleep(0.02)
+            data = await Soup.Session().send_and_read_async(Soup.Message.new("GET", uri), GLib.PRIORITY_DEFAULT, None)
+            return bytes(data.get_data())
+
+        task = gtk_app.create_asyncio_task(fetch())
+        gtkbot.wait_until(task.done)
+        assert task.result() == b"hi"
+
+
+    def test_a_task_awaiting_gio_can_be_cancelled(gtkbot, gtk_app):
+        # PyGObject's awaitable doesn't take asyncio's cancel(msg); PyLiite4's fix cancels the Gio operation and raises
+        # CancelledError in the coroutine.
+        server = Soup.Server()
+        server.add_handler("/never", lambda server, message, *rest: message.pause())
+        server.listen_local(0, Soup.ServerListenOptions.IPV4_ONLY)
+        uri = server.get_uris()[0].to_string() + "never"
+        cancellable = Gio.Cancellable()
+        seen = []
+
+        async def fetch():
+            try:
+                await Soup.Session().send_and_read_async(Soup.Message.new("GET", uri), GLib.PRIORITY_DEFAULT,
+                                                         cancellable)
+            except asyncio.CancelledError:
+                seen.append("cancelled")
+                raise
+
+        task = gtk_app.create_asyncio_task(fetch())
+        gtkbot.wait(0.2)
+        assert task.cancel()
+        gtkbot.wait_until(task.done)
+        assert task.cancelled() and seen == ["cancelled"] and cancellable.is_cancelled()
+
+
+    def test_tasks_can_be_cancelled(gtkbot, gtk_asyncio):
+        task = gtk_asyncio.create_task(asyncio.sleep(30))
+        gtkbot.wait(0.05)
+        task.cancel()
+        gtkbot.wait_until(task.done)
+        with pytest.raises(asyncio.CancelledError):
+            task.result()
+"""
+
+
+def test_asyncio(tmp_path):
+    result = run_pytest(tmp_path, {"test_inner_asyncio.py": ASYNCIO}, "--gtk")
+    assert result.returncode == 0, result.stdout[-6000:] + result.stderr[-2000:]
+    assert "3 passed" in result.stdout, result.stdout[-3000:]

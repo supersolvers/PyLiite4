@@ -35,6 +35,7 @@ Input comes two ways:
 
 from __future__ import annotations
 
+import asyncio
 import ctypes
 import itertools
 import os
@@ -82,13 +83,30 @@ class InteractionError(AssertionError):
 # Waiting
 
 
+def _iteration(context: GLib.MainContext, may_block: bool) -> bool:
+    """One main loop iteration, as GTK's own loop does it.
+
+    PyGObject's ``MainContext.iteration`` pauses a running asyncio loop while Python code iterates; the introspected
+    function underneath doesn't, so asyncio tasks go on during waits as they do under ``Gio.Application.run()``.
+    """
+    introspected = next((cls for cls in type(context).__mro__ if cls.__module__ == "gi.repository.GLib"
+                         and "iteration" in vars(cls)), type(context))
+    return bool(getattr(introspected, "iteration")(context, may_block))
+
+
 def iterate() -> None:
-    """Handle every event and callback that is ready now, without blocking."""
+    """Handle the events and callbacks that are ready now, without blocking.
+
+    Bounded, since something can always be ready: asyncio's work, while its loop runs on GLib's (``gtk_asyncio``).
+    """
     from PyLiite4 import GLib
 
     context = GLib.MainContext.default()
-    while context.pending():
-        context.iteration(False)
+    deadline = time.monotonic() + 0.5
+    for _ in range(10000):
+        if not context.pending() or time.monotonic() > deadline:
+            break
+        _iteration(context, False)
 
 
 def wait(seconds: float) -> None:
@@ -122,7 +140,7 @@ def wait_until(condition: Callable[[], T], timeout: float = DEFAULT_TIMEOUT, *, 
             if time.monotonic() >= deadline:
                 text = message or f"{getattr(condition, '__name__', 'condition')} didn't hold within {timeout} s"
                 raise WaitTimeout(f"{text}: {last_error}" if last_error else text) from last_error
-            context.iteration(True)
+            _iteration(context, True)
     finally:
         GLib.Source.remove(tick)
 
@@ -1456,6 +1474,20 @@ def gtk_log(request: pytest.FixtureRequest, _gtk_session: None) -> Problems:
 
 
 @pytest.fixture
+def gtk_asyncio(_gtk_session: None) -> Iterator[asyncio.AbstractEventLoop]:
+    """GLib's asyncio loop, marked running for the test as ``Gio.Application.run()`` marks it.
+
+    Coroutines and tasks, the application's ``create_asyncio_task()`` ones among them, then make progress while the
+    helpers wait, and Gio's async methods can be awaited. ``gtk_app`` uses it, as an application's run does.
+    """
+    from PyLiite4 import use_asyncio
+
+    loop: Any = use_asyncio()
+    with loop.running(lambda: None):
+        yield loop
+
+
+@pytest.fixture
 def gtk_app_class() -> type[Gtk.Application]:
     """The class ``gtk_app`` instantiates. Override this fixture to return ``Adw.Application`` or your own."""
     from PyLiite4 import Gtk
@@ -1467,8 +1499,9 @@ _application_ids = itertools.count(1)
 
 
 @pytest.fixture
-def gtk_app(gtk_app_class: type[Gtk.Application], _gtk_session: None) -> Iterator[Gtk.Application]:
-    """A registered application, not running: the test drives the main loop through the helpers.
+def gtk_app(gtk_app_class: type[Gtk.Application], gtk_asyncio: asyncio.AbstractEventLoop) -> Iterator[Gtk.Application]:
+    """A registered application, not running: the test drives the main loop through the helpers. Its asyncio tasks
+    run, as under ``run()``; see ``gtk_asyncio``.
 
     Each test gets its own, with a unique application id, since an id can't be registered twice in one process.
     ``gtk_app.activate()`` runs your ``activate`` handler. Its windows are destroyed afterwards.
@@ -1550,8 +1583,35 @@ class GtkBot:
     activate = staticmethod(activate)
     type_text = staticmethod(type_text)
     press_key = staticmethod(press_key)
-    find = staticmethod(find)
-    find_all = staticmethod(find_all)
+    if TYPE_CHECKING:
+        # Typed through the functions, whose overloads staticmethod() would hide.
+        @overload
+        @staticmethod
+        def find(root: Gtk.Widget, cls: None = None, *, name: str | re.Pattern[str] | None = None,
+                 label: str | re.Pattern[str] | None = None, buildable_id: str | None = None,
+                 predicate: Callable[[Gtk.Widget], bool] | None = None) -> Gtk.Widget: ...
+        @overload
+        @staticmethod
+        def find(root: Gtk.Widget, cls: type[W], *, name: str | re.Pattern[str] | None = None,
+                 label: str | re.Pattern[str] | None = None, buildable_id: str | None = None,
+                 predicate: Callable[[W], bool] | None = None) -> W: ...
+        @staticmethod
+        def find(root: Gtk.Widget, cls: type[Any] | None = None, **criteria: Any) -> Any: ...
+        @overload
+        @staticmethod
+        def find_all(root: Gtk.Widget, cls: None = None, *, name: str | re.Pattern[str] | None = None,
+                     label: str | re.Pattern[str] | None = None, buildable_id: str | None = None,
+                     predicate: Callable[[Gtk.Widget], bool] | None = None) -> list[Gtk.Widget]: ...
+        @overload
+        @staticmethod
+        def find_all(root: Gtk.Widget, cls: type[W], *, name: str | re.Pattern[str] | None = None,
+                     label: str | re.Pattern[str] | None = None, buildable_id: str | None = None,
+                     predicate: Callable[[W], bool] | None = None) -> list[W]: ...
+        @staticmethod
+        def find_all(root: Gtk.Widget, cls: type[Any] | None = None, **criteria: Any) -> list[Any]: ...
+    else:
+        find = staticmethod(find)
+        find_all = staticmethod(find_all)
 
 
 @pytest.fixture

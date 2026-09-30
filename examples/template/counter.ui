@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- A composite widget: the Python class decorated with counter_ui.template becomes ExampleCounter. -->
+  <template class="ExampleCounter" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="spacing">12</property>
+    <property name="halign">center</property>
+    <property name="valign">center</property>
+    <child>
+      <object class="GtkLabel" id="value-label">
+        <property name="label">0</property>
+        <style>
+          <class name="title-1"/>
+          <class name="numeric"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="spacing">6</property>
+        <style>
+          <class name="linked"/>
+        </style>
+        <child>
+          <object class="GtkButton" id="decrement-button">
+            <property name="label">−</property>
+            <property name="tooltip-text">Decrease</property>
+            <signal name="clicked" handler="on_decrement_clicked"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="increment-button">
+            <property name="label">+</property>
+            <property name="tooltip-text">Increase</property>
+            <signal name="clicked" handler="on_increment_clicked"/>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="reset-button">
+        <property name="label">Reset</property>
+        <property name="sensitive">false</property>
+        <signal name="clicked" handler="on_reset_clicked"/>
+        <style>
+          <class name="flat"/>
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

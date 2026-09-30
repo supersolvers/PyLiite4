@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="ExampleResourcesWindow" parent="AdwApplicationWindow">
+    <property name="title">Resources</property>
+    <property name="default-width">360</property>
+    <property name="default-height">300</property>
+    <property name="content">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar"/>
+        </child>
+        <property name="content">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">18</property>
+            <property name="valign">center</property>
+            <child>
+              <!-- The icon comes from icons/ in the resources, and its colour from style.css. -->
+              <object class="GtkImage">
+                <property name="icon-name">example-heart-symbolic</property>
+                <property name="pixel-size">64</property>
+                <style>
+                  <class name="heart"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="count-label">
+                <property name="label">Not liked yet</property>
+                <style>
+                  <class name="like-count"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label">Like</property>
+                <property name="halign">center</property>
+                <signal name="clicked" handler="on_like_clicked"/>
+                <style>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </property>
+  </template>
+</interface>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <!-- The application's resource base path, from its ID: Adw.Application loads style.css from here, and
+       Gtk.Application adds icons/ to the icon theme. -->
+  <gresource prefix="/org/example/PyLiite4Resources">
+    <file>window.ui</file>
+    <file>style.css</file>
+    <file>icons/scalable/actions/example-heart-symbolic.svg</file>
+  </gresource>
+</gresources>

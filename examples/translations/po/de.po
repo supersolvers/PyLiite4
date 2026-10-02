@@ -1,0 +1,48 @@
+# German translations for PyLiite4's translations example.
+# This file is distributed under the same license as the pyliite4-translations package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pyliite4-translations\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-04 02:03+0000\n"
+"PO-Revision-Date: 2026-11-04 02:03+0000\n"
+"Last-Translator: PyLiite4 example\n"
+"Language-Team: none\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: main.py:54
+#, python-brace-format
+msgid "You greeted {count} time"
+msgid_plural "You greeted {count} times"
+msgstr[0] "Du hast {count} Mal gegrüßt"
+msgstr[1] "Du hast {count} Mal gegrüßt"
+
+#: main.py:56
+msgid "Hello, world!"
+msgstr "Hallo, Welt!"
+
+#. Translators: the window's title
+#: main.py:61
+msgid "Translations"
+msgstr "Übersetzungen"
+
+#: window.ui:13
+msgid "This line comes from the .ui file."
+msgstr "Diese Zeile kommt aus der .ui-Datei."
+
+#. Shown until the button is pressed
+#: window.ui:18
+msgid "Not greeted yet"
+msgstr "Noch nicht gegrüßt"
+
+#. A context tells apart strings that are the same in English but not in every language.
+#: window.ui:24
+msgctxt "verb"
+msgid "_Greet"
+msgstr "_Grüßen"

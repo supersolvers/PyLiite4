@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the pyliite4-translations package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyliite4-translations\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-04 02:03+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: main.py:54
+#, python-brace-format
+msgid "You greeted {count} time"
+msgid_plural "You greeted {count} times"
+msgstr[0] ""
+msgstr[1] ""
+
+#: main.py:56
+msgid "Hello, world!"
+msgstr ""
+
+#. Translators: the window's title
+#: main.py:61
+msgid "Translations"
+msgstr ""
+
+#: window.ui:13
+msgid "This line comes from the .ui file."
+msgstr ""
+
+#. Shown until the button is pressed
+#: window.ui:18
+msgid "Not greeted yet"
+msgstr ""
+
+#. A context tells apart strings that are the same in English but not in every language.
+#: window.ui:24
+msgctxt "verb"
+msgid "_Greet"
+msgstr ""

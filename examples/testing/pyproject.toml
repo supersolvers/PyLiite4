@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# PyLiite4.testing: a private display and D-Bus session, the gtkbot fixture, and failing tests on GLib warnings.
+gtk = true
+testpaths = ["tests"]
+pythonpath = ["."]

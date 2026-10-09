@@ -1,7 +1,7 @@
 # Demos
 
-Three collections of GTK demos, ported to Python with PyLiite4. Run them from the repository root, with a PyLiite4 that
-has the libraries they use, such as a bundled wheel:
+Four collections of GTK demos: three ported to Python with PyLiite4, and PyLiite4's own. Run them from the
+repository root, with a PyLiite4 that has the libraries they use, such as a bundled wheel:
 
 ```bash
 python -m demos.gtk_demo
@@ -15,11 +15,16 @@ python -m demos.adwaita_demo
 python -m demos.workbench
 ```
 
+```bash
+python -m demos.pyliite4_demo
+```
+
 | Folder | Port of | License of the original |
 | --- | --- | --- |
 | `gtk_demo/` | GTK Demo (`gtk4-demo`), from GTK 4.22.4's `demos/gtk-demo` | LGPL-2.0-or-later, copyright the GTK authors |
 | `adwaita_demo/` | Adwaita Demo (`adwaita-1-demo`), from libadwaita 1.9.4's `demo` | LGPL-2.1-or-later, copyright the libadwaita authors |
 | `workbench/` | Workbench's demo library, from https://github.com/workbenchdev/Workbench | CC0-1.0 (public domain) |
+| `pyliite4_demo/` | Not a port: PyLiite4's own tour of what it adds to GTK | LGPL-3.0-only, PyLiite4's |
 
 The ports are distributed under PyLiite4's LGPL-3.0-only, as the originals' "or later" terms allow. GTK Demo's data
 files in `gtk_demo/data/` are GTK's own, unchanged, and the libadwaita demo's `.ui` files, style sheet and icons are

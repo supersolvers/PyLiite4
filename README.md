@@ -112,7 +112,9 @@ app.activate.connect(lambda app: app.create_asyncio_task(load(app, "notes.txt"))
 app.run([])
 ```
 
-`create_asyncio_task` keeps the application running until the task ends.
+`create_asyncio_task` keeps the application running until the task ends. Cancelling a task that awaits one of Gio's
+methods cancels the Gio operation too, and raises `CancelledError` in the coroutine; PyLiite4 corrects PyGObject
+there, whose awaitable doesn't accept asyncio's cancel.
 
 ### Custom widgets and drawing
 
@@ -276,7 +278,9 @@ on the plugin's Xvfb. `gtkbot.click()`, `activate()`, `type_text()` and `press_k
 shortcuts instead, which is quicker but skips event handling. The plugin also has `wait_until()`,
 `expect_signal()`, `wait_signal()`, `find()` and `gtk_log` for expected warnings. Accessibility is recorded
 in-process, so `Gtk.test_accessible_has_role()` and its kin work, and `gtkbot.announcements` lists what the test
-announced to screen readers.
+announced to screen readers. An application's asyncio tasks run while the helpers wait, as under `app.run()`: the
+`gtk_app` fixture sees to that, or `gtk_asyncio` for a test without an application. `examples/testing/` is a worked
+example.
 
 ### Coming from PySide6
 
@@ -320,11 +324,28 @@ These come from PyGObject or from GTK's annotations, and PyLiite4 doesn't work a
 - `Gdk.ContentProvider.get_value()` can't be called; variadic C functions such as
   `gtk_widget_class_add_binding_action()` aren't available (use `add_shortcut()`).
 
-## Demos
+## Demos and examples
 
 `demos/` holds Python ports of GTK Demo (111 demos), libadwaita's demo (21 pages) and Workbench's demo library (116),
-each tested by `tests/test_demos.py`. Run `python -m demos.gtk_demo`, `python -m demos.adwaita_demo` or `python -m
-demos.workbench` from the repository root; see `demos/README.md`.
+and PyLiite4 Demo, a tour of what PyLiite4 adds: formatted text, tips, shortcut recording, fonts, signals and
+properties, asyncio with libsoup, and GtkSourceView. Run `python -m demos.gtk_demo`, `python -m demos.adwaita_demo`,
+`python -m demos.workbench` or `python -m demos.pyliite4_demo` from the repository root; see `demos/README.md`.
+`tests/test_demos.py` opens each, and `tests/test_pyliite4_demo.py` drives PyLiite4 Demo's pages with real input.
+
+`examples/` holds small applications to start from, each run and type checked with `mypy --strict` by
+`tests/test_examples.py`:
+
+| Example | Shows |
+| --- | --- |
+| `hello.py` | the smallest window |
+| `app/` | an `Adw.Application` with actions, accelerators, an about dialog and `Gio.Settings` |
+| `template/` | a composite widget from a `.ui` template, typed by `pyliite4-ui` |
+| `resources/` | icons, CSS and a template in a GResource, compiled by `pyliite4-resources` |
+| `listview/` | a `Gtk.ColumnView` with sorting and filtering |
+| `translations/` | gettext translations, in Python and in a `.ui` file |
+| `chat/` | replies streamed into a `RichView` from an asyncio task that can be stopped |
+| `preferences/` | a preferences dialog of `ShortcutRecorder`s, with tips |
+| `testing/` | a small application with its own tests, written with `PyLiite4.testing` |
 
 ## Installing
 

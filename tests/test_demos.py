@@ -69,3 +69,7 @@ def test_workbench_demo(demo):
 @pytest.mark.skipif(not (ROOT / "demos" / "adwaita_demo" / "__init__.py").exists(), reason="not ported yet")
 def test_adwaita_demo():
     run("adwaita_demo")
+
+
+def test_pyliite4_demo():
+    run("pyliite4_demo")

@@ -1,6 +1,6 @@
 """Open one demo, let it run for a moment, and fail on any Python exception or GLib critical.
 
-Usage: python tests/run_demo.py gtk_demo NAME | workbench NAME | adwaita_demo [PAGE]
+Usage: python tests/run_demo.py gtk_demo NAME | workbench NAME | adwaita_demo [PAGE] | pyliite4_demo [PAGE]
 
 Run by tests/test_demos.py, one process per demo, so a crash or leftover state stays with its demo.
 """
@@ -44,6 +44,12 @@ def open_demo(app: Gtk.Application, suite: str, name: str | None) -> Gtk.Window 
         window = adwaita_demo.open_window(app)
         for page in [name] if name else adwaita_demo.page_names(window):
             adwaita_demo.show_page(window, page)
+        return window
+    if suite == "pyliite4_demo":
+        from demos import pyliite4_demo
+        window = pyliite4_demo.open_window(app)
+        for page in [name] if name else pyliite4_demo.page_names(window):
+            pyliite4_demo.show_page(window, page)
         return window
     raise SystemExit(f"unknown suite {suite}")
 

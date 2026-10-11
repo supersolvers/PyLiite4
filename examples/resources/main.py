@@ -30,7 +30,7 @@ from PyLiite4 import Adw, Gio, Gtk
 # The ignore works around the stubs: mypy finds Gtk.Widget's realize() and Gtk.Native's at odds in any class that
 # adds a base to a window class.
 @template
-class Window(ExampleResourcesWindowChildren, Adw.ApplicationWindow):  # type: ignore[misc]
+class Window(ExampleResourcesWindowChildren, Adw.ApplicationWindow):
     __gtype_name__ = "ExampleResourcesWindow"
 
     likes = 0

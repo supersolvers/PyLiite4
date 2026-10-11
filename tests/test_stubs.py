@@ -2,6 +2,7 @@
 
 import ast
 import importlib
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -175,8 +176,89 @@ items: list[str] = variant.unpack()
     assert result.returncode == 0, result.stdout
 
 
+def test_type_checker_accepts_pygobject_overrides(tmp_path):
+    result = mypy(tmp_path, """
+from PyLiite4 import Gdk, GLib, Gtk, Pango
+
+provider = Gtk.CssProvider()
+provider.load_from_data("label { color: red; }")
+buffer = Gtk.TextBuffer()
+buffer.set_text("hi")
+buffer.insert(buffer.get_end_iter(), "!")
+tag: Gtk.TextTag = buffer.create_tag("bold", weight=Pango.Weight.BOLD)
+buffer.insert_with_tags(buffer.get_start_iter(), "x", tag)
+bounds = buffer.get_selection_bounds()
+if bounds:
+    start, end = bounds
+    text: str = buffer.get_text(start, end, False)
+entry = Gtk.Entry()
+position: int = entry.insert_text("x", 0)
+box = Gtk.Box()
+children: list[Gtk.Widget] = list(box)
+point = box.translate_coordinates(box, 1.0, 2.0)
+if point is not None:
+    x, y = point
+color = Gdk.RGBA(red=1.0, alpha=0.5)
+loop = GLib.MainLoop(None)
+more: bool = GLib.MainContext.default().iteration()
+font = Pango.FontDescription("Sans 12")
+# A callback's user data before other arguments is an argument of its own.
+found: bool = buffer.get_start_iter().forward_find_char(lambda char, data: char == "!", None, None)
+""")
+    assert result.returncode == 0, result.stdout
+
+
+def test_user_data_before_other_arguments_is_passed():
+    """What the stubs say about forward_find_char's user data is what PyGObject does."""
+    from PyLiite4 import Gtk
+    buffer = Gtk.TextBuffer(text="ab!c")
+    start = buffer.get_start_iter()
+    assert start.forward_find_char(lambda char, data: char == data, "!", None)
+    assert start.get_offset() == 2
+
+
+def test_type_checker_accepts_classes_with_several_bases(tmp_path):
+    """Bases that define a name differently, such as Gtk.Widget's and Gtk.Native's realize, or interfaces implemented
+    in Python, don't make a subclass with another base an error."""
+    result = mypy(tmp_path, """
+from PyLiite4 import Adw, GObject, Gio, Gtk
+
+class Mixin: ...
+class Window(Gtk.Window, Mixin): ...
+class AppWindow(Adw.ApplicationWindow, Mixin): ...
+class Row(Adw.EntryRow, Mixin): ...
+class Model(GObject.Object, Gio.ListModel[GObject.Object]): ...
+class Shape(Gtk.Widget, Gtk.Orientable): ...
+class Group(GObject.Object, Gio.ActionGroup): ...
+orientation: Gtk.Orientation = Shape().orientation
+Window().realize()
+""")
+    assert result.returncode == 0, result.stdout
+
+
+def generator_module():
+    path = Path(__file__).parents[1] / "tools" / "generate.py"
+    if not path.exists():
+        pytest.skip("needs a source checkout, with tools/generate.py")
+    spec = importlib.util.spec_from_file_location("generate", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_overrides_the_stubs_describe_still_exist():
+    """PyGObject still overrides what the generator's tables say it does."""
+    generate = generator_module()
+    for path in [*generate.STRIPPED_BOOLEAN, *generate.OVERRIDE_SIGNATURES]:
+        namespace, owner, name = path.split(".")
+        method = getattr(getattr(importlib.import_module(f"PyLiite4.{namespace}"), owner), name)
+        assert Path(method.__code__.co_filename).parent.name == "overrides", path
+        assert method.__qualname__.startswith("strip_boolean_result") == (path in generate.STRIPPED_BOOLEAN), path
+
+
 @pytest.mark.parametrize("code", [
     "from PyLiite4 import GLib\nGLib.idle_add(GLib.PRIORITY_DEFAULT, print)\n",
+    "from PyLiite4 import Gtk\nok, x, y = Gtk.Box().translate_coordinates(Gtk.Box(), 1.0, 2.0)\n",
     "from PyLiite4 import Gio, GObject, Gtk\nstore: Gio.ListStore[Gtk.Label] = Gio.ListStore()\nstore.append(Gtk.Button())\n",
     "from PyLiite4 import Gio\nasync def f(file: Gio.File) -> None:\n    data: str = (await file.load_contents_async(None))[1]\n",
 ])

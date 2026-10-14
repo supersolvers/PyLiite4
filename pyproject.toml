@@ -18,6 +18,10 @@ dev = ["pytest", "mypy", "patchelf"]
 [project.scripts]
 pyliite4-ui = "PyLiite4.tools.ui:main"
 pyliite4-resources = "PyLiite4.tools.resources:main"
+pyliite4-deploy = "PyLiite4.tools.deploy:main"
+
+[project.entry-points.pyinstaller40]
+hook-dirs = "PyLiite4.__pyinstaller:get_hook_dirs"
 
 [project.entry-points.pytest11]
 pyliite4 = "PyLiite4.testing"

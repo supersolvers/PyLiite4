@@ -86,6 +86,9 @@ def find_cb(repository: Gom.Repository, result: Gio.AsyncResult) -> None:
 
 
 def load() -> None:
+    # The search entry can change before the database has opened.
+    if repository is None:
+        return
     text = search_entry.get_text() or ""
 
     data_model.remove_all()

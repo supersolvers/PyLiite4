@@ -14,6 +14,7 @@ domain under CC0. Each one is a folder in ``library/``:
 """
 
 import importlib
+import importlib.util
 import json
 import runpy
 import shutil
@@ -29,7 +30,9 @@ CATEGORIES = {"user_interface": "User Interface", "controls": "Controls", "layou
               "feedback": "Feedback", "navigation": "Navigation", "platform": "Platform APIs",
               "network": "Network", "tools": "Tools"}
 # Namespaces PyLiite4 doesn't provide; demos that need one are listed but can't run.
-UNAVAILABLE = {"WebKit", "Shumate", "Spelling", "Manette", "Gom", "Gly"}
+UNAVAILABLE = {"Gly"}
+# Namespaces from the PyLiite4-Addons wheel, which demos can use when it's installed.
+ADDONS = {"WebKit", "Shumate", "Spelling", "Manette", "Gom"}
 
 
 @dataclass
@@ -45,7 +48,8 @@ class Demo:
 
     @property
     def missing(self) -> list[str]:
-        return [namespace for namespace in self.requires if namespace in UNAVAILABLE]
+        return [namespace for namespace in self.requires if namespace in UNAVAILABLE
+                or (namespace in ADDONS and importlib.util.find_spec(f"PyLiite4.{namespace}") is None)]
 
 
 def demos() -> list[Demo]:
@@ -98,7 +102,7 @@ def run(demo: Demo, application: Gtk.Application) -> Gtk.Window:
     """
     global _css
     if demo.missing:
-        raise RuntimeError(f"{demo.name} needs {', '.join(demo.missing)}, which PyLiite4 doesn't provide")
+        raise RuntimeError(f"{demo.name} needs {', '.join(demo.missing)}, which isn't installed")
     # GtkBuilder only knows a library's widgets once its namespace is loaded.
     for namespace in demo.requires:
         module = importlib.import_module(f"PyLiite4.{namespace}")

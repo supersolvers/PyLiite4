@@ -263,14 +263,14 @@ def build_bundle(bundle, icons):
     return copied
 
 
-def write_licenses(bundle, cache):
+def write_licenses(bundle, cache, extra_prefixes=()):
     """Attribute every bundled file to its project and write their notices. Returns the projects."""
     unrecorded = [str(path.relative_to(bundle)) for path in bundle.rglob("*")
                   if path.is_file() and path not in ORIGINS and not GENERATED.search(str(path))]
     if unrecorded:
         raise RuntimeError("bundled files without a recorded origin:\n  " + "\n  ".join(sorted(unrecorded)))
     origins = {str(path.relative_to(bundle)): source for path, source in ORIGINS.items()}
-    components = third_party.Attribution(PREFIX, cache).attribute(origins)
+    components = third_party.Attribution(PREFIX, cache, extra_prefixes).attribute(origins)
     third_party.write_notices(components, bundle / "licenses")
     return components
 
@@ -280,28 +280,33 @@ def glibc_tag():
     return f"manylinux_{major}_{minor}_{platform.machine()}"
 
 
-def build_wheel(package_dir, output):
+def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundle="_bundled", entry_points=True):
+    """Pack package_dir as the PyLiite4 package. The add-ons wheel passes its own name, summary and bundle."""
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
-    name, version = project["name"], project["version"]
+    name, version = name or project["name"], project["version"]
     python = f"cp{sys.version_info.major}{sys.version_info.minor}"
     tag = f"{python}-{python}-{glibc_tag()}"
-    info = f"{name}-{version}.dist-info"
+    info = f"{name.replace('-', '_')}-{version}.dist-info"
     license_files = {path: (ROOT / path).read_text() for path in project["license-files"]}
     license_headers = "".join(f"License-File: {path}\n" for path in [*license_files, "THIRD-PARTY-NOTICES.txt"])
-    metadata = (f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\nSummary: {project['description']}\n"
-                f"License-Expression: {project['license']}\n{license_headers}"
+    requirements = "".join(f"Requires-Dist: {requirement}\n" for requirement in requires)
+    metadata = (f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\nSummary: {summary or project['description']}\n"
+                f"License-Expression: {project['license']}\n{license_headers}{requirements}"
                 f"Requires-Python: =={sys.version_info.major}.{sys.version_info.minor}.*\n"
                 f"Description-Content-Type: text/markdown\n\n{(ROOT / 'README.md').read_text()}")
-    scripts = "\n".join(f"{k} = {v}" for k, v in project["scripts"].items())
     extra = {
         f"{info}/METADATA": metadata,
         f"{info}/WHEEL": f"Wheel-Version: 1.0\nGenerator: PyLiite4 build_wheel\nRoot-Is-Purelib: false\nTag: {tag}\n",
-        f"{info}/entry_points.txt": f"[console_scripts]\n{scripts}\n",
         **{f"{info}/licenses/{path}": text for path, text in license_files.items()},
-        f"{info}/licenses/THIRD-PARTY-NOTICES.txt": (package_dir / "_bundled" / "licenses" / "NOTICES.txt").read_text(),
+        f"{info}/licenses/THIRD-PARTY-NOTICES.txt": (package_dir / bundle / "licenses" / "NOTICES.txt").read_text(),
     }
+    if entry_points:
+        sections = {"console_scripts": project["scripts"], **project.get("entry-points", {})}
+        extra[f"{info}/entry_points.txt"] = "".join(
+            f"[{section}]\n" + "".join(f"{k} = {v}\n" for k, v in entries.items()) + "\n"
+            for section, entries in sections.items())
     output.mkdir(parents=True, exist_ok=True)
-    wheel = output / f"{name}-{version}-{tag}.whl"
+    wheel = output / f"{name.replace('-', '_')}-{version}-{tag}.whl"
     record = []
     with zipfile.ZipFile(wheel, "w", zipfile.ZIP_DEFLATED) as archive:
         def add(arcname, data, mode=0o644):

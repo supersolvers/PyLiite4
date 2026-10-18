@@ -1,0 +1,19 @@
+--- a/Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp	2026-11-03 19:57:39.312079754 -0600
++++ b/Source/WebKit/Shared/glib/ProcessExecutablePathGLib.cpp	2026-11-03 19:57:39.320851039 -0600
+@@ -44,7 +44,7 @@
+ 
+ static String findWebKitProcess(const ASCIILiteral processName)
+ {
+-#if ENABLE(DEVELOPER_MODE)
++    // PyLiite4: a wheel can be installed anywhere, so let the bundle say where the processes are.
+     static const char* execDirectory = g_getenv("WEBKIT_EXEC_PATH");
+     if (execDirectory) {
+         String processPath = FileSystem::pathByAppendingComponent(FileSystem::stringFromFileSystemRepresentation(execDirectory), processName);
+@@ -52,6 +52,7 @@
+             return processPath;
+     }
+ 
++#if ENABLE(DEVELOPER_MODE)
+     static String executablePath = getExecutablePath();
+     if (!executablePath.isNull()) {
+         String processPath = FileSystem::pathByAppendingComponent(executablePath, processName);

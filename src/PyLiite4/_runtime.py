@@ -229,6 +229,36 @@ def _class_attribute(cls: type, name: str) -> Any:
     return None
 
 
+def _builder_symbol(name: str, split_first_cap: bool) -> str:
+    """The get_type function GtkBuilder guesses for a type name, as GTK's type_name_mangle() does."""
+    symbol = ""
+    for i, char in enumerate(name):
+        upper = char == char.upper()
+        if (upper and ((i > 0 and name[i - 1] != name[i - 1].upper())
+                       or (i == 1 and name[0] == name[0].upper() and split_first_cap))) \
+                or (i > 2 and upper and name[i - 1] == name[i - 1].upper() and name[i - 2] == name[i - 2].upper()):
+            symbol += "_"
+        symbol += char.lower()
+    return symbol + "_get_type"
+
+
+def _register_for_builder(gi_name: str) -> None:
+    """Register the classes GtkBuilder can't find by name.
+
+    A .ui file names a class such as WebKitWebView. Unless the type is registered, GtkBuilder guesses its get_type
+    function from the name, which works for most, such as ShumateSimpleMap, but not for that one, whose function is
+    webkit_web_view_get_type. Registering those also loads the namespace's library, which GObject Introspection
+    otherwise does only when a type is first used, and which the guess needs.
+    """
+    infos = [info for info in gi._gi.Repository.get_default().get_infos(gi_name) if type(info).__name__ == "ObjectInfo"]
+    for info in infos:
+        name, symbol = info.get_type_name(), info.get_type_init()
+        if symbol and symbol not in (_builder_symbol(name, True), _builder_symbol(name, False)):
+            info.get_g_type()
+    if infos:
+        infos[0].get_g_type()
+
+
 def bind(namespace: dict[str, Any], gi_name: str, version: str, names: tuple[str, ...],
          signal_methods: dict[str, tuple[str, ...]]) -> None:
     """Make a generated module a view of a PyGObject namespace."""
@@ -237,6 +267,7 @@ def bind(namespace: dict[str, Any], gi_name: str, version: str, names: tuple[str
     # Libraries set their translation directory when they load.
     _bundle.bind_translations()
     _fixes.apply(gi_name, module)
+    _register_for_builder(gi_name)
 
     for class_name, attributes in signal_methods.items():
         cls = getattr(module, class_name, None)

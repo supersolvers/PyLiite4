@@ -2,7 +2,7 @@
 
 Modelled on Workbench's own Library window (src/Library/ in Workbench): a search entry and a category filter over a
 boxed list of demos with their descriptions. Activating a row runs the demo in a process of its own, as Workbench does, so
-it starts clean every time; its button shows main.py, main.ui and main.css. Demos needing a namespace PyLiite4 doesn't provide are listed, but can't be activated.
+it starts clean every time; its button shows main.py, main.ui and main.css. Demos needing a namespace that isn't installed, such as WebKit without PyLiite4-Addons, are listed but can't be activated.
 """
 
 import sys
@@ -40,7 +40,7 @@ class EntryRow(Adw.ActionRow):
 
         if demo.missing:
             self.set_sensitive(False)
-            self.set_tooltip_text(f"Needs {', '.join(demo.missing)}, which PyLiite4 doesn't provide")
+            self.set_tooltip_text(f"Needs {', '.join(demo.missing)}, which isn't installed")
 
     def matches(self, category: str, search_term: str) -> bool:
         category_match = category == ALL_CATEGORIES or self.category == category

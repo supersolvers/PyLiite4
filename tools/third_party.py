@@ -40,6 +40,7 @@ MESON_LICENSES = {
     "fribidi": "LGPL-2.1-or-later",
     "glib": "LGPL-2.1-or-later",
     "glib-networking": "LGPL-2.1-or-later",
+    "gom": "LGPL-2.1-or-later",
     "gobject-introspection": "LGPL-2.0-or-later AND GPL-2.0-or-later AND MIT",
     "gst-python": "LGPL-2.1-or-later",
     "gstreamer": "LGPL-2.1-or-later",
@@ -47,28 +48,61 @@ MESON_LICENSES = {
     "gst-plugins-good": "LGPL-2.1-or-later",
     "gst-plugins-bad": "LGPL-2.1-or-later",
     "harfbuzz": "MIT-Modern-Variant",
+    "libmanette": "LGPL-2.1-or-later",
     "libportal": "LGPL-3.0-only",
+    "libshumate": "LGPL-2.1-or-later",
+    "libspelling": "LGPL-2.1-or-later",
     "librsvg": "LGPL-2.1-or-later",
     "pango": "LGPL-2.1-or-later",
+    "vte": "LGPL-3.0-or-later AND MIT AND (Apache-2.0 OR BSL-1.0 OR MIT) AND (Apache-2.0 OR MIT)",
     "wayland-protocols": "MIT",
 }
 # Projects that keep their license texts somewhere other than the top of their source tree.
 OTHER_TEXTS = {"freetype": {"LICENSE.TXT", "docs/LICENSE.TXT", "docs/FTL.TXT", "docs/GPLv2.TXT"},
-               "zlib": {"README"}}
+               "zlib": {"README"},
+               # The libraries VTE compiles in.
+               "vte": {"COPYING.XTERM", "subprojects/fast_float/LICENSE-APACHE", "subprojects/fast_float/LICENSE-BOOST",
+                       "subprojects/fast_float/LICENSE-MIT", "subprojects/fmt/LICENSE",
+                       "subprojects/simdutf/LICENSE-APACHE", "subprojects/simdutf/LICENSE-MIT"},
+               # WebKit has no license file at the top, and compiles in these.
+               "webkitgtk": {f"Source/{path}" for path in (
+                   "WebCore/LICENSE-APPLE", "WebCore/LICENSE-LGPL-2", "WebCore/LICENSE-LGPL-2.1",
+                   "JavaScriptCore/COPYING.LIB", "WTF/LICENSE-libc++.txt", "WTF/LICENSE-LLVM.txt", "WTF/LICENSE-simde.txt",
+                   "WTF/LICENSE-dragonbox.txt", "WTF/icu/LICENSE", "WTF/wtf/dtoa/COPYING", "WTF/wtf/dtoa/LICENSE",
+                   "WTF/wtf/fast_float/LICENSE", "WTF/wtf/simdutf/LICENSE-simdutf.txt", "bmalloc/mimalloc/mimalloc/LICENSE",
+                   "ThirdParty/ANGLE/LICENSE", "ThirdParty/skia/LICENSE", "ThirdParty/libsysprof-capture/COPYING",
+                   "ThirdParty/pdfjs/LICENSE", "JavaScriptCore/disassembler/zydis/LICENSE-zydis.txt",
+                   "JavaScriptCore/disassembler/zydis/LICENSE-zycore.txt",
+                   "JavaScriptCore/disassembler/ARM64/LICENSE-binja.txt")}}
 # Projects with no license file at all, and the text in tools/license-texts that stands in for one.
 STAND_IN_TEXTS = {"sqlite": "SQLite-blessing.txt"}
-# Built with make rather than meson, so without an install log.
+# Built with make or CMake rather than meson, so without an install log: their license and files, relative to a
+# prefix. The add-ons' are in /opt/addons (tools/manylinux/build_addons.sh).
 OTHER_BUILDS = {"ibus": ("LGPL-2.1-or-later", ["lib/libibus-1.0.so*", "lib/gtk-4.0/4.0.0/immodules/libim-ibus.so"]),
-                "tiff": ("libtiff", ["lib/libtiff.so*"])}
+                "tiff": ("libtiff", ["lib/libtiff.so*"]),
+                "icu": ("Unicode-3.0", ["lib/libicu*.so*"]),
+                "hunspell": ("MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later", ["lib/libhunspell-*.so*"]),
+                "enchant": ("LGPL-2.1-or-later", ["lib/libenchant-2.so*", "lib/enchant-2/*.so", "share/enchant-2/*"]),
+                "hidapi": ("BSD-3-Clause OR GPL-3.0-only OR HIDAPI", ["lib/libhidapi-hidraw.so*"]),
+                # Its own code, and the third-party code in OTHER_TEXTS.
+                "webkitgtk": ("LGPL-2.1-or-later AND LGPL-2.0-or-later AND BSD-2-Clause AND BSD-3-Clause AND MIT AND "
+                              "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 AND Unicode-3.0 AND "
+                              "BSD-2-Clause-Patent",
+                              ["lib/libwebkitgtk-6.0.so*", "lib/libjavascriptcoregtk-6.0.so*", "lib/webkitgtk-6.0/**/*",
+                               "lib/girepository-1.0/WebKit*.typelib", "lib/girepository-1.0/JavaScriptCore-6.0.typelib",
+                               "share/locale/*/LC_MESSAGES/WebKitGTK-6.0.mo"])}
 # Projects whose license mentions the GPL, and why what the wheel takes from them isn't GPL-only.
 # A project that mentions the GPL and isn't listed here fails the build until someone checks it.
 REVIEWED_GPL = {
     "dbus": "libdbus is AFL-2.1 OR GPL-2.0-or-later; the GPL-only parts are the daemon and tools",
     "flac": "libFLAC is BSD-3-Clause; the GPL covers the command-line tools",
     "freetype": "FTL OR GPL-2.0-or-later, used under the FTL",
+    "gcc": "only libatomic, a runtime library under the GCC Runtime Library Exception, which WebKit links",
     "gnutls": "libgnutls is LGPL-2.1-or-later; the GPL covers the tools and libgnutls-dane's tests",
     "gobject-introspection": "only typelibs are bundled, built from the LGPL and MIT .gir data",
+    "hidapi": "BSD-3-Clause OR GPL-3.0-only OR HIDAPI, used under the BSD license",
     "hicolor-icon-theme": "only index.theme, a data file that no code links to",
+    "hunspell": "MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later, used under the LGPL or the MPL",
     "keyutils": "libkeyutils is LGPL-2.1-or-later; the GPL covers the keyctl tools",
     "libcap": "BSD-3-Clause OR GPL-2.0-only, used under the BSD license",
     "libidn2": "libidn2 is LGPL-3.0-or-later OR GPL-2.0-or-later; the GPL-3.0 parts are the idn2 tool",
@@ -78,6 +112,7 @@ REVIEWED_GPL = {
     "lz4": "liblz4 is BSD-2-Clause; the GPL covers the lz4 tool",
     "nettle": "LGPL-3.0-or-later OR GPL-2.0-or-later",
     "systemd": "libsystemd is LGPL-2.1-or-later; the GPL covers some of systemd's programs",
+    "vte": "libvte is LGPL-3.0-or-later; the GPL-3.0 files are the vte app and test tools, which aren't built",
     "zstd": "BSD-3-Clause OR GPL-2.0-only, used under the BSD license",
 }
 GPL = re.compile(r"(?<![L\w])GPL")
@@ -135,7 +170,7 @@ def download(url, target, sha256=None):
 
 
 class Attribution:
-    def __init__(self, prefix, cache):
+    def __init__(self, prefix, cache, extra_prefixes=()):
         self.prefix = Path(prefix) if prefix else None
         self.cache = cache
         self.components = {}
@@ -150,18 +185,20 @@ class Attribution:
                     if not line.startswith("#"):
                         self.owners[line] = ("meson", stamp)
             for name, (_, patterns) in OTHER_BUILDS.items():
-                for pattern in patterns:
-                    for path in self.prefix.glob(pattern):
-                        self.owners[str(path)] = ("other", name)
-        # Every file of every installed RPM package, to its source RPM.
+                for prefix in [self.prefix, *map(Path, extra_prefixes)]:
+                    for pattern in patterns:
+                        for path in prefix.glob(pattern):
+                            self.owners[str(path)] = ("other", name)
+        # Every file of every installed RPM package, to its source RPM and its own package's license. Packages from
+        # one source RPM can differ, as libgcrypt-devel adds the GPL of its tools to libgcrypt's LGPL, so a component
+        # takes the licenses of the packages whose files the wheel bundles.
         self.rpm_files, self.rpm_licenses = {}, {}
         if shutil.which("rpm"):
             listing = subprocess.run(["rpm", "-qa", "--qf", "[%{FILENAMES}\t%{=SOURCERPM}\t%{=LICENSE}\n]"],
                                      capture_output=True, text=True, check=True).stdout
             for line in listing.splitlines():
                 path, source_rpm, license = line.split("\t")
-                self.rpm_files[path] = source_rpm
-                self.rpm_licenses[source_rpm] = license
+                self.rpm_files[path] = (source_rpm, license)
         self.distributions = {}
         for distribution in metadata.distributions():
             for file in distribution.files or []:
@@ -186,7 +223,7 @@ class Attribution:
         source = Path(json.loads((build / "meson-info" / "meson-info.json").read_text())["directories"]["source"])
         declared = " AND ".join(info.get("license") or [])
         # gst-python is built once for each Python version, as gst-python-cp313 and so on.
-        name = "glib" if stamp == "glib-bootstrap" else re.sub(r"-cp\d+$", "", stamp)
+        name = {"glib-bootstrap": "glib", "harfbuzz-icu": "harfbuzz"}.get(stamp) or re.sub(r"-cp\d+$", "", stamp)
         license = MESON_LICENSES.get(name) or declared
         component = Component(name, info["version"], license, "built from source", [self.source_archive(source)],
                               tree_texts(source, OTHER_TEXTS.get(name, frozenset())))
@@ -195,9 +232,12 @@ class Attribution:
         return component
 
     def _other(self, name):
-        source = next(p for p in SOURCE_TREE.glob(f"{name}-*") if p.is_dir())
-        return Component(name, source.name.removeprefix(f"{name}-"), OTHER_BUILDS[name][0], "built from source",
-                         [self.source_archive(source)], tree_texts(source))
+        # ICU unpacks to icu/, without its version.
+        source = next(p for p in [*SOURCE_TREE.glob(f"{name}-*"), SOURCE_TREE / name] if p.is_dir())
+        archive = self.source_archive(source)
+        version = re.search(r"\d+(?:\.\d+)+", archive.name).group(0)
+        return Component(name, version, OTHER_BUILDS[name][0], "built from source", [archive],
+                         tree_texts(source, OTHER_TEXTS.get(name, frozenset())))
 
     def crates(self, lock):
         """The crates.io packages a Rust project compiled in: those cargo downloaded for it."""
@@ -245,7 +285,8 @@ class Attribution:
                     texts.update(archive_texts(srpm.extractfile(member).read(), OTHER_TEXTS.get(name, frozenset())))
         if not texts and name in STAND_IN_TEXTS:
             texts[STAND_IN_TEXTS[name]] = (TEXTS / STAND_IN_TEXTS[name]).read_bytes()
-        return Component(name, version, self.rpm_licenses[source_rpm], "AlmaLinux 9 package", [target], texts)
+        license = " AND ".join(sorted(self.rpm_licenses[source_rpm]))
+        return Component(name, version, license, "AlmaLinux 9 package", [target], texts)
 
     def _dpkg(self, package):
         source, version = subprocess.run(["dpkg-query", "-W", "-f", "${source:Package}\t${Version}", package],
@@ -283,9 +324,10 @@ class Attribution:
                 unclaimed.append(source)
         if self.rpm_files and unclaimed:
             for source in unclaimed:
-                key = self.rpm_files.get(str(source)) or self.rpm_files.get(str(source.resolve()))
-                if key:
-                    keys[source] = ("rpm", key)
+                found = self.rpm_files.get(str(source)) or self.rpm_files.get(str(source.resolve()))
+                if found:
+                    keys[source] = ("rpm", found[0])
+                    self.rpm_licenses.setdefault(found[0], set()).add(found[1])
         if shutil.which("dpkg-query") and not self.rpm_files and unclaimed:
             # Debian's file lists name /usr/lib files both with and without the /usr of merged /usr.
             candidates = {source: {str(source), str(source.resolve()), str(source.resolve()).removeprefix("/usr")}

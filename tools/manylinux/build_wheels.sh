@@ -32,4 +32,9 @@ for version in ${versions[*]}; do
     fi
     PATH="$venv/bin:$PATH" "$venv/bin/python" /project/tools/build_wheel.py --prefix /opt/gtk --output /project/dist \
         --sources /project/dist/sources
+    # The PyLiite4-Addons wheel, once build_addons.sh has built its libraries.
+    if [ -f /src/stamps/webkitgtk ]; then
+        PATH="$venv/bin:$PATH" "$venv/bin/python" /project/tools/build_addons_wheel.py --prefix /opt/gtk \
+            --addons-prefix /opt/addons --output /project/dist --sources /project/dist/sources
+    fi
 done

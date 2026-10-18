@@ -1,0 +1,13 @@
+--- a/lib/spelling-checker.c	2026-11-04 01:04:35.818790212 -0600
++++ b/lib/spelling-checker.c	2026-11-04 01:04:35.831553434 -0600
+@@ -89,8 +89,9 @@
+ 
+   G_OBJECT_CLASS (spelling_checker_parent_class)->constructed (object);
+ 
++  /* PyLiite4: the default provider is (transfer none), and finalize unrefs it. */
+   if (self->provider == NULL)
+-    self->provider = spelling_provider_get_default ();
++    self->provider = g_object_ref (spelling_provider_get_default ());
+ }
+ 
+ static void

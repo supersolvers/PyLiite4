@@ -6,11 +6,8 @@
 set -euo pipefail
 
 PREFIX=/opt/gtk
-GNOME=https://download.gnome.org/sources
-GST=https://gstreamer.freedesktop.org/src
-JOBS=$(nproc)
-mkdir -p /src/stamps /src/archives "$PREFIX"
-cd /src
+mkdir -p "$PREFIX"
+source "$(dirname "$0")/common.sh"
 
 dnf -y -q --setopt=install_weak_deps=False install bison flex gperf gettext-devel pcre2-devel libffi-devel zlib-devel \
     expat-devel libpng-devel libjpeg-turbo-devel libtiff-devel freetype-devel fontconfig-devel libxml2-devel dbus-devel \
@@ -26,32 +23,6 @@ for library in libctf.so.0 libctf-nobfd.so.0; do
 done
 [ -x /opt/tools/bin/meson ] || { /opt/python/cp314-cp314/bin/python -m venv /opt/tools
     /opt/tools/bin/pip -q install meson==1.12.1 ninja packaging setuptools; }
-
-fetch() { # url -> prints the unpacked directory
-    local archive="/src/archives/${1##*/}"
-    [ -f "$archive" ] || curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 --max-time 300 -o "$archive" "$1"
-    local directory
-    # tar may die of SIGPIPE once head has its line, which pipefail would treat as a failure.
-    directory=$(tar tf "$archive" | head -1 | cut -d/ -f1 || true)
-    [ -d "/src/$directory" ] || tar xf "$archive" -C /src --no-same-owner
-    echo "/src/$directory"
-}
-
-meson_package() { # stamp url meson-options...
-    local stamp=$1 url=$2; shift 2
-    [ -f "/src/stamps/$stamp" ] && return
-    echo "=== $stamp ($(date +%T))"
-    local source build
-    source=$(fetch "$url")
-    build="/src/build-$stamp"
-    local mode=()
-    [ -d "$build/meson-private" ] && mode=(--wipe)
-    meson setup "${mode[@]}" "$build" "$source" --prefix="$PREFIX" --libdir=lib --buildtype=release \
-        --wrap-mode=nodownload -Dauto_features=auto "$@" > "/src/$stamp.setup.log" 2>&1 \
-        || { tail -30 "/src/$stamp.setup.log"; exit 1; }
-    ninja -C "$build" -j "$JOBS" install > "/src/$stamp.log" 2>&1 || { tail -30 "/src/$stamp.log"; exit 1; }
-    touch "/src/stamps/$stamp"
-}
 
 meson_package wayland https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.24.0/downloads/wayland-1.24.0.tar.xz \
     -Ddocumentation=false -Dtests=false
@@ -75,16 +46,8 @@ meson_package harfbuzz https://github.com/harfbuzz/harfbuzz/releases/download/12
 meson_package pango $GNOME/pango/1.57/pango-1.57.1.tar.xz -Dintrospection=enabled -Dbuild-testsuite=false \
     -Dbuild-examples=false -Ddocumentation=false -Dman-pages=false
 # AlmaLinux's libtiff links the GPL-only libjbig, so build one without JBIG support.
-if [ ! -f /src/stamps/tiff ]; then
-    echo "=== tiff ($(date +%T))"
-    tiff=$(fetch https://download.osgeo.org/libtiff/tiff-4.7.1.tar.xz)
-    cmake -S "$tiff" -B /src/build-tiff -G Ninja -DCMAKE_INSTALL_PREFIX="$PREFIX" -DCMAKE_INSTALL_LIBDIR=lib \
-        -DCMAKE_BUILD_TYPE=Release -Djbig=OFF -Dlerc=OFF -Dlibdeflate=OFF -Dcxx=OFF -Dtiff-tools=OFF \
-        -Dtiff-tests=OFF -Dtiff-contrib=OFF -Dtiff-docs=OFF > /src/tiff.setup.log 2>&1 \
-        || { tail -30 /src/tiff.setup.log; exit 1; }
-    ninja -C /src/build-tiff -j "$JOBS" install > /src/tiff.log 2>&1 || { tail -30 /src/tiff.log; exit 1; }
-    touch /src/stamps/tiff
-fi
+cmake_package tiff https://download.osgeo.org/libtiff/tiff-4.7.1.tar.xz -Djbig=OFF -Dlerc=OFF -Dlibdeflate=OFF -Dcxx=OFF \
+    -Dtiff-tools=OFF -Dtiff-tests=OFF -Dtiff-contrib=OFF -Dtiff-docs=OFF
 meson_package gdk-pixbuf $GNOME/gdk-pixbuf/2.44/gdk-pixbuf-2.44.8.tar.xz -Dintrospection=enabled -Dtests=false \
     -Dinstalled_tests=false -Dman=false -Ddocumentation=false -Dglycin=disabled -Dgif=enabled -Dpng=enabled \
     -Djpeg=enabled -Dtiff=enabled -Dothers=enabled

@@ -2,6 +2,8 @@
 """Unpack a manylinux container image into a directory, without a container engine.
 
 Usage: tools/manylinux/fetch_root.py TARGET [--image pypa/manylinux_2_34_x86_64]
+
+For ARM64, use --image pypa/manylinux_2_34_aarch64; running it needs qemu-user-static.
 """
 
 import argparse
@@ -34,7 +36,8 @@ def main():
     base = f"{REGISTRY}/v2/{args.image}"
     manifest = json.load(fetch(f"{base}/manifests/{args.tag}", token, MANIFESTS))
     if "manifests" in manifest:
-        entry = next(m for m in manifest["manifests"] if m["platform"]["architecture"] == "amd64")
+        architecture = "arm64" if args.image.endswith("aarch64") else "amd64"
+        entry = next(m for m in manifest["manifests"] if m["platform"]["architecture"] == architecture)
         manifest = json.load(fetch(f"{base}/manifests/{entry['digest']}", token, MANIFESTS))
     args.target.mkdir(parents=True, exist_ok=True)
     for index, layer in enumerate(manifest["layers"]):

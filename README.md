@@ -33,10 +33,17 @@ app.run([])
   additions).
 - **Type stubs** for every class, method, property, signal and constructor keyword, generated from GTK's GIR files.
   They also describe PyGObject's Python additions: `GLib.idle_add`, awaitable async methods, `Gio.ListStore[Item]`,
-  `GLib.Variant`, `Gio.Settings` as a mapping, and pycairo contexts for drawing.
+  `GLib.Variant`, `Gio.Settings` as a mapping, PyGObject's overrides such as `Gtk.TextBuffer.set_text(text)`, and
+  pycairo contexts for drawing.
+- **Documentation:** the stubs carry GTK's documentation as docstrings, with C names turned into Python ones, so
+  editors show it on hover. `tools/reference.py` builds the same as an HTML reference with search.
 - **Signal objects** and **property attributes:** see below.
 - **`pyliite4-ui`** turns a GtkBuilder `.ui` file into typed Python: a template becomes a typed composite widget.
 - **`pyliite4-resources`** compiles a `.gresource.xml` file to a Python module. Importing it registers the resources.
+- **`pyliite4-deploy`** freezes an application with PyInstaller, into a folder that runs without Python installed.
+- **PyLiite4-Addons**, a separate wheel: `WebKit` and `JavaScriptCore` (WebKitGTK, a web engine), `Shumate` (maps),
+  `Spelling` (spell checking for GtkSourceView), `Vte` (a terminal), `Gom` (objects stored in SQLite) and `Manette`
+  (game controllers). See [Installing](#installing).
 
 The classes are PyGObject's own, extended in place. Objects created by GTK, such as those from `Gtk.Builder`, have the
 same API, and PyGObject code and documentation still apply.
@@ -51,6 +58,8 @@ PyLiite4 also corrects APIs that crash, corrupt memory or can't be called throug
 - `Gsk.Path.get_start_point()`, `get_end_point()`, `get_closest_point()` and `Gsk.PathMeasure.get_point()` return
   `Gsk.PathPoint`s, which PyGObject can't allocate.
 - `Gtk.Expression.evaluate(this)` returns the value, and `Pango.SCALE_*` exist.
+- A `.ui` file can name any class of a namespace that has been imported, such as `WebKitWebView`, which GtkBuilder
+  otherwise can't find.
 
 ## Signals
 
@@ -282,6 +291,27 @@ announced to screen readers. An application's asyncio tasks run while the helper
 `gtk_app` fixture sees to that, or `gtk_asyncio` for a test without an application. `examples/testing/` is a worked
 example.
 
+### matplotlib, numpy and other PyGObject code
+
+PyLiite4's classes are PyGObject's, so code that uses `gi` itself works on the same objects. A bundled wheel carries
+its own PyGObject, which becomes importable when PyLiite4 is first imported, so import PyLiite4 before anything that
+imports `gi`, such as matplotlib's GTK 4 backends:
+
+```python
+from PyLiite4 import Gtk  # first, so that matplotlib finds the wheel's PyGObject
+from matplotlib.backends.backend_gtk4agg import FigureCanvasGTK4Agg
+from matplotlib.figure import Figure
+
+figure = Figure()
+figure.add_subplot().plot([1, 3, 2])
+window = Gtk.Window(child=FigureCanvasGTK4Agg(figure))
+```
+
+A numpy array of RGBA pixels becomes an image with `Gdk.MemoryTexture.new(width, height,
+Gdk.MemoryFormat.R8G8B8A8, GLib.Bytes.new(array.tobytes()), width * 4)`, and
+`cairo.ImageSurface.create_for_data(memoryview(array), cairo.FORMAT_ARGB32, width, height, width * 4)` draws into
+one, with `cairo` from `PyLiite4`. `tests/test_interop.py` runs all three.
+
 ### Coming from PySide6
 
 | PySide6 | GTK |
@@ -302,6 +332,8 @@ example.
 | `pyside6-uic` | `.ui` templates and `pyliite4-ui` |
 | `pyside6-rcc` | GResources and `pyliite4-resources` |
 | `QSignalBlocker` | `signal.blocked(handler)` |
+| `QWebEngineView` | `WebKit.WebView`, from PyLiite4-Addons |
+| `pyside6-deploy` | `pyliite4-deploy` |
 | `QTest.mouseClick`, `keyClick`, `keyClicks` | `gtkbot.input.click`, `key`, `type` |
 | `QSignalSpy`, `qtbot.waitSignal` | `gtkbot.expect_signal`, `wait_signal` |
 | `qtbot.waitUntil`, `qWait` | `gtkbot.wait_until`, `wait` |
@@ -356,6 +388,17 @@ glibc, the C++ runtime and graphics drivers:
 pip install PyLiite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
 ```
 
+The PyLiite4-Addons wheel adds WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette. It needs the PyLiite4
+wheel of the same version and Python, whose libraries it shares:
+
+```bash
+pip install PyLiite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl PyLiite4_Addons-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
+```
+
+It is separate because WebKit alone is larger than the rest of GTK. WebKit runs pages in helper processes from the
+wheel, without its bubblewrap sandbox, which would need `bwrap` and `xdg-dbus-proxy` on the user's system: show web
+content you trust. Spell checking uses the system's Hunspell dictionaries, from `/usr/share/hunspell`.
+
 The plain package uses the system's GTK and PyGObject instead:
 
 ```bash
@@ -367,6 +410,7 @@ pip install .
 | | Status |
 | --- | --- |
 | Linux x86-64, bundled | Python 3.10 to 3.14, glibc 2.34 or newer (Ubuntu 22.04, Debian 12, RHEL 9 and later) |
+| Linux aarch64, bundled | The build scripts support it; no wheels have been built yet |
 | Linux, system GTK | Python 3.10 or newer; PyGObject must be installable |
 | Windows, macOS | Not implemented |
 
@@ -375,6 +419,15 @@ patent-encumbered codecs like H.264 or AAC. They also include translations and t
 talks to the IBus daemon on the user's system. HTTPS uses the bundled OpenSSL with the system's CA certificates, found
 at the usual path for Debian, Fedora, openSUSE or Alpine, or wherever `SSL_CERT_FILE` points. SVG images load through
 librsvg. Formats that need glycin, such as HEIF and JPEG XL, aren't supported.
+
+### Shipping an application
+
+`pyliite4-deploy app.py` freezes `app.py` with PyInstaller into `dist/app/`, a folder holding the executable, Python
+and the wheel's GTK, which runs without Python installed. It needs `pip install pyinstaller` and PyLiite4 from a
+bundled wheel. Options after `--` go to PyInstaller, as in `pyliite4-deploy app.py -- --add-data data:data`, though
+data shipped as GResources needs none. The frozen app needs a glibc at least as new as the build machine's, so build on
+the oldest system you support. PyLiite4 also gives PyInstaller a hook, so a hand-written `.spec` file gets the GTK
+stack too.
 
 ## License
 
@@ -386,6 +439,10 @@ GStreamer (LGPL), X11 and Cairo (MIT and LGPL or MPL) and the Rust crates that l
 texts are in `PyLiite4/_bundled/licenses/`. `NOTICES.txt` there lists every project with its version, license and
 source archive, and `components.json` lists which bundled file comes from which project. The wheel metadata includes
 the same list as `THIRD-PARTY-NOTICES.txt`.
+
+The add-ons wheel lists its own projects the same way, in `PyLiite4/_addons/licenses/`. Among them, VTE is
+LGPL-3.0-or-later, WebKitGTK is LGPL and BSD with the third-party code it compiles in, and Hunspell and HIDAPI are
+used under their non-GPL options. Poppler, for PDFs, is GPL and isn't included.
 
 None of the bundled libraries is GPL-only. Some packages also contain GPL programs, but the wheel takes only their
 LGPL, BSD or dual-licensed libraries. To keep it that way, the build fails when a project that mentions the GPL isn't
@@ -401,7 +458,14 @@ python3 tools/generate.py
 ```
 
 regenerates `src/PyLiite4/<Namespace>.py` and `.pyi` from the GIR files, so the stubs match the GTK version installed
-when they were generated.
+when they were generated. With `--addons`, it writes the add-on namespaces instead, which the add-ons wheel build does
+itself.
+
+```bash
+python3 tools/reference.py
+```
+
+builds the HTML reference in `build/reference/`; open `index.html`.
 
 ```bash
 xvfb-run -a env -u WAYLAND_DISPLAY GDK_BACKEND=x11 PYTHONPATH=src python3 -m pytest
@@ -438,6 +502,13 @@ tools/manylinux/verify_in_root.sh /path/to/root dist/PyLiite4-0.1.0-cp314-cp314-
 
 The stack build records finished packages, so running it again resumes after a failure.
 
+```bash
+tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_addons.sh
+```
+
+builds the add-ons' libraries, WebKitGTK taking a few hours. After it, `build_wheels.sh` builds a PyLiite4-Addons wheel
+next to each PyLiite4 wheel, and `verify_in_root.sh` and `verify_wheel.sh` test it when given after the main wheel.
+
 Each wheel build traces every bundled file to the project it came from: the meson install logs for the stack built
 from source, the source RPMs for AlmaLinux packages, and PyPI and crates.io for Python packages and Rust crates. The
 build fails if a file has no project, a project has no license texts, or a project mentions the GPL and hasn't been
@@ -445,10 +516,11 @@ reviewed. `build_wheels.sh` also copies every project's source archive, with `SH
 which is published with the release. Downloaded source RPMs and sdists are kept in `build/third-party/`.
 
 ```bash
-tools/verify_wheel.sh dist/PyLiite4-*.whl
+tools/verify_wheel.sh dist/PyLiite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl
 ```
 
-installs that wheel in a clean venv and runs the tests in a `bwrap` sandbox with the system's GTK stack hidden.
+installs that wheel in a clean venv and runs the tests in a `bwrap` sandbox with the system's GTK stack hidden, on a
+D-Bus session of their own.
 
 ```bash
 dbus-run-session -- tools/verify_wayland.sh dist/PyLiite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl

@@ -2,13 +2,15 @@
 # Test a wheel inside the manylinux root, on its old glibc, with the built stack hidden.
 # Needs a host Xvfb, which this script starts on a private display.
 #
-# Usage: tools/manylinux/verify_in_root.sh ROOT WHEEL [PYTHON_TAG] [ADDONS_WHEEL]
+# Usage: tools/manylinux/verify_in_root.sh ROOT WHEEL [PYTHON_TAG] [ADDON_WHEEL...]
 set -euo pipefail
 root=$(realpath "$1"); wheel=$(realpath "$2"); tag=${3:-cp314}
-# The add-ons wheel, if given, and the add-ons' build hidden like the stack's.
+# The add-on wheels, PyLiite4-Addons and PyLiite4-Poppler, if given, and their builds hidden like the stack's.
 extra=()
-if [ -n "${4:-}" ]; then addons=$(realpath "$4"); extra+=(--ro-bind "$addons" /tmp/wheel/"${addons##*/}"); fi
-if [ -d "$root/opt/addons" ]; then extra+=(--tmpfs /opt/addons); fi
+for addons in "${@:4}"; do addons=$(realpath "$addons"); extra+=(--ro-bind "$addons" /tmp/wheel/"${addons##*/}"); done
+for prefix in addons poppler; do
+    if [ -d "$root/opt/$prefix" ]; then extra+=(--tmpfs "/opt/$prefix"); fi
+done
 project=$(cd "$(dirname "$0")/../.." && pwd)
 display=$((90 + RANDOM % 400))
 Xvfb ":$display" -screen 0 1024x768x24 >/dev/null 2>&1 &

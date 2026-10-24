@@ -37,4 +37,9 @@ for version in ${versions[*]}; do
         PATH="$venv/bin:$PATH" "$venv/bin/python" /project/tools/build_addons_wheel.py --prefix /opt/gtk \
             --addons-prefix /opt/addons --output /project/dist --sources /project/dist/sources
     fi
+    # The PyLiite4-Poppler wheel, which is GPL, once build_poppler.sh has built Poppler.
+    if [ -f /src/stamps/poppler ]; then
+        PATH="$venv/bin:$PATH" "$venv/bin/python" /project/tools/build_addons_wheel.py --prefix /opt/gtk \
+            --addons-prefix /opt/poppler --poppler --output /project/dist --sources /project/dist/sources
+    fi
 done

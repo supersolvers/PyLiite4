@@ -1,4 +1,5 @@
-"""Collect a PyLiite4 wheel's ``_bundled`` tree: GTK and its libraries, typelibs, data and PyGObject.
+"""Collect a PyLiite4 wheel's ``_bundled`` tree: GTK and its libraries, typelibs, data and PyGObject. The trees of
+the PyLiite4-Addons and PyLiite4-Poppler wheels, ``_addons`` and ``_poppler``, come too when they're installed.
 
 The bundled PyGObject lives outside the normal import path, in ``_bundled/python``, and ``_bundle.setup()`` adds it
 to ``sys.path`` at import. PyInstaller's analysis can't see it, so this hook copies it as files and names the
@@ -13,17 +14,16 @@ from pathlib import Path
 
 spec = importlib.util.find_spec("PyLiite4")
 package = Path(next(iter(spec.submodule_search_locations)))
-bundle = package / "_bundled"
+bundles = [package / name for name in ("_bundled", "_addons", "_poppler")]
 
 datas = []
-hiddenimports = []
 excludedimports = ["gi", "cairo"]
 # Some of these, such as collections.abc, live in base_library.zip, where the check for hidden imports misses them.
 warn_on_missing_hiddenimports = False
 
-if bundle.is_dir():
-    stdlib = set(sys.stdlib_module_names)
-    imported = set()
+stdlib = set(sys.stdlib_module_names)
+imported = set()
+for bundle in bundles:
     for path in sorted(bundle.rglob("*")):
         if not path.is_file() or "__pycache__" in path.parts:
             continue
@@ -34,4 +34,4 @@ if bundle.is_dir():
                     imported.update(alias.name for alias in node.names)
                 elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
                     imported.add(node.module)
-    hiddenimports = sorted(name for name in imported if name.split(".")[0] in stdlib)
+hiddenimports = sorted(name for name in imported if name.split(".")[0] in stdlib)

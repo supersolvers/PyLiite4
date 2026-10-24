@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Build the PyLiite4-Addons wheel: WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette.
+"""Build the PyLiite4-Addons wheel (WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette) or, with --poppler,
+the PyLiite4-Poppler wheel.
 
-The libraries come from --addons-prefix (tools/manylinux/build_addons.sh), built on the stack in --prefix. The wheel
-installs PyLiite4/_addons, whose libraries find the rest in the PyLiite4 wheel's PyLiite4/_bundled, so it bundles
-only what that wheel doesn't have. Build the PyLiite4 wheel into --output first: this reads which libraries it has.
+The libraries come from --addons-prefix (tools/manylinux/build_addons.sh or build_poppler.sh), built on the stack in
+--prefix. The wheel installs PyLiite4/_addons or PyLiite4/_poppler, whose libraries find the rest in the PyLiite4
+wheel's PyLiite4/_bundled, so it bundles only what that wheel doesn't have. Build the PyLiite4 wheel into --output
+first: this reads which libraries it has.
 
-Usage: tools/build_addons_wheel.py --prefix /opt/gtk --addons-prefix /opt/addons [--output DIR] [--sources DIR]
+Poppler is GPL, so it has a wheel of its own, which an application that stays LGPL-compatible can leave out.
+
+Usage: tools/build_addons_wheel.py --prefix /opt/gtk --addons-prefix /opt/addons [--poppler] [--output DIR]
+           [--sources DIR]
 """
 
 import argparse
@@ -16,18 +21,42 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+from dataclasses import dataclass
 from pathlib import Path
 
 import build_wheel
 import third_party
 from build_wheel import ROOT, SYSTEM_LIBRARIES, bring, ldd, set_runpath
 
-ROOT_LIBRARIES = ["libwebkitgtk-6.0.so.4", "libjavascriptcoregtk-6.0.so.1", "libshumate-1.0.so.1", "libspelling-1.so.2",
-                  "libvte-2.91-gtk4.so.0", "libgom-1.0.so.0", "libmanette-0.2.so.0"]
-TYPELIBS = ["JavaScriptCore-6.0", "WebKit-6.0", "Shumate-1.0", "Spelling-1", "Vte-3.91", "Gom-1.0", "Manette-0.2"]
+
+@dataclass
+class Wheel:
+    name: str
+    summary: str
+    bundle: str
+    libraries: list
+    typelibs: list
+    translations: list
+    license: str | None = None
+    # The GPL projects it is for.
+    gpl: tuple = ()
+
+
+WHEELS = {
+    "addons": Wheel("PyLiite4-Addons", "WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette for PyLiite4",
+                    "_addons",
+                    ["libwebkitgtk-6.0.so.4", "libjavascriptcoregtk-6.0.so.1", "libshumate-1.0.so.1",
+                     "libspelling-1.so.2", "libvte-2.91-gtk4.so.0", "libgom-1.0.so.0", "libmanette-0.2.so.0"],
+                    ["JavaScriptCore-6.0", "WebKit-6.0", "Shumate-1.0", "Spelling-1", "Vte-3.91", "Gom-1.0",
+                     "Manette-0.2"],
+                    ["WebKitGTK-6.0", "vte-2.91", "shumate1", "libspelling"]),
+    # Its own generated module is PyLiite4's, under the LGPL; Poppler is GPL.
+    "poppler": Wheel("PyLiite4-Poppler", "Poppler, for reading and drawing PDF documents, for PyLiite4 (GPL)",
+                     "_poppler", ["libpoppler-glib.so.8"], ["Poppler-0.18"], [],
+                     "LGPL-3.0-only AND (GPL-2.0-only OR GPL-3.0-only)", ("poppler",)),
+}
 # WebKit's own processes; its jsc shell isn't wanted.
 WEBKIT_PROCESSES = ["WebKitWebProcess", "WebKitNetworkProcess", "WebKitGPUProcess"]
-TRANSLATION_DOMAINS = ["WebKitGTK-6.0", "vte-2.91", "shumate1", "libspelling"]
 # From the bundle's directories, how to reach _bundled/lib next to them.
 BUNDLED_LIB = "_bundled/lib"
 TYPELIB_DIRS = ["{prefix}/lib/girepository-1.0", "{gtk}/lib/girepository-1.0", "/usr/lib64/girepository-1.0"]
@@ -53,9 +82,9 @@ def find(directories, name, prefix, gtk):
     return next(path for d in directories if (path := Path(d.format(prefix=prefix, gtk=gtk)) / name).exists())
 
 
-def needed_typelibs(prefix, gtk, bundled):
-    """The add-ons' typelibs, and those they include that the PyLiite4 wheel lacks, such as libmanette's GUdev."""
-    needed, pending = [], list(TYPELIBS)
+def needed_typelibs(wheel, prefix, gtk, bundled):
+    """The wheel's typelibs, and those they include that the PyLiite4 wheel lacks, such as libmanette's GUdev."""
+    needed, pending = [], list(wheel.typelibs)
     while pending:
         name = pending.pop(0)
         if name in needed or name in bundled:
@@ -67,39 +96,41 @@ def needed_typelibs(prefix, gtk, bundled):
 
 
 def runpath(path, addons):
-    """$ORIGIN-relative paths from path to _addons/lib and then the main bundle's lib."""
+    """$ORIGIN-relative paths from path to the add-on bundle's lib and then the main bundle's."""
     up = os.path.relpath(addons / "lib", path.parent)
     bundled = os.path.relpath(addons.parent / BUNDLED_LIB, path.parent)
     return ":".join("$ORIGIN" if p == "." else f"$ORIGIN/{p}" for p in (up, bundled))
 
 
-def build_addons(addons, prefix, gtk, bundled, bundled_typelibs):
+def build_addons(wheel, addons, prefix, gtk, bundled, bundled_typelibs):
     lib = addons / "lib"
     lib.mkdir(parents=True)
     helpers = []
     webkit = prefix / "lib" / "webkitgtk-6.0"
-    (lib / "webkitgtk-6.0" / "injected-bundle").mkdir(parents=True)
-    for process in WEBKIT_PROCESSES:
-        helpers.append(bring(webkit / process, lib / "webkitgtk-6.0"))
-    for module in (webkit / "injected-bundle").glob("*.so"):
-        helpers.append(bring(module, lib / "webkitgtk-6.0" / "injected-bundle"))
+    if webkit.is_dir():
+        (lib / "webkitgtk-6.0" / "injected-bundle").mkdir(parents=True)
+        for process in WEBKIT_PROCESSES:
+            helpers.append(bring(webkit / process, lib / "webkitgtk-6.0"))
+        for module in (webkit / "injected-bundle").glob("*.so"):
+            helpers.append(bring(module, lib / "webkitgtk-6.0" / "injected-bundle"))
     # Enchant is built relocatable: it finds its providers and data next to its library.
-    (lib / "enchant-2").mkdir()
-    for provider in (prefix / "lib" / "enchant-2").glob("*.so"):
-        helpers.append(bring(provider, lib / "enchant-2"))
-    (addons / "share" / "enchant-2").mkdir(parents=True)
-    for data in (prefix / "share" / "enchant-2").iterdir():
-        bring(data, addons / "share" / "enchant-2")
+    if (prefix / "lib" / "enchant-2").is_dir():
+        (lib / "enchant-2").mkdir()
+        for provider in (prefix / "lib" / "enchant-2").glob("*.so"):
+            helpers.append(bring(provider, lib / "enchant-2"))
+        (addons / "share" / "enchant-2").mkdir(parents=True)
+        for data in (prefix / "share" / "enchant-2").iterdir():
+            bring(data, addons / "share" / "enchant-2")
 
     # Follow dependencies, leaving out what the system or the PyLiite4 wheel provides.
-    pending = [prefix / "lib" / name for name in ROOT_LIBRARIES] + helpers
+    pending = [prefix / "lib" / name for name in wheel.libraries] + helpers
     copied = {}
     while pending:
         for name, source in ldd(pending.pop()).items():
             if name not in copied and name not in bundled and not SYSTEM_LIBRARIES.match(name):
                 copied[name] = source
                 pending.append(source)
-    for name in ROOT_LIBRARIES:
+    for name in wheel.libraries:
         copied.setdefault(name, prefix / "lib" / name)
     for name, source in copied.items():
         bring(source, lib / name)
@@ -108,15 +139,15 @@ def build_addons(addons, prefix, gtk, bundled, bundled_typelibs):
 
     # PyGObject overrides, such as Gom's, which PyGObject finds in any gi/overrides on sys.path.
     overrides = addons / "python" / "gi" / "overrides"
-    overrides.mkdir(parents=True)
     for override in prefix.glob("lib/python3*/site-packages/gi/overrides/*.py"):
+        overrides.mkdir(parents=True, exist_ok=True)
         bring(override, overrides)
 
     typelibs = lib / "girepository-1.0"
     typelibs.mkdir()
-    for typelib in needed_typelibs(prefix, gtk, bundled_typelibs):
+    for typelib in needed_typelibs(wheel, prefix, gtk, bundled_typelibs):
         bring(typelib, typelibs)
-    for domain in TRANSLATION_DOMAINS:
+    for domain in wheel.translations:
         for catalog in (prefix / "share" / "locale").glob(f"*/LC_MESSAGES/{domain}.mo"):
             target = addons / "share" / "locale" / catalog.relative_to(prefix / "share" / "locale")
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -127,13 +158,15 @@ def build_addons(addons, prefix, gtk, bundled, bundled_typelibs):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prefix", required=True, help="the GTK stack the PyLiite4 wheel was built from")
-    parser.add_argument("--addons-prefix", required=True, type=Path, help="where build_addons.sh installed")
+    parser.add_argument("--addons-prefix", required=True, type=Path, help="where build_addons.sh or build_poppler.sh installed")
+    parser.add_argument("--poppler", action="store_true", help="build PyLiite4-Poppler instead of PyLiite4-Addons")
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     parser.add_argument("--sources", type=Path, help="copy the source archive of every bundled project here")
     parser.add_argument("--cache", type=Path, default=ROOT / "build" / "third-party",
                         help="where downloaded source packages are kept (default: build/third-party)")
     args = parser.parse_args()
     build_wheel.PREFIX = args.prefix
+    wheel = WHEELS["poppler" if args.poppler else "addons"]
     if not shutil.which("patchelf"):
         parser.error("patchelf was not found")
     version, bundled, bundled_typelibs = bundled_libraries(args.output)
@@ -141,17 +174,19 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         package = Path(directory) / "PyLiite4"
         package.mkdir()
-        subprocess.run([sys.executable, ROOT / "tools" / "generate.py", "--addons", "--gir-dir",
+        subprocess.run([sys.executable, ROOT / "tools" / "generate.py", "--poppler" if args.poppler else "--addons",
+                        "--gir-dir",
                         f"{args.prefix}/share/gir-1.0", "--gir-dir", f"{args.addons_prefix}/share/gir-1.0",
                         "--output", package], check=True, stdout=subprocess.DEVNULL)
-        libraries = build_addons(package / "_addons", args.addons_prefix, args.prefix, bundled, bundled_typelibs)
-        components = build_wheel.write_licenses(package / "_addons", args.cache.resolve(), [args.addons_prefix])
+        bundle = package / wheel.bundle
+        libraries = build_addons(wheel, bundle, args.addons_prefix, args.prefix, bundled, bundled_typelibs)
+        components = build_wheel.write_licenses(bundle, args.cache.resolve(), [args.addons_prefix], wheel.gpl)
         if args.sources:
             third_party.collect_sources(components, args.sources)
-        wheel = build_wheel.build_wheel(package, args.output, name="PyLiite4-Addons",
-                                        summary="WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette for PyLiite4",
-                                        requires=[f"PyLiite4=={version}"], bundle="_addons", entry_points=False)
-    print(f"{wheel} ({wheel.stat().st_size / 1e6:.0f} MB, {len(libraries)} libraries)")
+        path = build_wheel.build_wheel(package, args.output, name=wheel.name, summary=wheel.summary,
+                                       requires=[f"PyLiite4=={version}"], bundle=wheel.bundle, entry_points=False,
+                                       license=wheel.license)
+    print(f"{path} ({path.stat().st_size / 1e6:.0f} MB, {len(libraries)} libraries)")
 
 
 if __name__ == "__main__":

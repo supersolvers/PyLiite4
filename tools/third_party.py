@@ -60,6 +60,8 @@ MESON_LICENSES = {
 # Projects that keep their license texts somewhere other than the top of their source tree.
 OTHER_TEXTS = {"freetype": {"LICENSE.TXT", "docs/LICENSE.TXT", "docs/FTL.TXT", "docs/GPLv2.TXT"},
                "zlib": {"README"},
+               # Poppler's GPL-3.0 text, beside COPYING's GPL-2.0.
+               "poppler": {"COPYING3"},
                # The libraries VTE compiles in.
                "vte": {"COPYING.XTERM", "subprojects/fast_float/LICENSE-APACHE", "subprojects/fast_float/LICENSE-BOOST",
                        "subprojects/fast_float/LICENSE-MIT", "subprojects/fmt/LICENSE",
@@ -77,7 +79,8 @@ OTHER_TEXTS = {"freetype": {"LICENSE.TXT", "docs/LICENSE.TXT", "docs/FTL.TXT", "
 # Projects with no license file at all, and the text in tools/license-texts that stands in for one.
 STAND_IN_TEXTS = {"sqlite": "SQLite-blessing.txt"}
 # Built with make or CMake rather than meson, so without an install log: their license and files, relative to a
-# prefix. The add-ons' are in /opt/addons (tools/manylinux/build_addons.sh).
+# prefix. The add-ons' are in /opt/addons (tools/manylinux/build_addons.sh), and Poppler's in /opt/poppler
+# (tools/manylinux/build_poppler.sh).
 OTHER_BUILDS = {"ibus": ("LGPL-2.1-or-later", ["lib/libibus-1.0.so*", "lib/gtk-4.0/4.0.0/immodules/libim-ibus.so"]),
                 "tiff": ("libtiff", ["lib/libtiff.so*"]),
                 "icu": ("Unicode-3.0", ["lib/libicu*.so*"]),
@@ -90,7 +93,9 @@ OTHER_BUILDS = {"ibus": ("LGPL-2.1-or-later", ["lib/libibus-1.0.so*", "lib/gtk-4
                               "BSD-2-Clause-Patent",
                               ["lib/libwebkitgtk-6.0.so*", "lib/libjavascriptcoregtk-6.0.so*", "lib/webkitgtk-6.0/**/*",
                                "lib/girepository-1.0/WebKit*.typelib", "lib/girepository-1.0/JavaScriptCore-6.0.typelib",
-                               "share/locale/*/LC_MESSAGES/WebKitGTK-6.0.mo"])}
+                               "share/locale/*/LC_MESSAGES/WebKitGTK-6.0.mo"]),
+                "poppler": ("GPL-2.0-only OR GPL-3.0-only", ["lib/libpoppler.so*", "lib/libpoppler-glib.so*",
+                                                             "lib/girepository-1.0/Poppler-*.typelib"])}
 # Projects whose license mentions the GPL, and why what the wheel takes from them isn't GPL-only.
 # A project that mentions the GPL and isn't listed here fails the build until someone checks it.
 REVIEWED_GPL = {
@@ -346,8 +351,11 @@ class Attribution:
                     keys[source] = ("dpkg", package)
         return keys
 
-    def attribute(self, origins):
-        """Components with their bundled files, from {bundled path: source file}. Raises on a gap."""
+    def attribute(self, origins, gpl=()):
+        """Components with their bundled files, from {bundled path: source file}. Raises on a gap.
+
+        gpl names the GPL projects a GPL wheel, such as PyLiite4-Poppler, is for.
+        """
         keys = self.owner_keys(sorted(set(origins.values())))
         gaps = sorted(bundled for bundled, source in origins.items() if not keys[source])
         if gaps:
@@ -362,7 +370,7 @@ class Attribution:
         if missing:
             raise RuntimeError(f"no license texts were found for {', '.join(missing)}")
         unreviewed = [f"{c.name} ({c.license})" for c in components for c in [c, *c.parts]
-                      if GPL.search(c.license) and c.name not in REVIEWED_GPL]
+                      if GPL.search(c.license) and c.name not in REVIEWED_GPL and c.name not in gpl]
         if unreviewed:
             raise RuntimeError("these projects mention the GPL; check that what the wheel takes from them isn't "
                                "GPL-only, then add them to REVIEWED_GPL:\n  " + "\n  ".join(unreviewed))

@@ -1,10 +1,10 @@
 #!/bin/bash
-# Install a bundled wheel, and optionally the matching PyLiite4-Addons wheel,
+# Install a bundled wheel, and optionally the matching PyLiite4-Addons and PyLiite4-Poppler wheels,
 # into a clean venv and run the test suite with the system's GTK stack hidden,
 # so only the wheels' copies can satisfy it. The tests get their own D-Bus
 # session and no portals, so they can't reach the desktop.
 #
-# Usage: tools/verify_wheel.sh dist/PyLiite4-*.whl [dist/PyLiite4_Addons-*.whl]
+# Usage: tools/verify_wheel.sh dist/PyLiite4-*.whl [dist/PyLiite4_Addons-*.whl] [dist/PyLiite4_Poppler-*.whl]
 set -euo pipefail
 wheels=()
 for wheel in "$@"; do wheels+=("$(realpath "$wheel")"); done
@@ -21,8 +21,11 @@ hide=(--tmpfs /usr/lib/python3/dist-packages --tmpfs "$libdir/girepository-1.0" 
 for library in libgtk-4.so.1 libadwaita-1.so.0 libgirepository-2.0.so.0 libglib-2.0.so.0 libgobject-2.0.so.0 \
                libgio-2.0.so.0 libpango-1.0.so.0 libcairo.so.2 libgdk_pixbuf-2.0.so.0 libwebkitgtk-6.0.so.4 \
                libjavascriptcoregtk-6.0.so.1 libvte-2.91-gtk4.so.0 libshumate-1.0.so.1 libspelling-1.so.2 \
-               libgom-1.0.so.0 libmanette-0.2.so.0; do
+               libgom-1.0.so.0 libmanette-0.2.so.0 libpoppler-glib.so.8; do
     if [ -e "$libdir/$library" ]; then hide+=(--ro-bind /dev/null "$libdir/$library"); fi
+done
+for library in "$libdir"/libpoppler.so.*; do
+    if [ -e "$library" ]; then hide+=(--ro-bind /dev/null "$library"); fi
 done
 
 cat > "$work/maps.py" <<'PYTHON'

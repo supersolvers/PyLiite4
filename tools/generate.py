@@ -32,9 +32,12 @@ FILES = {"GLib": "GLib-2.0", "GObject": "GObject-2.0", "Gio": "Gio-2.0", "GdkPix
          "GstVideo": "GstVideo-1.0", "GstPbutils": "GstPbutils-1.0", "GstApp": "GstApp-1.0",
          "HarfBuzz": "HarfBuzz-0.0", "PangoCairo": "PangoCairo-1.0", "Rsvg": "Rsvg-2.0",
          "JavaScriptCore": "JavaScriptCore-6.0", "WebKit": "WebKit-6.0", "Shumate": "Shumate-1.0",
-         "Spelling": "Spelling-1", "Vte": "Vte-3.91", "Gom": "Gom-1.0", "Manette": "Manette-0.2"}
+         "Spelling": "Spelling-1", "Vte": "Vte-3.91", "Gom": "Gom-1.0", "Manette": "Manette-0.2",
+         "Poppler": "Poppler-0.18"}
 # In the PyLiite4-Addons wheel (tools/build_addons_wheel.py), after the namespaces above that they use.
 ADDON_NAMESPACES = ["JavaScriptCore", "WebKit", "Shumate", "Spelling", "Vte", "Gom", "Manette"]
+# In the PyLiite4-Poppler wheel, which is GPL.
+POPPLER_NAMESPACES = ["Poppler"]
 DEPENDENCIES = {"GObject": ["GLib"], "Gio": ["GLib", "GObject"], "GdkPixbuf": ["GObject", "Gio"],
                 "Pango": ["GObject", "Gio", "HarfBuzz"], "Graphene": ["GObject"],
                 "Gdk": ["Gio", "GdkPixbuf", "Pango"], "Gsk": ["Gdk", "Graphene"],
@@ -43,7 +46,8 @@ DEPENDENCIES = {"GObject": ["GLib"], "Gio": ["GLib", "GObject"], "GdkPixbuf": ["
                 "GstVideo": ["GstBase"], "GstPbutils": ["GstAudio", "GstVideo"], "GstApp": ["GstBase"],
                 "HarfBuzz": ["GObject"], "PangoCairo": ["Pango"], "Rsvg": ["GdkPixbuf", "Gio"],
                 "JavaScriptCore": ["GObject"], "WebKit": ["Gtk", "Soup", "JavaScriptCore"], "Shumate": ["Gtk"],
-                "Spelling": ["GtkSource"], "Vte": ["Gtk"], "Gom": ["Gio"], "Manette": ["Gio"]}
+                "Spelling": ["GtkSource"], "Vte": ["Gtk"], "Gom": ["Gio"], "Manette": ["Gio"],
+                "Poppler": ["Gio"]}
 
 CORE = "http://www.gtk.org/introspection/core/1.0"
 C = "http://www.gtk.org/introspection/c/1.0"
@@ -329,6 +333,7 @@ DESCRIPTIONS = {
     "Vte": "VTE, a terminal emulator widget, from PyLiite4-Addons",
     "Gom": "Gom, an object mapper for SQLite, from PyLiite4-Addons",
     "Manette": "libmanette, for game controllers, from PyLiite4-Addons",
+    "Poppler": "Poppler, for reading and drawing PDF documents, from PyLiite4-Poppler, which is GPL",
 }
 # Starts each line of a docstring, so that the GObject stub's renaming leaves doc text alone.
 DOC = "\0"
@@ -436,8 +441,8 @@ class ClassInfo:
 
 
 class Generator:
-    def __init__(self, gir_dirs, addons=False):
-        self.namespaces = NAMESPACES + (ADDON_NAMESPACES if addons else [])
+    def __init__(self, gir_dirs, extra=()):
+        self.namespaces = NAMESPACES + list(extra)
         self.roots = {}
         self.versions = {}
         for namespace in self.namespaces:
@@ -1187,11 +1192,14 @@ def main():
     parser.add_argument("--gir-dir", type=Path, action="append",
                         help="where to find GIR files; repeat to search several, in order (default: /usr/share/gir-1.0)")
     parser.add_argument("--output", type=Path, default=Path(__file__).parent.parent / "src" / "PyLiite4")
-    parser.add_argument("--addons", action="store_true",
-                        help="write the PyLiite4-Addons namespaces, such as WebKit, instead of PyLiite4's")
+    wheel = parser.add_mutually_exclusive_group()
+    wheel.add_argument("--addons", action="store_true",
+                       help="write the PyLiite4-Addons namespaces, such as WebKit, instead of PyLiite4's")
+    wheel.add_argument("--poppler", action="store_true", help="write the PyLiite4-Poppler namespace")
     args = parser.parse_args()
-    generator = Generator(args.gir_dir or [Path("/usr/share/gir-1.0")], args.addons)
-    for namespace in ADDON_NAMESPACES if args.addons else NAMESPACES:
+    extra = ADDON_NAMESPACES if args.addons else POPPLER_NAMESPACES if args.poppler else []
+    generator = Generator(args.gir_dir or [Path("/usr/share/gir-1.0")], extra)
+    for namespace in extra or NAMESPACES:
         (args.output / f"{namespace}.py").write_text(generator.module(namespace))
         (args.output / f"{namespace}.pyi").write_text(generator.stub(namespace))
         print(f"{namespace} {generator.versions[namespace]}: "

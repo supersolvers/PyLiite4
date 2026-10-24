@@ -44,6 +44,8 @@ app.run([])
 - **PyLiite4-Addons**, a separate wheel: `WebKit` and `JavaScriptCore` (WebKitGTK, a web engine), `Shumate` (maps),
   `Spelling` (spell checking for GtkSourceView), `Vte` (a terminal), `Gom` (objects stored in SQLite) and `Manette`
   (game controllers). See [Installing](#installing).
+- **PyLiite4-Poppler**, another separate wheel: `Poppler`, for reading and drawing PDF documents. Poppler is GPL, so
+  an application that uses it must be too. See [License](#license).
 
 The classes are PyGObject's own, extended in place. Objects created by GTK, such as those from `Gtk.Builder`, have the
 same API, and PyGObject code and documentation still apply.
@@ -333,6 +335,7 @@ one, with `cairo` from `PyLiite4`. `tests/test_interop.py` runs all three.
 | `pyside6-rcc` | GResources and `pyliite4-resources` |
 | `QSignalBlocker` | `signal.blocked(handler)` |
 | `QWebEngineView` | `WebKit.WebView`, from PyLiite4-Addons |
+| `QPdfDocument` | `Poppler.Document`, from PyLiite4-Poppler, which is GPL |
 | `pyside6-deploy` | `pyliite4-deploy` |
 | `QTest.mouseClick`, `keyClick`, `keyClicks` | `gtkbot.input.click`, `key`, `type` |
 | `QSignalSpy`, `qtbot.waitSignal` | `gtkbot.expect_signal`, `wait_signal` |
@@ -399,6 +402,26 @@ It is separate because WebKit alone is larger than the rest of GTK. WebKit runs 
 wheel, without its bubblewrap sandbox, which would need `bwrap` and `xdg-dbus-proxy` on the user's system: show web
 content you trust. Spell checking uses the system's Hunspell dictionaries, from `/usr/share/hunspell`.
 
+The PyLiite4-Poppler wheel adds Poppler, for PDF documents, and likewise needs the matching PyLiite4 wheel:
+
+```bash
+pip install PyLiite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl PyLiite4_Poppler-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
+```
+
+```python
+from PyLiite4 import Gio, Poppler
+
+document = Poppler.Document.new_from_gfile(Gio.File.new_for_path("manual.pdf"), None, None)
+page = document.get_page(0)
+print(document.get_n_pages(), page.get_size(), page.get_text())
+# Draw it in a Gtk.DrawingArea's draw function, or on any Cairo context.
+page.render(context)
+```
+
+Poppler is GPL, unlike the rest of PyLiite4, and is a wheel of its own so that applications can leave it out. It is
+built without poppler-data, so PDFs that use CJK fonts without embedding them may not show their text, and without
+signature checking.
+
 The plain package uses the system's GTK and PyGObject instead:
 
 ```bash
@@ -442,9 +465,13 @@ the same list as `THIRD-PARTY-NOTICES.txt`.
 
 The add-ons wheel lists its own projects the same way, in `PyLiite4/_addons/licenses/`. Among them, VTE is
 LGPL-3.0-or-later, WebKitGTK is LGPL and BSD with the third-party code it compiles in, and Hunspell and HIDAPI are
-used under their non-GPL options. Poppler, for PDFs, is GPL and isn't included.
+used under their non-GPL options.
 
-None of the bundled libraries is GPL-only. Some packages also contain GPL programs, but the wheel takes only their
+The PyLiite4-Poppler wheel is the exception: Poppler is `GPL-2.0-only OR GPL-3.0-only`, so the wheel's license is
+`LGPL-3.0-only AND (GPL-2.0-only OR GPL-3.0-only)`, and a program that uses it must be distributed under the GPL.
+Its projects are listed in `PyLiite4/_poppler/licenses/`. Install it only if that suits your application.
+
+Apart from that wheel, none of the bundled libraries is GPL-only. Some packages also contain GPL programs, but the wheel takes only their
 LGPL, BSD or dual-licensed libraries. To keep it that way, the build fails when a project that mentions the GPL isn't
 on a reviewed list in `tools/third_party.py`.
 
@@ -458,8 +485,8 @@ python3 tools/generate.py
 ```
 
 regenerates `src/PyLiite4/<Namespace>.py` and `.pyi` from the GIR files, so the stubs match the GTK version installed
-when they were generated. With `--addons`, it writes the add-on namespaces instead, which the add-ons wheel build does
-itself.
+when they were generated. With `--addons` or `--poppler`, it writes the add-on namespaces instead, which the add-on
+wheel builds do themselves.
 
 ```bash
 python3 tools/reference.py
@@ -508,6 +535,13 @@ tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_addons.sh
 
 builds the add-ons' libraries, WebKitGTK taking a few hours. After it, `build_wheels.sh` builds a PyLiite4-Addons wheel
 next to each PyLiite4 wheel, and `verify_in_root.sh` and `verify_wheel.sh` test it when given after the main wheel.
+
+```bash
+tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_poppler.sh
+```
+
+builds Poppler, in under a minute, and `build_wheels.sh` then builds a PyLiite4-Poppler wheel too. Its build is the
+only one allowed to bundle a GPL project.
 
 Each wheel build traces every bundled file to the project it came from: the meson install logs for the stack built
 from source, the source RPMs for AlmaLinux packages, and PyPI and crates.io for Python packages and Rust crates. The

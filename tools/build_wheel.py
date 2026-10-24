@@ -263,14 +263,17 @@ def build_bundle(bundle, icons):
     return copied
 
 
-def write_licenses(bundle, cache, extra_prefixes=()):
-    """Attribute every bundled file to its project and write their notices. Returns the projects."""
+def write_licenses(bundle, cache, extra_prefixes=(), gpl=()):
+    """Attribute every bundled file to its project and write their notices. Returns the projects.
+
+    gpl names the GPL projects that may be bundled, for a GPL wheel.
+    """
     unrecorded = [str(path.relative_to(bundle)) for path in bundle.rglob("*")
                   if path.is_file() and path not in ORIGINS and not GENERATED.search(str(path))]
     if unrecorded:
         raise RuntimeError("bundled files without a recorded origin:\n  " + "\n  ".join(sorted(unrecorded)))
     origins = {str(path.relative_to(bundle)): source for path, source in ORIGINS.items()}
-    components = third_party.Attribution(PREFIX, cache, extra_prefixes).attribute(origins)
+    components = third_party.Attribution(PREFIX, cache, extra_prefixes).attribute(origins, gpl)
     third_party.write_notices(components, bundle / "licenses")
     return components
 
@@ -280,8 +283,9 @@ def glibc_tag():
     return f"manylinux_{major}_{minor}_{platform.machine()}"
 
 
-def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundle="_bundled", entry_points=True):
-    """Pack package_dir as the PyLiite4 package. The add-ons wheel passes its own name, summary and bundle."""
+def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundle="_bundled", entry_points=True,
+                license=None):
+    """Pack package_dir as the PyLiite4 package. The add-on wheels pass their own name, summary, bundle and license."""
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     name, version = name or project["name"], project["version"]
     python = f"cp{sys.version_info.major}{sys.version_info.minor}"
@@ -291,7 +295,7 @@ def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundl
     license_headers = "".join(f"License-File: {path}\n" for path in [*license_files, "THIRD-PARTY-NOTICES.txt"])
     requirements = "".join(f"Requires-Dist: {requirement}\n" for requirement in requires)
     metadata = (f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\nSummary: {summary or project['description']}\n"
-                f"License-Expression: {project['license']}\n{license_headers}{requirements}"
+                f"License-Expression: {license or project['license']}\n{license_headers}{requirements}"
                 f"Requires-Python: =={sys.version_info.major}.{sys.version_info.minor}.*\n"
                 f"Description-Content-Type: text/markdown\n\n{(ROOT / 'README.md').read_text()}")
     extra = {

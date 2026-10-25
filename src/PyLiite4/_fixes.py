@@ -57,7 +57,9 @@ def fix_asyncio(loop: Any) -> None:
             self._log_traceback = False
             if self.done():
                 return False
-            self._num_cancels_requested += 1
+            # Python 3.11 and later count requests, for Task.cancelling().
+            if hasattr(self, "_num_cancels_requested"):
+                self._num_cancels_requested += 1
             waiter.cancel()
             self._must_cancel = True
             self._cancel_message = msg

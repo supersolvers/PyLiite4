@@ -12,6 +12,14 @@ for prefix in addons poppler; do
     if [ -d "$root/opt/$prefix" ]; then extra+=(--tmpfs "/opt/$prefix"); fi
 done
 project=$(cd "$(dirname "$0")/../.." && pwd)
+# PyLiite4.testing runs each test session on its own D-Bus and X server, and real input uses libXtst. dbus-daemon's
+# package can't be installed as such here, as its system bus helper belongs to a group the user namespace lacks, so
+# its files are unpacked.
+"$project/tools/manylinux/enter.sh" "$root" bash -c '
+    dnf -y -q --setopt=install_weak_deps=False install xorg-x11-server-Xvfb libXtst cpio > /dev/null 2>&1 || true
+    if [ ! -x /usr/bin/dbus-daemon ]; then
+        cd /tmp && dnf -q download dbus-daemon && rpm2cpio dbus-daemon-*.rpm | (cd / && cpio -idm --quiet --no-preserve-owner)
+    fi'
 display=$((90 + RANDOM % 400))
 Xvfb ":$display" -screen 0 1024x768x24 >/dev/null 2>&1 &
 xvfb=$!
@@ -20,7 +28,7 @@ sleep 1
 bwrap --bind "$root" / --dev /dev --proc /proc --tmpfs /tmp --tmpfs /opt/gtk --ro-bind /etc/resolv.conf /etc/resolv.conf \
     --ro-bind "$wheel" /tmp/wheel/"${wheel##*/}" "${extra[@]}" --ro-bind "$project/tests" /tmp/run/tests \
     --ro-bind "$project/examples" /tmp/run/examples --ro-bind "$project/demos" /tmp/run/demos \
-    --ro-bind /tmp/.X11-unix /tmp/.X11-unix \
+    --tmpfs /tmp/.X11-unix --ro-bind "/tmp/.X11-unix/X$display" "/tmp/.X11-unix/X$display" \
     --unshare-user --uid 0 --gid 0 --clearenv --setenv HOME /tmp/home --setenv LANG C.UTF-8 \
     --setenv PATH /usr/bin:/bin --setenv DISPLAY ":$display" --setenv GDK_BACKEND x11 --setenv NO_AT_BRIDGE 1 \
     --chdir /tmp/run bash -c "ldd --version | head -1

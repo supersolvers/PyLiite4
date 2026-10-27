@@ -1,0 +1,61 @@
+# Flatpak manifest for examples/hello.py, built from this checkout:
+#
+#   flatpak install flathub org.gnome.Platform//50 org.gnome.Sdk//50
+#   flatpak-builder --user --install --force-clean build-dir examples/flatpak/org.example.PyLiite4Hello.yml
+#   flatpak run org.example.PyLiite4Hello
+#
+# The GNOME runtime already has GTK, libadwaita, GStreamer, GtkSourceView, libsoup, libportal and PyGObject, so the app
+# uses those and installs only PyLiite4's pure-Python modules, as the plain package does on a desktop with system GTK.
+# The bundled manylinux wheel would add 200 MB of libraries that duplicate the runtime's, would not get the runtime's
+# security updates, and on import would point GIO, GSettings, fonts and the data directories at its own copies instead
+# of the sandbox's. Runtime 50 has GTK 4.22 and libadwaita 1.9, the versions PyLiite4's modules are generated from; with
+# an older runtime, API that it lacks fails when used.
+id: org.example.PyLiite4Hello
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: pyliite4-hello
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+modules:
+  - name: PyLiite4
+    buildsystem: simple
+    build-commands:
+      # Copied rather than installed with pip: the package is pure Python here, and this needs nothing from the SDK
+      # beyond Python, nor the network for build dependencies.
+      - |
+        site=$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib", "posix_prefix", {"base": "/app"}))')
+        mkdir -p "$site"
+        cp -r src/PyLiite4 "$site/"
+        find "$site/PyLiite4" -name __pycache__ -prune -exec rm -rf {} +
+        rm -rf "$site/PyLiite4/_bundled" "$site/PyLiite4/__pyinstaller"
+        python3 -m compileall -q "$site/PyLiite4"
+      - install -Dm644 -t /app/share/licenses/PyLiite4 LICENSE COPYING.GPL3
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - .mypy_cache
+          - .pytest_cache
+          - build
+          - demos
+          - dist
+          - tests
+          - tools
+
+  - name: hello
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 hello.py /app/share/pyliite4-hello/hello.py
+      - install -Dm755 pyliite4-hello /app/bin/pyliite4-hello
+    sources:
+      - type: file
+        path: ../hello.py
+      - type: script
+        dest-filename: pyliite4-hello
+        commands:
+          - exec python3 /app/share/pyliite4-hello/hello.py "$@"

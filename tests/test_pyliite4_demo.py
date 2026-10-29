@@ -165,7 +165,8 @@ DEMO = f"""
         gtkbot.input.click(tasks.fetch_button)
         gtkbot.wait_until(lambda: tasks.status.get_label().startswith("200 from /now"))
         gtkbot.input.click(tasks.slow_button)
-        assert tasks.cancel_button.get_sensitive()
+        # The request's task marks the page busy when it first runs, on a later main loop iteration.
+        gtkbot.wait_until(tasks.cancel_button.get_sensitive)
         gtkbot.input.click(tasks.cancel_button)
         gtkbot.wait_until(lambda: tasks.status.get_label() == "Cancelled")
         gtkbot.input.click(tasks.thread_button)

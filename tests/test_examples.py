@@ -90,7 +90,10 @@ def utf8_locale() -> str | None:
     try:
         names = subprocess.run(["locale", "-a"], capture_output=True, text=True).stdout.split()
     except OSError:
-        return None
+        names = []
+    # locale -a crashes under qemu-user, so glibc's compiled locales are also looked for directly.
+    if not names and Path("/usr/lib/locale").is_dir():
+        names = [path.name for path in Path("/usr/lib/locale").iterdir() if (path / "LC_CTYPE").exists()]
     usable = [name for name in names if name.lower().endswith(("utf8", "utf-8")) and not name.startswith("C.")]
     return next((name for name in usable if name.startswith("en_US")), usable[0] if usable else None)
 

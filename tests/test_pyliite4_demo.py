@@ -174,6 +174,9 @@ DEMO = f"""
         assert tasks.status.get_label().startswith("348,513 primes")
 
 
+    # GTK may warn this for the scrolled window's scrollbar troughs while typing, more often on slow machines.
+    # Plain GTK does it too, up to 4.24.1 at least.
+    @pytest.mark.gtk_log_ignore("Trying to snapshot GtkGizmo .* without a current allocation")
     def test_source_editor(gtkbot, demo):
         pyliite4_demo.show_page(demo, source_editor.NAME)
         try:

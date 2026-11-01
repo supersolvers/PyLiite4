@@ -56,9 +56,13 @@ DEMOS = f"""
         assert fishbowl.selected_widget_type == first
 
 
-    def test_minesweeper_new_game_and_reveal(gtkbot, open_demo):
+    def test_minesweeper_new_game_and_reveal(gtkbot, open_demo, monkeypatch):
         from demos.gtk_demo.demos import listview_minesweeper
 
+        # A revealed mine plays a sound: kept off the desktop's audio, and off GTK's critical where no sound theme
+        # is installed.
+        celebrated = []
+        monkeypatch.setattr(listview_minesweeper, "celebrate", celebrated.append)
         window = open_demo(listview_minesweeper)
         view = gtkbot.find(window, Gtk.GridView)
         game = view.get_model().get_model()
@@ -71,6 +75,7 @@ DEMOS = f"""
                                                                     predicate=lambda label: label.get_width() > 0)), None))
         gtkbot.input.click(cell)
         assert game.get_item(0).props.label != "?"
+        assert celebrated == ([False] if game.get_item(0).is_mine else [])
 """
 
 

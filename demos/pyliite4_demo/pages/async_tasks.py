@@ -26,9 +26,10 @@ def count_primes(limit: int) -> int:
 
 
 class Server:
-    """A libsoup server on a loopback port: /now answers at once, /slow after a second and a half."""
+    """A libsoup server on a loopback port: /now answers at once, /slow after ``slow_ms``, a second and a half."""
 
     def __init__(self) -> None:
+        self.slow_ms = 1500
         self.server = Soup.Server()
         self.server.add_handler("/now", self.now)
         self.server.add_handler("/slow", self.slow)
@@ -47,7 +48,7 @@ class Server:
             self.now(server, message, path, query)
             message.unpause()
             return GLib.SOURCE_REMOVE
-        GLib.timeout_add(1500, answer)
+        GLib.timeout_add(self.slow_ms, answer)
 
 
 class Page(Gtk.Box):

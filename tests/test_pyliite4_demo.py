@@ -162,6 +162,8 @@ DEMO = f"""
 
     def test_async_requests_cancelling_and_threads(gtkbot, demo):
         tasks = page(gtkbot, demo, async_tasks)
+        # Long enough that a slow machine still clicks Cancel before the answer; it is cancelled, so no slower.
+        tasks.server.slow_ms = 30_000
         gtkbot.input.click(tasks.fetch_button)
         gtkbot.wait_until(lambda: tasks.status.get_label().startswith("200 from /now"))
         gtkbot.input.click(tasks.slow_button)

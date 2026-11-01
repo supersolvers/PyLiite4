@@ -160,15 +160,22 @@ VIEW = """
         view = shown(gtkbot, "")
         paragraphs = [f"<p>Paragraph {n} with <b>some</b> <code>code</code> and a <a href='https://x.org/{n}'>link</a>"
                       f" in it, long enough to wrap over a couple of lines in a narrow view.</p>" for n in range(150)]
-        view.set_markup("".join(paragraphs[:140]))
-        times = []
+        times, full_times = [], []
         for n in range(140, 150):
+            # The same reply rendered from scratch, which an update should be much quicker than on any machine.
+            view.set_markup("")
+            gtkbot.iterate()
+            started = time.perf_counter()
+            view.set_markup("".join(paragraphs[:n]))
+            gtkbot.iterate()
+            full_times.append(time.perf_counter() - started)
             for words in range(1, 6):
                 started = time.perf_counter()
                 view.set_markup("".join(paragraphs[:n]) + "<p>" + " streamed" * words + "</p>")
                 gtkbot.iterate()
                 times.append(time.perf_counter() - started)
-        assert sum(times) / len(times) < 0.05, f"{sum(times) / len(times):.3f} s per update"
+        update, full = sum(times) / len(times), sum(full_times) / len(full_times)
+        assert update < full * 0.6, f"{update:.3f} s per update, {full:.3f} s to render it all"
 """
 
 

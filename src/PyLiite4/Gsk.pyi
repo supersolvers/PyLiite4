@@ -4838,7 +4838,7 @@ class VulkanRendererClass:
 
 
 
-def value_dup_render_node(value: GObject.Value) -> RenderNode | None:
+def value_dup_render_node(value: _Any) -> RenderNode | None:
     """Retrieves the render node stored inside a `GObject.Value`,
     and acquires a reference to it.
 
@@ -4849,7 +4849,7 @@ def value_dup_render_node(value: GObject.Value) -> RenderNode | None:
         the render node
     """
 
-def value_get_render_node(value: GObject.Value) -> RenderNode | None:
+def value_get_render_node(value: _Any) -> RenderNode | None:
     """Retrieves the render node stored inside a `GObject.Value`.
 
     Args:
@@ -4859,7 +4859,7 @@ def value_get_render_node(value: GObject.Value) -> RenderNode | None:
         the render node
     """
 
-def value_set_render_node(value: GObject.Value, node: RenderNode) -> None:
+def value_set_render_node(value: _Any, node: RenderNode) -> None:
     """Stores the given render node inside a `GObject.Value`.
 
     The GObject.Value will acquire a reference
@@ -4870,7 +4870,7 @@ def value_set_render_node(value: GObject.Value, node: RenderNode) -> None:
         node: a render node
     """
 
-def value_take_render_node(value: GObject.Value, node: RenderNode | None = ...) -> None:
+def value_take_render_node(value: _Any, node: RenderNode | None = ...) -> None:
     """Stores the given render node inside a `GObject.Value`.
 
     This function transfers the ownership of the

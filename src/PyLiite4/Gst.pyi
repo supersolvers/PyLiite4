@@ -2668,7 +2668,7 @@ class Caps:
             a pointer to the Gst.Structure corresponding
                 to index
         """
-    def id_str_set_value(self, field: IdStr, value: GObject.Value) -> None:
+    def id_str_set_value(self, field: IdStr, value: _Any) -> None:
         """Sets the given field on all structures of self to the given value.
         This is a convenience function for calling Gst.Structure.set_value() on
         all structures of self.
@@ -2880,7 +2880,7 @@ class Caps:
         Args:
             features: the Gst.CapsFeatures to set
         """
-    def set_value(self, field: _str, value: GObject.Value) -> None:
+    def set_value(self, field: _str, value: _Any) -> None:
         """Sets the given field on all structures of self to the given value.
         This is a convenience function for calling Gst.Structure.set_value() on
         all structures of self.
@@ -2889,7 +2889,7 @@ class Caps:
             field: name of the field to set
             value: value to set the field to
         """
-    def set_value_static_str(self, field: _str, value: GObject.Value) -> None:
+    def set_value_static_str(self, field: _str, value: _Any) -> None:
         """Sets the given field on all structures of self to the given value.
         This is a convenience function for calling Gst.Structure.set_value() on
         all structures of self.
@@ -3405,7 +3405,7 @@ class ChildProxy(GObject.GInterface):
         Returns:
             the number of child objects
         """
-    def get_property(self, name: _str) -> GObject.Value:
+    def get_property(self, name: _str) -> _Any:
         """Gets a single property using the GstChildProxy mechanism.
         You are responsible for freeing it by calling GObject.Value.unset()
 
@@ -3429,7 +3429,7 @@ class ChildProxy(GObject.GInterface):
             pspec: pointer to take the GObject.ParamSpec
                 describing the property
         """
-    def set_property(self, name: _str, value: GObject.Value) -> None:
+    def set_property(self, name: _str, value: _Any) -> None:
         """Sets a single property using the GstChildProxy mechanism.
 
         Args:
@@ -4203,7 +4203,7 @@ class ControlBinding(Object):
     """
     props: _ControlBindingProps  # type: ignore[assignment]
     def __init__(self, *, name: _str = ..., object: Object = ..., parent: Object = ..., **properties: _Any) -> None: ...
-    def get_g_value_array(self, timestamp: ClockTime, interval: ClockTime, values: _list[GObject.Value]) -> _bool:
+    def get_g_value_array(self, timestamp: ClockTime, interval: ClockTime, values: _list[_Any]) -> _bool:
         """Gets a number of #GValues for the given controlled property starting at the
         requested time. The array values need to hold enough space for n_values of
         GObject.Value.
@@ -4219,7 +4219,7 @@ class ControlBinding(Object):
         Returns:
             True if the given array could be filled, False otherwise
         """
-    def get_value(self, timestamp: ClockTime) -> GObject.Value | None:
+    def get_value(self, timestamp: ClockTime) -> _Any:
         """Gets the value for the given controlled property at the requested time.
 
         Args:
@@ -4259,9 +4259,9 @@ class ControlBinding(Object):
             True if the controller value could be applied to the object
                 property, False otherwise
         """
-    def do_get_g_value_array(self, timestamp: ClockTime, interval: ClockTime, values: _list[GObject.Value]) -> _bool:
+    def do_get_g_value_array(self, timestamp: ClockTime, interval: ClockTime, values: _list[_Any]) -> _bool:
         """The virtual method behind get_g_value_array(), for subclasses to override."""
-    def do_get_value(self, timestamp: ClockTime) -> GObject.Value | None:
+    def do_get_value(self, timestamp: ClockTime) -> _Any:
         """The virtual method behind get_value(), for subclasses to override."""
     def do_sync_values(self, object: Object, timestamp: ClockTime, last_sync: ClockTime) -> _bool:
         """The virtual method behind sync_values(), for subclasses to override."""
@@ -7260,7 +7260,7 @@ class ElementFactory(PluginFeature):
             new Gst.Element or None
                 if the element couldn't be created
         """
-    def create_with_properties(self, names: _list[_str] | None = ..., values: _list[GObject.Value] | None = ...) -> Element | None:
+    def create_with_properties(self, names: _list[_str] | None = ..., values: _list[_Any] | None = ...) -> Element | None:
         """Create a new element of the type defined by the given elementfactory.
         The supplied list of properties, will be passed at object construction.
 
@@ -7417,7 +7417,7 @@ class ElementFactory(PluginFeature):
                 if unable to create element
         """
     @staticmethod
-    def make_with_properties(factoryname: _str, names: _list[_str] | None = ..., values: _list[GObject.Value] | None = ...) -> Element | None:
+    def make_with_properties(factoryname: _str, names: _list[_str] | None = ..., values: _list[_Any] | None = ...) -> Element | None:
         """Create a new element of the type defined by the given elementfactory.
         The supplied list of properties, will be passed at object construction.
 
@@ -9146,7 +9146,7 @@ class Iterator:
         Returns:
             a new copy of self.
         """
-    def filter(self, func: GLib.CompareFunc, user_data: GObject.Value) -> Iterator:
+    def filter(self, func: GLib.CompareFunc, user_data: _Any) -> Iterator:
         """Create a new iterator from an existing iterator. The new iterator
         will only return those elements that match the given compare function func.
         The first parameter that is passed to func is the GObject.Value of the current
@@ -9164,7 +9164,7 @@ class Iterator:
 
                 MT safe.
         """
-    def find_custom(self, func: GLib.CompareFunc) -> _tuple[_bool, GObject.Value]:
+    def find_custom(self, func: GLib.CompareFunc) -> _tuple[_bool, _Any]:
         """Find the first element in self that matches the compare function func.
         func should return 0 when the element is found. The first parameter
         to func will be the current element of the iterator and the
@@ -9185,7 +9185,7 @@ class Iterator:
                 MT safe.
             elem: pointer to a GObject.Value where to store the result
         """
-    def fold(self, func: IteratorFoldFunction, ret: GObject.Value) -> IteratorResult:
+    def fold(self, func: IteratorFoldFunction, ret: _Any) -> IteratorResult:
         """Folds func over the elements of iter. That is to say, func will be called
         as func (object, ret, user_data) for each object in self. The normal use
         of this procedure is to accumulate the results of operating on the objects in
@@ -9226,7 +9226,7 @@ class Iterator:
         """
     def free(self) -> None:
         """MT safe."""
-    def next(self) -> _tuple[IteratorResult, GObject.Value]:
+    def next(self) -> _tuple[IteratorResult, _Any]:
         """Get the next item from the iterator in elem.
 
         Only when this function returns Gst.IteratorResult.OK, elem will contain a valid
@@ -9276,7 +9276,7 @@ class Iterator:
         MT safe.
         """
     @classmethod
-    def new_single(cls, type: _GTypeLike, object: GObject.Value) -> Iterator:
+    def new_single(cls, type: _GTypeLike, object: _Any) -> Iterator:
         """This Gst.Iterator is a convenient iterator for the common
         case where a Gst.Iterator needs to be returned but only
         a single object has to be considered. This happens often
@@ -9747,7 +9747,7 @@ class Message:
 
                 MT safe.
         """
-    def get_stream_status_object(self) -> GObject.Value | None:
+    def get_stream_status_object(self) -> _Any:
         """Extracts the object managing the streaming thread from self.
 
         Returns:
@@ -9974,7 +9974,7 @@ class Message:
             code: location for the code
             text: location for the text
         """
-    def parse_property_notify(self) -> _tuple[Object, _str, GObject.Value | None]:
+    def parse_property_notify(self) -> _tuple[Object, _str, _Any]:
         """Parses a property-notify message. These will be posted on the bus only
         when set up with Gst.Element.add_property_notify_watch() or
         Gst.Element.add_property_deep_notify_watch().
@@ -10319,7 +10319,7 @@ class Message:
         Args:
             seqnum: A sequence number.
         """
-    def set_stream_status_object(self, object: GObject.Value) -> None:
+    def set_stream_status_object(self, object: _Any) -> None:
         """Configures the object handling the streaming thread. This is usually a
         GstTask object but other objects might be added in the future.
 
@@ -10725,7 +10725,7 @@ class Message:
             The new qos message.
         """
     @classmethod
-    def new_property_notify(cls, src: Object, property_name: _str, val: GObject.Value | None = ...) -> Message:
+    def new_property_notify(cls, src: Object, property_name: _str, val: _Any = ...) -> Message:
         """Args:
             src: The Gst.Object whose property changed (may or may not be a Gst.Element)
             property_name: name of the property that changed
@@ -11874,7 +11874,7 @@ class Object(GObject.InitiallyUnowned):
         Returns:
             the control rate in nanoseconds
         """
-    def get_g_value_array(self, property_name: _str, timestamp: ClockTime, interval: ClockTime, values: _list[GObject.Value]) -> _bool:
+    def get_g_value_array(self, property_name: _str, timestamp: ClockTime, interval: ClockTime, values: _list[_Any]) -> _bool:
         """Gets a number of #GValues for the given controlled property starting at the
         requested time. The array values need to hold enough space for n_values of
         GObject.Value.
@@ -11924,7 +11924,7 @@ class Object(GObject.InitiallyUnowned):
                 MT safe. Grabs and releases the Gst.Object's LOCK for all objects
                          in the hierarchy.
         """
-    def get_value(self, property_name: _str, timestamp: ClockTime) -> GObject.Value | None:
+    def get_value(self, property_name: _str, timestamp: ClockTime) -> _Any:
         """Gets the value for the given controlled property at the requested time.
 
         Args:
@@ -18558,7 +18558,7 @@ class Structure:
                 returns False.
             value: a pointer to a #guint64 to set
         """
-    def get_value(self, fieldname: _str) -> GObject.Value | None:
+    def get_value(self, fieldname: _str) -> _Any:
         """Get the value of the field with name fieldname.
 
         Args:
@@ -18596,7 +18596,7 @@ class Structure:
         Returns:
             True if name matches the name of the structure.
         """
-    def id_get_value(self, field: GLib.Quark) -> GObject.Value | None:
+    def id_get_value(self, field: GLib.Quark) -> _Any:
         """Get the value of the field with GQuark field.
 
         Args:
@@ -18629,7 +18629,7 @@ class Structure:
         Returns:
             True if the structure contains a field with the given name and type
         """
-    def id_set_value(self, field: GLib.Quark, value: GObject.Value) -> None:
+    def id_set_value(self, field: GLib.Quark, value: _Any) -> None:
         """Sets the field with the given GQuark field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed.
@@ -18651,7 +18651,7 @@ class Structure:
         Returns:
             the GObject.Value of the field
         """
-    def id_str_get_value(self, fieldname: IdStr) -> GObject.Value | None:
+    def id_str_get_value(self, fieldname: IdStr) -> _Any:
         """Get the value of the field with name fieldname.
 
         Args:
@@ -18697,7 +18697,7 @@ class Structure:
         Args:
             fieldname: the name of the field to remove
         """
-    def id_str_set_value(self, fieldname: IdStr, value: GObject.Value) -> None:
+    def id_str_set_value(self, fieldname: IdStr, value: _Any) -> None:
         """Sets the field with the given name field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed.
@@ -18706,7 +18706,7 @@ class Structure:
             fieldname: the name of the field to set
             value: the new value of the field
         """
-    def id_str_take_value(self, fieldname: IdStr, value: GObject.Value) -> None:
+    def id_str_take_value(self, fieldname: IdStr, value: _Any) -> None:
         """Sets the field with the given GstIdStr field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed.
@@ -18715,7 +18715,7 @@ class Structure:
             fieldname: the name of the field to set
             value: the new value of the field
         """
-    def id_take_value(self, field: GLib.Quark, value: GObject.Value) -> None:
+    def id_take_value(self, field: GLib.Quark, value: _Any) -> None:
         """Sets the field with the given GQuark field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed.
@@ -18903,7 +18903,7 @@ class Structure:
         Returns:
             True if the parent refcount could be set.
         """
-    def set_value(self, fieldname: _str, value: GObject.Value) -> None:
+    def set_value(self, fieldname: _str, value: _Any) -> None:
         """Sets the field with the given name field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed.
@@ -18912,7 +18912,7 @@ class Structure:
             fieldname: the name of the field to set
             value: the new value of the field
         """
-    def set_value_static_str(self, fieldname: _str, value: GObject.Value) -> None:
+    def set_value_static_str(self, fieldname: _str, value: _Any) -> None:
         """Sets the field with the given name field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed.
@@ -18924,7 +18924,7 @@ class Structure:
             fieldname: the name of the field to set
             value: the new value of the field
         """
-    def take_value(self, fieldname: _str, value: GObject.Value) -> None:
+    def take_value(self, fieldname: _str, value: _Any) -> None:
         """Sets the field with the given name field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed. The function will take ownership of value.
@@ -18933,7 +18933,7 @@ class Structure:
             fieldname: the name of the field to set
             value: the new value of the field
         """
-    def take_value_static_str(self, fieldname: _str, value: GObject.Value) -> None:
+    def take_value_static_str(self, fieldname: _str, value: _Any) -> None:
         """Sets the field with the given name field to value.  If the field
         does not exist, it is created.  If the field exists, the previous
         value is replaced and freed. The function will take ownership of value.
@@ -19574,7 +19574,7 @@ class TagList:
     not allowed. Strings must not be empty or None.
     """
     mini_object: MiniObject
-    def add_value(self, mode: TagMergeMode, tag: _str, value: GObject.Value) -> None:
+    def add_value(self, mode: TagMergeMode, tag: _str, value: _Any) -> None:
         """Sets the GValue for a given tag using the specified mode.
 
         Args:
@@ -19937,7 +19937,7 @@ class TagList:
                 given list.
             value: location for the result
         """
-    def get_value_index(self, tag: _str, index: _int) -> GObject.Value | None:
+    def get_value_index(self, tag: _str, index: _int) -> _Any:
         """Gets the value that is at the given index for the given tag in the given
         list.
 
@@ -20055,7 +20055,7 @@ class TagList:
                 error.
         """
     @staticmethod
-    def copy_value(list: TagList, tag: _str) -> _tuple[_bool, GObject.Value]:
+    def copy_value(list: TagList, tag: _str) -> _tuple[_bool, _Any]:
         """Copies the contents for the given tag into the value,
         merging multiple values into one if multiple values are associated
         with the tag.
@@ -20165,7 +20165,7 @@ class TagSetter(GObject.GInterface):
     GST_LOG_OBJECT (tagsetter, "final tags: %" GST_PTR_FORMAT, result);
     ```
     """
-    def add_tag_value(self, mode: TagMergeMode, tag: _str, value: GObject.Value) -> None:
+    def add_tag_value(self, mode: TagMergeMode, tag: _str, value: _Any) -> None:
         """Adds the given tag / GValue pair on the setter using the given merge mode.
 
         Args:
@@ -21867,7 +21867,7 @@ class ValueArray:
     """A fundamental type that describes an ordered list of GObject.Value"""
     props: _ValueArrayProps  # type: ignore[assignment]
     @staticmethod
-    def append_and_take_value(value: GObject.Value, append_value: GObject.Value) -> None:
+    def append_and_take_value(value: _Any, append_value: _Any) -> None:
         """Appends append_value to the GstValueArray in value.
 
         Args:
@@ -21875,7 +21875,7 @@ class ValueArray:
             append_value: the value to append
         """
     @staticmethod
-    def append_value(value: GObject.Value, append_value: GObject.Value) -> None:
+    def append_value(value: _Any, append_value: _Any) -> None:
         """Appends append_value to the GstValueArray in value.
 
         Args:
@@ -21883,7 +21883,7 @@ class ValueArray:
             append_value: the value to append
         """
     @staticmethod
-    def get_size(value: GObject.Value) -> _int:
+    def get_size(value: _Any) -> _int:
         """Gets the number of values contained in value.
 
         Args:
@@ -21893,7 +21893,7 @@ class ValueArray:
             the number of values
         """
     @staticmethod
-    def get_value(value: GObject.Value, index: _int) -> GObject.Value:
+    def get_value(value: _Any, index: _int) -> _Any:
         """Gets the value that is a member of the array contained in value and
         has the index index.
 
@@ -21905,7 +21905,7 @@ class ValueArray:
             the value at the given index
         """
     @staticmethod
-    def init(value: GObject.Value, prealloc: _int) -> GObject.Value:
+    def init(value: _Any, prealloc: _int) -> _Any:
         """Initializes and pre-allocates a GObject.Value of type #GST_TYPE_ARRAY.
 
         Args:
@@ -21916,7 +21916,7 @@ class ValueArray:
             The GObject.Value structure that has been passed in
         """
     @staticmethod
-    def prepend_value(value: GObject.Value, prepend_value: GObject.Value) -> None:
+    def prepend_value(value: _Any, prepend_value: _Any) -> None:
         """Prepends prepend_value to the GstValueArray in value.
 
         Args:
@@ -21940,7 +21940,7 @@ class ValueList:
     """A fundamental type that describes an unordered list of GObject.Value"""
     props: _ValueListProps  # type: ignore[assignment]
     @staticmethod
-    def append_and_take_value(value: GObject.Value, append_value: GObject.Value) -> None:
+    def append_and_take_value(value: _Any, append_value: _Any) -> None:
         """Appends append_value to the GstValueList in value.
 
         Args:
@@ -21948,7 +21948,7 @@ class ValueList:
             append_value: the value to append
         """
     @staticmethod
-    def append_value(value: GObject.Value, append_value: GObject.Value) -> None:
+    def append_value(value: _Any, append_value: _Any) -> None:
         """Appends append_value to the GstValueList in value.
 
         Args:
@@ -21956,7 +21956,7 @@ class ValueList:
             append_value: the value to append
         """
     @staticmethod
-    def concat(value1: GObject.Value, value2: GObject.Value) -> GObject.Value:
+    def concat(value1: _Any, value2: _Any) -> _Any:
         """Concatenates copies of value1 and value2 into a list.  Values that are not
         of type #GST_TYPE_LIST are treated as if they were lists of length 1.
         dest will be initialized to the type #GST_TYPE_LIST.
@@ -21969,7 +21969,7 @@ class ValueList:
             an uninitialized GObject.Value to take the result
         """
     @staticmethod
-    def get_size(value: GObject.Value) -> _int:
+    def get_size(value: _Any) -> _int:
         """Gets the number of values contained in value.
 
         Args:
@@ -21979,7 +21979,7 @@ class ValueList:
             the number of values
         """
     @staticmethod
-    def get_value(value: GObject.Value, index: _int) -> GObject.Value:
+    def get_value(value: _Any, index: _int) -> _Any:
         """Gets the value that is a member of the list contained in value and
         has the index index.
 
@@ -21991,7 +21991,7 @@ class ValueList:
             the value at the given index
         """
     @staticmethod
-    def init(value: GObject.Value, prealloc: _int) -> GObject.Value:
+    def init(value: _Any, prealloc: _int) -> _Any:
         """Initializes and pre-allocates a GObject.Value of type #GST_TYPE_LIST.
 
         Args:
@@ -22002,7 +22002,7 @@ class ValueList:
             The GObject.Value structure that has been passed in
         """
     @staticmethod
-    def merge(value1: GObject.Value, value2: GObject.Value) -> GObject.Value:
+    def merge(value1: _Any, value2: _Any) -> _Any:
         """Merges copies of value1 and value2.  Values that are not
         of type #GST_TYPE_LIST are treated as if they were lists of length 1.
 
@@ -22018,7 +22018,7 @@ class ValueList:
             an uninitialized GObject.Value to take the result
         """
     @staticmethod
-    def prepend_value(value: GObject.Value, prepend_value: GObject.Value) -> None:
+    def prepend_value(value: _Any, prepend_value: _Any) -> None:
         """Prepends prepend_value to the GstValueList in value.
 
         Args:
@@ -22869,7 +22869,7 @@ def tag_is_fixed(tag: _str) -> _bool:
     """
 
 
-def tag_merge_strings_with_comma(src: GObject.Value) -> GObject.Value:
+def tag_merge_strings_with_comma(src: _Any) -> _Any:
     """This is a convenience function for the func argument of Gst.tag_register().
     It concatenates all given strings using a comma. The tag must be registered
     as a G_TYPE_STRING or this function will fail.
@@ -22881,7 +22881,7 @@ def tag_merge_strings_with_comma(src: GObject.Value) -> GObject.Value:
         uninitialized GValue to store result in
     """
 
-def tag_merge_use_first(src: GObject.Value) -> GObject.Value:
+def tag_merge_use_first(src: _Any) -> _Any:
     """This is a convenience function for the func argument of Gst.tag_register().
     It creates a copy of the first value from the list.
 
@@ -23254,7 +23254,7 @@ def util_set_object_array(object: GObject.Object, name: _str, array: GObject.Val
         array: a GObject.ValueArray containing the values
     """
 
-def util_set_value_from_string(value_str: _str) -> GObject.Value:
+def util_set_value_from_string(value_str: _str) -> _Any:
     """Converts the string to the type of the value and
     sets the value with it.
 
@@ -23406,7 +23406,7 @@ def util_uint64_scale_round(val: _int, num: _int, denom: _int) -> _int:
             Gst.util_uint64_scale_int_round(), Gst.util_uint64_scale_int_ceil().
     """
 
-def value_can_compare(value1: GObject.Value, value2: GObject.Value) -> _bool:
+def value_can_compare(value1: _Any, value2: _Any) -> _bool:
     """Determines if value1 and value2 can be compared.
 
     Args:
@@ -23417,7 +23417,7 @@ def value_can_compare(value1: GObject.Value, value2: GObject.Value) -> _bool:
         True if the values can be compared
     """
 
-def value_can_intersect(value1: GObject.Value, value2: GObject.Value) -> _bool:
+def value_can_intersect(value1: _Any, value2: _Any) -> _bool:
     """Determines if intersecting two values will produce a valid result.
     Two values will produce a valid intersection if they have the same
     type.
@@ -23430,7 +23430,7 @@ def value_can_intersect(value1: GObject.Value, value2: GObject.Value) -> _bool:
         True if the values can intersect
     """
 
-def value_can_subtract(minuend: GObject.Value, subtrahend: GObject.Value) -> _bool:
+def value_can_subtract(minuend: _Any, subtrahend: _Any) -> _bool:
     """Checks if it's possible to subtract subtrahend from minuend.
 
     Args:
@@ -23441,7 +23441,7 @@ def value_can_subtract(minuend: GObject.Value, subtrahend: GObject.Value) -> _bo
         True if a subtraction is possible
     """
 
-def value_can_union(value1: GObject.Value, value2: GObject.Value) -> _bool:
+def value_can_union(value1: _Any, value2: _Any) -> _bool:
     """Determines if value1 and value2 can be non-trivially unioned.
     Any two values can be trivially unioned by adding both of them
     to a GstValueList.  However, certain types have the possibility
@@ -23459,7 +23459,7 @@ def value_can_union(value1: GObject.Value, value2: GObject.Value) -> _bool:
             be unioned.
     """
 
-def value_compare(value1: GObject.Value, value2: GObject.Value) -> _int:
+def value_compare(value1: _Any, value2: _Any) -> _int:
     """Compares value1 and value2.  If value1 and value2 cannot be
     compared, the function returns GST_VALUE_UNORDERED.  Otherwise,
     if value1 is greater than value2, GST_VALUE_GREATER_THAN is returned.
@@ -23474,7 +23474,7 @@ def value_compare(value1: GObject.Value, value2: GObject.Value) -> _int:
         comparison result
     """
 
-def value_deserialize(src: _str) -> _tuple[_bool, GObject.Value]:
+def value_deserialize(src: _str) -> _tuple[_bool, _Any]:
     """Tries to deserialize a string into the type specified by the given GValue.
     If the operation succeeds, True is returned, False otherwise.
 
@@ -23487,7 +23487,7 @@ def value_deserialize(src: _str) -> _tuple[_bool, GObject.Value]:
             deserialization
     """
 
-def value_deserialize_with_pspec(src: _str, pspec: GObject.ParamSpec | None = ...) -> _tuple[_bool, GObject.Value]:
+def value_deserialize_with_pspec(src: _str, pspec: GObject.ParamSpec | None = ...) -> _tuple[_bool, _Any]:
     """Tries to deserialize a string into the type specified by the given GValue.
     pspec may be used to guide the deserializing of nested members.
     If the operation succeeds, True is returned, False otherwise.
@@ -23502,7 +23502,7 @@ def value_deserialize_with_pspec(src: _str, pspec: GObject.ParamSpec | None = ..
             deserialization
     """
 
-def value_fixate(dest: GObject.Value, src: GObject.Value) -> _bool:
+def value_fixate(dest: _Any, src: _Any) -> _bool:
     """Fixate src into a new value dest.
     For ranges, the first element is taken. For lists and arrays, the
     first item is fixated and returned.
@@ -23516,7 +23516,7 @@ def value_fixate(dest: GObject.Value, src: GObject.Value) -> _bool:
         True if dest contains a fixated version of src.
     """
 
-def value_fraction_multiply(product: GObject.Value, factor1: GObject.Value, factor2: GObject.Value) -> _bool:
+def value_fraction_multiply(product: _Any, factor1: _Any, factor2: _Any) -> _bool:
     """Multiplies the two GObject.Value items containing a #GST_TYPE_FRACTION and sets
     product to the product of the two fractions.
 
@@ -23529,7 +23529,7 @@ def value_fraction_multiply(product: GObject.Value, factor1: GObject.Value, fact
         False in case of an error (like integer overflow), True otherwise.
     """
 
-def value_fraction_subtract(dest: GObject.Value, minuend: GObject.Value, subtrahend: GObject.Value) -> _bool:
+def value_fraction_subtract(dest: _Any, minuend: _Any, subtrahend: _Any) -> _bool:
     """Subtracts the subtrahend from the minuend and sets dest to the result.
 
     Args:
@@ -23541,7 +23541,7 @@ def value_fraction_subtract(dest: GObject.Value, minuend: GObject.Value, subtrah
         False in case of an error (like integer overflow), True otherwise.
     """
 
-def value_get_bitmask(value: GObject.Value) -> _int:
+def value_get_bitmask(value: _Any) -> _int:
     """Gets the bitmask specified by value.
 
     Args:
@@ -23551,7 +23551,7 @@ def value_get_bitmask(value: GObject.Value) -> _int:
         the bitmask.
     """
 
-def value_get_caps(value: GObject.Value) -> Caps:
+def value_get_caps(value: _Any) -> Caps:
     """Gets the contents of value. The reference count of the returned
     Gst.Caps will not be modified, therefore the caller must take one
     before getting rid of the value.
@@ -23563,7 +23563,7 @@ def value_get_caps(value: GObject.Value) -> Caps:
         the contents of value
     """
 
-def value_get_caps_features(value: GObject.Value) -> CapsFeatures:
+def value_get_caps_features(value: _Any) -> CapsFeatures:
     """Gets the contents of value.
 
     Args:
@@ -23573,7 +23573,7 @@ def value_get_caps_features(value: GObject.Value) -> CapsFeatures:
         the contents of value
     """
 
-def value_get_double_range_max(value: GObject.Value) -> _float:
+def value_get_double_range_max(value: _Any) -> _float:
     """Gets the maximum of the range specified by value.
 
     Args:
@@ -23583,7 +23583,7 @@ def value_get_double_range_max(value: GObject.Value) -> _float:
         the maximum of the range
     """
 
-def value_get_double_range_min(value: GObject.Value) -> _float:
+def value_get_double_range_min(value: _Any) -> _float:
     """Gets the minimum of the range specified by value.
 
     Args:
@@ -23593,7 +23593,7 @@ def value_get_double_range_min(value: GObject.Value) -> _float:
         the minimum of the range
     """
 
-def value_get_flagset_flags(value: GObject.Value) -> _int:
+def value_get_flagset_flags(value: _Any) -> _int:
     """Retrieve the flags field of a GstFlagSet value.
 
     Args:
@@ -23603,7 +23603,7 @@ def value_get_flagset_flags(value: GObject.Value) -> _int:
         the flags field of the flagset instance.
     """
 
-def value_get_flagset_mask(value: GObject.Value) -> _int:
+def value_get_flagset_mask(value: _Any) -> _int:
     """Retrieve the mask field of a GstFlagSet value.
 
     Args:
@@ -23613,7 +23613,7 @@ def value_get_flagset_mask(value: GObject.Value) -> _int:
         the mask field of the flagset instance.
     """
 
-def value_get_fraction_denominator(value: GObject.Value) -> _int:
+def value_get_fraction_denominator(value: _Any) -> _int:
     """Gets the denominator of the fraction specified by value.
 
     Args:
@@ -23623,7 +23623,7 @@ def value_get_fraction_denominator(value: GObject.Value) -> _int:
         the denominator of the fraction.
     """
 
-def value_get_fraction_numerator(value: GObject.Value) -> _int:
+def value_get_fraction_numerator(value: _Any) -> _int:
     """Gets the numerator of the fraction specified by value.
 
     Args:
@@ -23633,7 +23633,7 @@ def value_get_fraction_numerator(value: GObject.Value) -> _int:
         the numerator of the fraction.
     """
 
-def value_get_fraction_range_max(value: GObject.Value) -> GObject.Value | None:
+def value_get_fraction_range_max(value: _Any) -> _Any:
     """Gets the maximum of the range specified by value.
 
     Args:
@@ -23643,7 +23643,7 @@ def value_get_fraction_range_max(value: GObject.Value) -> GObject.Value | None:
         the maximum of the range
     """
 
-def value_get_fraction_range_min(value: GObject.Value) -> GObject.Value | None:
+def value_get_fraction_range_min(value: _Any) -> _Any:
     """Gets the minimum of the range specified by value.
 
     Args:
@@ -23653,7 +23653,7 @@ def value_get_fraction_range_min(value: GObject.Value) -> GObject.Value | None:
         the minimum of the range
     """
 
-def value_get_int64_range_max(value: GObject.Value) -> _int:
+def value_get_int64_range_max(value: _Any) -> _int:
     """Gets the maximum of the range specified by value.
 
     Args:
@@ -23663,7 +23663,7 @@ def value_get_int64_range_max(value: GObject.Value) -> _int:
         the maximum of the range
     """
 
-def value_get_int64_range_min(value: GObject.Value) -> _int:
+def value_get_int64_range_min(value: _Any) -> _int:
     """Gets the minimum of the range specified by value.
 
     Args:
@@ -23673,7 +23673,7 @@ def value_get_int64_range_min(value: GObject.Value) -> _int:
         the minimum of the range
     """
 
-def value_get_int64_range_step(value: GObject.Value) -> _int:
+def value_get_int64_range_step(value: _Any) -> _int:
     """Gets the step of the range specified by value.
 
     Args:
@@ -23683,7 +23683,7 @@ def value_get_int64_range_step(value: GObject.Value) -> _int:
         the step of the range
     """
 
-def value_get_int_range_max(value: GObject.Value) -> _int:
+def value_get_int_range_max(value: _Any) -> _int:
     """Gets the maximum of the range specified by value.
 
     Args:
@@ -23693,7 +23693,7 @@ def value_get_int_range_max(value: GObject.Value) -> _int:
         the maximum of the range
     """
 
-def value_get_int_range_min(value: GObject.Value) -> _int:
+def value_get_int_range_min(value: _Any) -> _int:
     """Gets the minimum of the range specified by value.
 
     Args:
@@ -23703,7 +23703,7 @@ def value_get_int_range_min(value: GObject.Value) -> _int:
         the minimum of the range
     """
 
-def value_get_int_range_step(value: GObject.Value) -> _int:
+def value_get_int_range_step(value: _Any) -> _int:
     """Gets the step of the range specified by value.
 
     Args:
@@ -23713,7 +23713,7 @@ def value_get_int_range_step(value: GObject.Value) -> _int:
         the step of the range
     """
 
-def value_get_structure(value: GObject.Value) -> Structure:
+def value_get_structure(value: _Any) -> Structure:
     """Gets the contents of value.
 
     Args:
@@ -23723,7 +23723,7 @@ def value_get_structure(value: GObject.Value) -> Structure:
         the contents of value
     """
 
-def value_init_and_copy(src: GObject.Value) -> GObject.Value:
+def value_init_and_copy(src: _Any) -> _Any:
     """Initialises the target value to be of the same type as source and then copies
     the contents from source to target.
 
@@ -23734,7 +23734,7 @@ def value_init_and_copy(src: GObject.Value) -> GObject.Value:
         the target value
     """
 
-def value_intersect(value1: GObject.Value, value2: GObject.Value) -> _tuple[_bool, GObject.Value]:
+def value_intersect(value1: _Any, value2: _Any) -> _tuple[_bool, _Any]:
     """Calculates the intersection of two values.  If the values have
     a non-empty intersection, the value representing the intersection
     is placed in dest, unless None.  If the intersection is non-empty,
@@ -23751,7 +23751,7 @@ def value_intersect(value1: GObject.Value, value2: GObject.Value) -> _tuple[_boo
             needed.
     """
 
-def value_is_fixed(value: GObject.Value) -> _bool:
+def value_is_fixed(value: _Any) -> _bool:
     """Tests if the given GValue, if available in a GstStructure (or any other
     container) contains a "fixed" (which means: one value) or an "unfixed"
     (which means: multiple possible values, such as data lists or data
@@ -23764,7 +23764,7 @@ def value_is_fixed(value: GObject.Value) -> _bool:
         true if the value is "fixed".
     """
 
-def value_is_subset(value1: GObject.Value, value2: GObject.Value) -> _bool:
+def value_is_subset(value1: _Any, value2: _Any) -> _bool:
     """Check that value1 is a subset of value2.
 
     Args:
@@ -23783,7 +23783,7 @@ def value_register(table: ValueTable) -> None:
         table: structure containing functions to register
     """
 
-def value_serialize(value: GObject.Value) -> _str | None:
+def value_serialize(value: _Any) -> _str | None:
     """tries to transform the given value into a string representation that allows
     getting back this string later on using Gst.value_deserialize().
 
@@ -23795,7 +23795,7 @@ def value_serialize(value: GObject.Value) -> _str | None:
             or None if none exists
     """
 
-def value_set_bitmask(value: GObject.Value, bitmask: _int) -> None:
+def value_set_bitmask(value: _Any, bitmask: _int) -> None:
     """Sets value to the bitmask specified by bitmask.
 
     Args:
@@ -23803,7 +23803,7 @@ def value_set_bitmask(value: GObject.Value, bitmask: _int) -> None:
         bitmask: the bitmask
     """
 
-def value_set_caps(value: GObject.Value, caps: Caps) -> None:
+def value_set_caps(value: _Any, caps: Caps) -> None:
     """Sets the contents of value to caps. A reference to the
     provided caps will be taken by the value.
 
@@ -23812,7 +23812,7 @@ def value_set_caps(value: GObject.Value, caps: Caps) -> None:
         caps: the caps to set the value to
     """
 
-def value_set_caps_features(value: GObject.Value, features: CapsFeatures) -> None:
+def value_set_caps_features(value: _Any, features: CapsFeatures) -> None:
     """Sets the contents of value to features.
 
     Args:
@@ -23820,7 +23820,7 @@ def value_set_caps_features(value: GObject.Value, features: CapsFeatures) -> Non
         features: the features to set the value to
     """
 
-def value_set_double_range(value: GObject.Value, start: _float, end: _float) -> None:
+def value_set_double_range(value: _Any, start: _float, end: _float) -> None:
     """Sets value to the range specified by start and end.
 
     Args:
@@ -23829,7 +23829,7 @@ def value_set_double_range(value: GObject.Value, start: _float, end: _float) -> 
         end: the end of the range
     """
 
-def value_set_flagset(value: GObject.Value, flags: _int, mask: _int) -> None:
+def value_set_flagset(value: _Any, flags: _int, mask: _int) -> None:
     """Sets value to the flags and mask values provided in flags and mask.
     The flags value indicates the values of flags, the mask represents
     which bits in the flag value have been set, and which are "don't care"
@@ -23840,7 +23840,7 @@ def value_set_flagset(value: GObject.Value, flags: _int, mask: _int) -> None:
         mask: The mask indicate which flags bits must match for comparisons
     """
 
-def value_set_fraction(value: GObject.Value, numerator: _int, denominator: _int) -> None:
+def value_set_fraction(value: _Any, numerator: _int, denominator: _int) -> None:
     """Sets value to the fraction specified by numerator over denominator.
     The fraction gets reduced to the smallest numerator and denominator,
     and if necessary the sign is moved to the numerator.
@@ -23851,7 +23851,7 @@ def value_set_fraction(value: GObject.Value, numerator: _int, denominator: _int)
         denominator: the denominator of the fraction
     """
 
-def value_set_fraction_range(value: GObject.Value, start: GObject.Value, end: GObject.Value) -> None:
+def value_set_fraction_range(value: _Any, start: _Any, end: _Any) -> None:
     """Sets value to the range specified by start and end.
 
     Args:
@@ -23860,7 +23860,7 @@ def value_set_fraction_range(value: GObject.Value, start: GObject.Value, end: GO
         end: the end of the range (a GST_TYPE_FRACTION GValue)
     """
 
-def value_set_fraction_range_full(value: GObject.Value, numerator_start: _int, denominator_start: _int, numerator_end: _int, denominator_end: _int) -> None:
+def value_set_fraction_range_full(value: _Any, numerator_start: _int, denominator_start: _int, numerator_end: _int, denominator_end: _int) -> None:
     """Sets value to the range specified by numerator_start/@denominator_start
     and numerator_end/@denominator_end.
 
@@ -23872,7 +23872,7 @@ def value_set_fraction_range_full(value: GObject.Value, numerator_start: _int, d
         denominator_end: the denominator end of the range
     """
 
-def value_set_int64_range(value: GObject.Value, start: _int, end: _int) -> None:
+def value_set_int64_range(value: _Any, start: _int, end: _int) -> None:
     """Sets value to the range specified by start and end.
 
     Args:
@@ -23881,7 +23881,7 @@ def value_set_int64_range(value: GObject.Value, start: _int, end: _int) -> None:
         end: the end of the range
     """
 
-def value_set_int64_range_step(value: GObject.Value, start: _int, end: _int, step: _int) -> None:
+def value_set_int64_range_step(value: _Any, start: _int, end: _int, step: _int) -> None:
     """Sets value to the range specified by start, end and step.
 
     Args:
@@ -23891,7 +23891,7 @@ def value_set_int64_range_step(value: GObject.Value, start: _int, end: _int, ste
         step: the step of the range
     """
 
-def value_set_int_range(value: GObject.Value, start: _int, end: _int) -> None:
+def value_set_int_range(value: _Any, start: _int, end: _int) -> None:
     """Sets value to the range specified by start and end.
 
     Args:
@@ -23900,7 +23900,7 @@ def value_set_int_range(value: GObject.Value, start: _int, end: _int) -> None:
         end: the end of the range
     """
 
-def value_set_int_range_step(value: GObject.Value, start: _int, end: _int, step: _int) -> None:
+def value_set_int_range_step(value: _Any, start: _int, end: _int, step: _int) -> None:
     """Sets value to the range specified by start, end and step.
 
     Args:
@@ -23910,7 +23910,7 @@ def value_set_int_range_step(value: GObject.Value, start: _int, end: _int, step:
         step: the step of the range
     """
 
-def value_set_structure(value: GObject.Value, structure: Structure) -> None:
+def value_set_structure(value: _Any, structure: Structure) -> None:
     """Sets the contents of value to structure.
 
     Args:
@@ -23918,7 +23918,7 @@ def value_set_structure(value: GObject.Value, structure: Structure) -> None:
         structure: the structure to set the value to
     """
 
-def value_subtract(minuend: GObject.Value, subtrahend: GObject.Value) -> _tuple[_bool, GObject.Value]:
+def value_subtract(minuend: _Any, subtrahend: _Any) -> _tuple[_bool, _Any]:
     """Subtracts subtrahend from minuend and stores the result in dest.
     Note that this means subtraction as in sets, not as in mathematics.
 
@@ -23934,7 +23934,7 @@ def value_subtract(minuend: GObject.Value, subtrahend: GObject.Value) -> _tuple[
             give a fair speedup.
     """
 
-def value_union(value1: GObject.Value, value2: GObject.Value) -> _tuple[_bool, GObject.Value]:
+def value_union(value1: _Any, value2: _Any) -> _tuple[_bool, _Any]:
     """Creates a GValue corresponding to the union of value1 and value2.
 
     Args:

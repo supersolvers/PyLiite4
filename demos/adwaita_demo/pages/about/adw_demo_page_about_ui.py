@@ -6,7 +6,7 @@ from PyLiite4 import Adw, GObject, Gtk
 
 _UI = '<?xml version="1.0" encoding="UTF-8"?>\n<interface>\n  <requires lib="gtk" version="4.0"/>\n  <requires lib="libadwaita" version="1.0"/>\n  <template class="AdwDemoPageAbout" parent="AdwBin">\n    <property name="child">\n      <object class="AdwToolbarView">\n        <child type="top">\n          <object class="AdwHeaderBar">\n            <property name="show-title">False</property>\n          </object>\n        </child>\n        <property name="content">\n          <object class="AdwStatusPage">\n            <property name="icon-name">widget-about-symbolic</property>\n            <property name="title" translatable="yes">About Dialog</property>\n            <property name="description" translatable="yes">An about dialog</property>\n            <property name="child">\n              <object class="GtkButton">\n                <property name="label" translatable="yes">Run Demo</property>\n                <property name="halign">center</property>\n                <property name="action-name">demo.run</property>\n                <style>\n                  <class name="pill"/>\n                </style>\n              </object>\n            </property>\n          </object>\n        </property>\n      </object>\n    </property>\n  </template>\n</interface>\n'
 
-_W = TypeVar('_W', bound=type)
+_W = TypeVar('_W', bound=type[Gtk.Widget])
 
 CLASS_NAME = 'AdwDemoPageAbout'
 PARENT = Adw.Bin
@@ -33,4 +33,4 @@ def template(cls: _W) -> _W:
         setattr(cls, attribute, Gtk.Template.Child(object_id))
     for name in HANDLERS:
         setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))
-    return Gtk.Template(string=_UI)(cls)  # type: ignore[no-any-return]
+    return Gtk.Template(string=_UI)(cls)

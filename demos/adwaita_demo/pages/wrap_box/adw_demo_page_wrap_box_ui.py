@@ -6,7 +6,7 @@ from PyLiite4 import Adw, GObject, Gtk
 
 _UI = '<?xml version="1.0" encoding="UTF-8"?>\n<interface>\n  <requires lib="gtk" version="4.0"/>\n  <requires lib="libadwaita" version="1.0"/>\n  <template class="AdwDemoPageWrapBox" parent="AdwBin">\n    <property name="child">\n      <object class="AdwToolbarView">\n        <child type="top">\n          <object class="AdwHeaderBar">\n            <property name="show-title">False</property>\n          </object>\n        </child>\n        <property name="content">\n          <object class="AdwStatusPage">\n            <property name="icon-name">widget-wrap-box-symbolic</property>\n            <property name="title" translatable="yes">Wrap Box</property>\n            <property name="description" translatable="yes">A box-like widget that can wrap into multiple lines.</property>\n            <property name="child">\n              <object class="AdwClamp">\n                <property name="child">\n                  <object class="AdwWrapBox" id="wrap_box">\n                    <property name="line-spacing">6</property>\n                    <property name="child-spacing">6</property>\n                    <child>\n                      <object class="GtkButton" id="add_btn">\n                        <property name="icon-name">list-add-symbolic</property>\n                        <property name="action-name">demo.add-tag</property>\n                        <style>\n                          <class name="flat"/>\n                          <class name="circular"/>\n                        </style>\n                      </object>\n                    </child>\n                  </object>\n                </property>\n              </object>\n            </property>\n          </object>\n        </property>\n      </object>\n    </property>\n  </template>\n</interface>\n'
 
-_W = TypeVar('_W', bound=type)
+_W = TypeVar('_W', bound=type[Gtk.Widget])
 
 CLASS_NAME = 'AdwDemoPageWrapBox'
 PARENT = Adw.Bin
@@ -34,4 +34,4 @@ def template(cls: _W) -> _W:
         setattr(cls, attribute, Gtk.Template.Child(object_id))
     for name in HANDLERS:
         setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))
-    return Gtk.Template(string=_UI)(cls)  # type: ignore[no-any-return]
+    return Gtk.Template(string=_UI)(cls)

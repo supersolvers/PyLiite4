@@ -6,7 +6,7 @@ from PyLiite4 import Adw, GObject, Gtk
 
 _UI = '<?xml version="1.0" encoding="UTF-8"?>\n<interface>\n  <requires lib="gtk" version="4.0"/>\n  <requires lib="libadwaita" version="1.0"/>\n  <template class="AdwDemoPageBottomSheets" parent="AdwBin">\n    <property name="child">\n      <object class="AdwBottomSheet" id="sheet">\n        <property name="content">\n          <object class="AdwToolbarView">\n            <child type="top">\n              <object class="AdwHeaderBar">\n                <property name="show-title">False</property>\n              </object>\n            </child>\n            <property name="content">\n              <object class="AdwStatusPage">\n                <property name="icon-name">widget-bottom-sheet-symbolic</property>\n                <property name="title" translatable="yes">Bottom Sheet</property>\n                <property name="description" translatable="yes">A bottom sheet with an optional bottom bar</property>\n                <property name="margin-bottom" bind-source="sheet" bind-property="bottom-bar-height"/>\n              </object>\n            </property>\n          </object>\n        </property>\n        <property name="sheet">\n          <object class="AdwToolbarView">\n            <child type="top">\n              <object class="AdwHeaderBar"/>\n            </child>\n            <property name="content">\n              <object class="AdwStatusPage">\n                <property name="icon-name">go-down-symbolic</property>\n              </object>\n            </property>\n          </object>\n        </property>\n        <property name="bottom-bar">\n          <object class="GtkCenterBox">\n            <style>\n              <class name="toolbar"/>\n            </style>\n            <property name="height-request">46</property>\n            <property name="center-widget">\n              <object class="GtkLabel">\n                <property name="label">Pull Up Here</property>\n                <property name="ellipsize">end</property>\n              </object>\n            </property>\n          </object>\n        </property>\n      </object>\n    </property>\n  </template>\n</interface>\n'
 
-_W = TypeVar('_W', bound=type)
+_W = TypeVar('_W', bound=type[Gtk.Widget])
 
 CLASS_NAME = 'AdwDemoPageBottomSheets'
 PARENT = Adw.Bin
@@ -33,4 +33,4 @@ def template(cls: _W) -> _W:
         setattr(cls, attribute, Gtk.Template.Child(object_id))
     for name in HANDLERS:
         setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))
-    return Gtk.Template(string=_UI)(cls)  # type: ignore[no-any-return]
+    return Gtk.Template(string=_UI)(cls)

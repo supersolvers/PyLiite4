@@ -6,7 +6,7 @@ from PyLiite4 import GObject, Gtk
 
 _UI = '<?xml version="1.0" encoding="UTF-8"?>\n<interface>\n  <!-- A composite widget: the Python class decorated with counter_ui.template becomes ExampleCounter. -->\n  <template class="ExampleCounter" parent="GtkBox">\n    <property name="orientation">vertical</property>\n    <property name="spacing">12</property>\n    <property name="halign">center</property>\n    <property name="valign">center</property>\n    <child>\n      <object class="GtkLabel" id="value-label">\n        <property name="label">0</property>\n        <style>\n          <class name="title-1"/>\n          <class name="numeric"/>\n        </style>\n      </object>\n    </child>\n    <child>\n      <object class="GtkBox">\n        <property name="spacing">6</property>\n        <style>\n          <class name="linked"/>\n        </style>\n        <child>\n          <object class="GtkButton" id="decrement-button">\n            <property name="label">−</property>\n            <property name="tooltip-text">Decrease</property>\n            <signal name="clicked" handler="on_decrement_clicked"/>\n          </object>\n        </child>\n        <child>\n          <object class="GtkButton" id="increment-button">\n            <property name="label">+</property>\n            <property name="tooltip-text">Increase</property>\n            <signal name="clicked" handler="on_increment_clicked"/>\n          </object>\n        </child>\n      </object>\n    </child>\n    <child>\n      <object class="GtkButton" id="reset-button">\n        <property name="label">Reset</property>\n        <property name="sensitive">false</property>\n        <signal name="clicked" handler="on_reset_clicked"/>\n        <style>\n          <class name="flat"/>\n        </style>\n      </object>\n    </child>\n  </template>\n</interface>\n'
 
-_W = TypeVar('_W', bound=type)
+_W = TypeVar('_W', bound=type[Gtk.Widget])
 
 CLASS_NAME = 'ExampleCounter'
 PARENT = Gtk.Box
@@ -36,4 +36,4 @@ def template(cls: _W) -> _W:
         setattr(cls, attribute, Gtk.Template.Child(object_id))
     for name in HANDLERS:
         setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))
-    return Gtk.Template(string=_UI)(cls)  # type: ignore[no-any-return]
+    return Gtk.Template(string=_UI)(cls)

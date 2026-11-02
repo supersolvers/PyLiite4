@@ -461,7 +461,7 @@ class CClosure:
     callback: _Any
     closure: Closure
     @staticmethod
-    def marshal_BOOLEAN__BOXED_BOXED(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_BOOLEAN__BOXED_BOXED(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with handlers that
         take two boxed pointers as arguments and return a boolean.  If you
         have such a signal, you will probably also need to use an
@@ -481,7 +481,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_BOOLEAN__FLAGS(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_BOOLEAN__FLAGS(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with handlers that
         take a flags type as an argument and return a boolean.  If you have
         such a signal, you will probably also need to use an accumulator,
@@ -501,7 +501,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_STRING__OBJECT_POINTER(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_STRING__OBJECT_POINTER(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with handlers that
         take a GObject.Object and a pointer and produce a string.  It is highly
         unlikely that your signal handler fits this description.
@@ -520,7 +520,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__BOOLEAN(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__BOOLEAN(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         boolean argument.
 
@@ -538,7 +538,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__BOXED(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__BOXED(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         argument which is any boxed pointer type.
 
@@ -556,7 +556,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__CHAR(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__CHAR(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         character argument.
 
@@ -574,7 +574,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__DOUBLE(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__DOUBLE(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with one
         double-precision floating point argument.
 
@@ -592,7 +592,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__ENUM(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__ENUM(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         argument with an enumerated type.
 
@@ -610,7 +610,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__FLAGS(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__FLAGS(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         argument with a flags types.
 
@@ -628,7 +628,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__FLOAT(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__FLOAT(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with one
         single-precision floating point argument.
 
@@ -646,7 +646,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__INT(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__INT(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         integer argument.
 
@@ -664,7 +664,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__LONG(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__LONG(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with with a single
         long integer argument.
 
@@ -682,7 +682,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__OBJECT(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__OBJECT(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         GObject.Object argument.
 
@@ -700,7 +700,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__PARAM(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__PARAM(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         argument of type GObject.ParamSpec.
 
@@ -718,7 +718,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__POINTER(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__POINTER(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single raw
         pointer argument type.
 
@@ -740,7 +740,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__STRING(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__STRING(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single string
         argument.
 
@@ -758,7 +758,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__UCHAR(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__UCHAR(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         unsigned character argument.
 
@@ -776,7 +776,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__UINT(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__UINT(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with with a single
         unsigned integer argument.
 
@@ -794,7 +794,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__UINT_POINTER(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__UINT_POINTER(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with an unsigned int
         and a pointer as arguments.
 
@@ -812,7 +812,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__ULONG(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__ULONG(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         unsigned long integer argument.
 
@@ -830,7 +830,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__VARIANT(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__VARIANT(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with a single
         GLib.Variant argument.
 
@@ -848,7 +848,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_VOID__VOID(closure: Closure, return_value: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_VOID__VOID(closure: Closure, return_value: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A GObject.ClosureMarshal function for use with signals with no arguments.
 
         Args:
@@ -865,7 +865,7 @@ class CClosure:
                 GObject.Closure.set_meta_marshal()
         """
     @staticmethod
-    def marshal_generic(closure: Closure, return_gvalue: Value, n_param_values: _int, param_values: Value, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
+    def marshal_generic(closure: Closure, return_gvalue: _Any, n_param_values: _int, param_values: _Any, invocation_hint: _Any = ..., marshal_data: _Any = ...) -> None:
         """A generic marshaller function implemented via
         [libffi](http://sourceware.org/libffi/).
 
@@ -1074,7 +1074,7 @@ class Closure:
         reference count of a closure drops to zero (unless it has already
         been invalidated before).
         """
-    def invoke(self, param_values: _list[Value], invocation_hint: _Any = ...) -> Value:
+    def invoke(self, param_values: _list[_Any], invocation_hint: _Any = ...) -> _Any:
         """Invokes the closure, i.e. executes the callback represented by the self.
 
         Args:
@@ -1494,7 +1494,7 @@ class Object:
         Returns:
             The user data pointer set, or None
         """
-    def getv(self, names: _list[_str], values: _list[Value]) -> None:
+    def getv(self, names: _list[_str], values: _list[_Any]) -> None:
         """Gets n_properties properties for an self.
         Obtained properties will be set to values. All properties must be valid.
         Warnings will be emitted and undefined behaviour may result if invalid
@@ -1785,7 +1785,7 @@ class Object:
          the instance begun in dispose and chain up to the finalize method of the
          parent class.
         """
-    def do_get_property(self, property_id: _int, value: Value, pspec: ParamSpec) -> None:
+    def do_get_property(self, property_id: _int, value: _Any, pspec: ParamSpec) -> None:
         """the generic getter for all properties of this type. Should be
          overridden for every type with properties.
         """
@@ -1801,7 +1801,7 @@ class Object:
         and will be emitted (in reverse order) when GObject.Object.thaw_notify() is
         called.
         """
-    def do_set_property(self, property_id: _int, value: Value, pspec: ParamSpec) -> None:
+    def do_set_property(self, property_id: _int, value: _Any, pspec: ParamSpec) -> None:
         """the generic setter for all properties of this type. Should be
          overridden for every type with properties. If implementations of
          set_property don't emit property change notification explicitly, this will
@@ -2098,7 +2098,7 @@ class ObjectConstructParam:
     """The GObjectConstructParam struct is an auxiliary structure used to hand
     GObject.ParamSpec/GObject.Value pairs to the constructor of a #GObjectClass.
     """
-    value: Value
+    value: _Any
     pspec: ParamSpec
 
 ObjectFinalizeFunc = _Callable[..., None]
@@ -2211,7 +2211,7 @@ class ParamSpec:
         Returns:
             the short description of self.
         """
-    def get_default_value(self) -> Value:
+    def get_default_value(self) -> _Any:
         """Gets the default value of self as a pointer to a GObject.Value.
 
         The GObject.Value will remain valid for the life of self.
@@ -2314,22 +2314,22 @@ class ParamSpec:
         """The instance finalization function (optional), should chain
          up to the finalize method of the parent class.
         """
-    def do_value_is_valid(self, value: Value) -> _bool:
+    def do_value_is_valid(self, value: _Any) -> _bool:
         """Checks if contents of value comply with the specifications
           set out by this type, without modifying the value. This vfunc is optional.
           If it isn't set, GObject will use value_validate. Since 2.74
         """
-    def do_value_set_default(self, value: Value) -> None:
+    def do_value_set_default(self, value: _Any) -> None:
         """Resets a value to the default value for this type
          (recommended, the default is GObject.Value.reset()), see
          GObject.param_value_set_default().
         """
-    def do_value_validate(self, value: Value) -> _bool:
+    def do_value_validate(self, value: _Any) -> _bool:
         """Ensures that the contents of value comply with the
          specifications set out by this type (optional), see
          GObject.param_value_validate().
         """
-    def do_values_cmp(self, value1: Value, value2: Value) -> _int:
+    def do_values_cmp(self, value1: _Any, value2: _Any) -> _int:
         """Compares value1 with value2 according to this type
          (recommended, the default is memcmp()), see GObject.param_values_cmp().
         """
@@ -2609,7 +2609,7 @@ class Parameter:
 
     Deprecated since 2.54: This type is not introspectable.
     """
-    value: Value
+    value: _Any
     name: _str
 
 SIGNAL_FLAGS_MASK: _int
@@ -3776,7 +3776,7 @@ class Value:
     macros.
     """
     data: _list[_Value__data__union]
-    def copy(self, dest_value: Value) -> None:
+    def copy(self, dest_value: _Any) -> None:
         """Copies the value of self into dest_value.
 
         Args:
@@ -3944,7 +3944,7 @@ class Value:
         Returns:
             variant contents of self (may be None)
         """
-    def init(self, g_type: _GTypeLike) -> Value:
+    def init(self, g_type: _GTypeLike) -> _Any:
         """Initializes self to store values of the given type, and sets its value
         to the initial value for type.
 
@@ -3991,7 +3991,7 @@ class Value:
         Returns:
             the value contents as a pointer
         """
-    def reset(self) -> Value:
+    def reset(self) -> _Any:
         """Clears the current value in self and resets it to the initial value
         (as if the value had just been initialized using
         GObject.Value.init()).
@@ -4237,7 +4237,7 @@ class Value:
         Args:
             variant: a GLib.Variant, or None
         """
-    def transform(self, dest_value: Value) -> _bool:
+    def transform(self, dest_value: _Any) -> _bool:
         """Tries to cast the contents of self into a type appropriate
         to store in dest_value.
 
@@ -4321,9 +4321,9 @@ class ValueArray:
     Deprecated since 2.32: Use `GLib.Array` instead, if possible for the given use case,
        as described above.
     """
-    values: Value
+    values: _Any
     n_values: _int
-    def append(self, value: Value | None = ...) -> ValueArray:
+    def append(self, value: _Any = ...) -> ValueArray:
         """Insert a copy of value as last element of self. If value is
         None, an uninitialized value is appended.
 
@@ -4344,7 +4344,7 @@ class ValueArray:
         Returns:
             Newly allocated copy of GObject.ValueArray
         """
-    def get_nth(self, index_: _int) -> Value:
+    def get_nth(self, index_: _int) -> _Any:
         """Return a pointer to the value at index_ contained in self.
 
         Deprecated since 2.32: Use g_array_index() instead.
@@ -4355,7 +4355,7 @@ class ValueArray:
         Returns:
             pointer to a value at index_ in self
         """
-    def insert(self, index_: _int, value: Value | None = ...) -> ValueArray:
+    def insert(self, index_: _int, value: _Any = ...) -> ValueArray:
         """Insert a copy of value at specified position into self. If value
         is None, an uninitialized value is inserted.
 
@@ -4368,7 +4368,7 @@ class ValueArray:
         Returns:
             the GObject.ValueArray passed in as self
         """
-    def prepend(self, value: Value | None = ...) -> ValueArray:
+    def prepend(self, value: _Any = ...) -> ValueArray:
         """Insert a copy of value as first element of self. If value is
         None, an uninitialized value is prepended.
 
@@ -5139,7 +5139,7 @@ def param_type_register_static(name: _str, pspec_info: ParamSpecTypeInfo) -> GTy
         The new type identifier.
     """
 
-def param_value_convert(pspec: ParamSpec, src_value: Value, dest_value: Value, strict_validation: _bool) -> _bool:
+def param_value_convert(pspec: ParamSpec, src_value: _Any, dest_value: _Any, strict_validation: _bool) -> _bool:
     """Transforms src_value into dest_value if possible, and then
     validates dest_value, in order for it to conform to pspec.  If
     strict_validation is True this function will only succeed if the
@@ -5160,7 +5160,7 @@ def param_value_convert(pspec: ParamSpec, src_value: Value, dest_value: Value, s
             False otherwise and dest_value is left untouched.
     """
 
-def param_value_defaults(pspec: ParamSpec, value: Value) -> _bool:
+def param_value_defaults(pspec: ParamSpec, value: _Any) -> _bool:
     """Checks whether value contains the default value as specified in pspec.
 
     Args:
@@ -5171,7 +5171,7 @@ def param_value_defaults(pspec: ParamSpec, value: Value) -> _bool:
         whether value contains the canonical default for this pspec
     """
 
-def param_value_is_valid(pspec: ParamSpec, value: Value) -> _bool:
+def param_value_is_valid(pspec: ParamSpec, value: _Any) -> _bool:
     """Return whether the contents of value comply with the specifications
     set out by pspec.
 
@@ -5184,7 +5184,7 @@ def param_value_is_valid(pspec: ParamSpec, value: Value) -> _bool:
             set out by pspec.
     """
 
-def param_value_set_default(pspec: ParamSpec, value: Value) -> None:
+def param_value_set_default(pspec: ParamSpec, value: _Any) -> None:
     """Sets value to its default value as specified in pspec.
 
     Args:
@@ -5193,7 +5193,7 @@ def param_value_set_default(pspec: ParamSpec, value: Value) -> None:
             can also pass an empty GObject.Value, initialized with G_VALUE_INIT
     """
 
-def param_value_validate(pspec: ParamSpec, value: Value) -> _bool:
+def param_value_validate(pspec: ParamSpec, value: _Any) -> _bool:
     """Ensures that the contents of value comply with the specifications
     set out by pspec. For example, a GObject.ParamSpecInt might require
     that integers stored in value may not be smaller than -42 and not be
@@ -5209,7 +5209,7 @@ def param_value_validate(pspec: ParamSpec, value: Value) -> _bool:
         whether modifying value was necessary to ensure validity
     """
 
-def param_values_cmp(pspec: ParamSpec, value1: Value, value2: Value) -> _int:
+def param_values_cmp(pspec: ParamSpec, value1: _Any, value2: _Any) -> _int:
     """Compares value1 with value2 according to pspec, and return -1, 0 or +1,
     if value1 is found to be less than, equal to or greater than value2,
     respectively.
@@ -5234,7 +5234,7 @@ def pointer_type_register_static(name: _str) -> GType:
         a new G_TYPE_POINTER derived type id for name.
     """
 
-def signal_accumulator_first_wins(ihint: SignalInvocationHint, return_accu: Value, handler_return: Value, dummy: _Any = ...) -> _bool:
+def signal_accumulator_first_wins(ihint: SignalInvocationHint, return_accu: _Any, handler_return: _Any, dummy: _Any = ...) -> _bool:
     """A predefined GObject.SignalAccumulator for signals intended to be used as a
     hook for application code to provide a particular value.  Usually
     only one such value is desired and multiple handlers for the same
@@ -5256,7 +5256,7 @@ def signal_accumulator_first_wins(ihint: SignalInvocationHint, return_accu: Valu
         standard GObject.SignalAccumulator result
     """
 
-def signal_accumulator_true_handled(ihint: SignalInvocationHint, return_accu: Value, handler_return: Value, dummy: _Any = ...) -> _bool:
+def signal_accumulator_true_handled(ihint: SignalInvocationHint, return_accu: _Any, handler_return: _Any, dummy: _Any = ...) -> _bool:
     """A predefined GObject.SignalAccumulator for signals that return a
     boolean values. The behavior that this accumulator gives is
     that a return of True stops the signal emission: no further
@@ -5289,7 +5289,7 @@ def signal_add_emission_hook(signal_id: _int, detail: GLib.Quark, hook_func: Sig
         the hook id, for later use with GObject.signal_remove_emission_hook().
     """
 
-def signal_chain_from_overridden(instance_and_params: _list[Value], return_value: Value) -> None:
+def signal_chain_from_overridden(instance_and_params: _list[_Any], return_value: _Any) -> None:
     """Calls the original class closure of a signal. This function should only
     be called from an overridden class closure; see
     GObject.signal_override_class_closure() and
@@ -5353,7 +5353,7 @@ def signal_connect_closure_by_id(instance: Object, signal_id: _int, detail: GLib
         the handler ID (always greater than 0)
     """
 
-def signal_emitv(instance_and_params: _list[Value], signal_id: _int, detail: GLib.Quark, return_value: Value) -> Value:
+def signal_emitv(instance_and_params: _list[_Any], signal_id: _int, detail: GLib.Quark, return_value: _Any) -> _Any:
     """Emits a signal. Signal emission is done synchronously.
     The method will only return control after all handlers are called or signal emission was stopped.
 
@@ -5769,7 +5769,7 @@ def signal_type_cclosure_new(itype: _GTypeLike, struct_offset: _int) -> Closure:
 
 
 
-def strdup_value_contents(value: Value) -> _str:
+def strdup_value_contents(value: _Any) -> _str:
     """Return a newly allocated string, which describes the contents of a
     GObject.Value.  The main purpose of this function is to describe GObject.Value
     contents for debugging output, the way in which the contents are
@@ -5843,9 +5843,9 @@ def type_check_instance_is_fundamentally_a(instance: TypeInstance, fundamental_t
 
 def type_check_is_value_type(type: _GTypeLike) -> _bool: ...
 
-def type_check_value(value: Value) -> _bool: ...
+def type_check_value(value: _Any) -> _bool: ...
 
-def type_check_value_holds(value: Value, type: _GTypeLike) -> _bool: ...
+def type_check_value_holds(value: _Any, type: _GTypeLike) -> _bool: ...
 
 def type_children(type: _GTypeLike) -> _list[GType]:
     """Return a newly allocated and 0-terminated array of type IDs, listing

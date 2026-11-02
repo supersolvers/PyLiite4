@@ -32365,7 +32365,7 @@ class Task(GObject.Object, AsyncResult):
         Returns:
             the task result, or None on error
         """
-    def propagate_value(self) -> _tuple[_bool, GObject.Value]:
+    def propagate_value(self) -> _tuple[_bool, _Any]:
         """Gets the result of self as a GObject.Value, and transfers ownership of
         that value to the caller. As with Gio.Task.return_value(), this is
         a generic low-level method; Gio.Task.propagate_pointer() and the like
@@ -32462,7 +32462,7 @@ class Task(GObject.Object, AsyncResult):
                 function
             result_destroy: a GLib.DestroyNotify function.
         """
-    def return_value(self, result: GObject.Value | None = ...) -> None:
+    def return_value(self, result: _Any = ...) -> None:
         """Sets self's result to result (by copying it) and completes the task.
 
         If result is None then a GObject.Value of type G_TYPE_POINTER
@@ -37441,7 +37441,7 @@ def dbus_generate_guid() -> _str:
         A valid D-Bus GUID.
     """
 
-def dbus_gvalue_to_gvariant(gvalue: GObject.Value, type: GLib.VariantType) -> GLib.Variant:
+def dbus_gvalue_to_gvariant(gvalue: _Any, type: GLib.VariantType) -> GLib.Variant:
     """Converts a GObject.Value to a GLib.Variant of the type indicated by the type
     parameter.
 
@@ -37481,7 +37481,7 @@ def dbus_gvalue_to_gvariant(gvalue: GObject.Value, type: GLib.VariantType) -> GL
             in case of failure.
     """
 
-def dbus_gvariant_to_gvalue(value: GLib.Variant) -> GObject.Value:
+def dbus_gvariant_to_gvalue(value: GLib.Variant) -> _Any:
     """Converts a GLib.Variant to a GObject.Value. If value is floating, it is consumed.
 
     The rules specified in the Gio.dbus_gvalue_to_gvariant() function are

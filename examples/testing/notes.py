@@ -43,8 +43,7 @@ class NotesWindow(Adw.ApplicationWindow):
         row = Adw.ActionRow(title=text)
         remove = Gtk.Button(icon_name="user-trash-symbolic", tooltip_text="Remove", valign=Gtk.Align.CENTER,
                             css_classes=["flat"])
-        # PyGObject takes plain values here; the stubs still describe the C function's GValues.
-        remove.update_property([Gtk.AccessibleProperty.LABEL], [f"Remove “{text}”"])  # type: ignore[list-item]
+        remove.update_property([Gtk.AccessibleProperty.LABEL], [f"Remove “{text}”"])
         remove.clicked.connect(lambda button: self.remove_note(row))
         row.add_suffix(remove)
         self.notes.append(row)

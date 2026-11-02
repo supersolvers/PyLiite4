@@ -6,7 +6,7 @@ from PyLiite4 import Adw, GObject, Gtk
 
 _UI = '<?xml version="1.0" encoding="UTF-8"?>\n<interface>\n  <requires lib="gtk" version="4.0"/>\n  <requires lib="libadwaita" version="1.0"/>\n  <template class="AdwTabViewDemoPage" parent="AdwBin">\n    <style>\n      <class name="tab-page"/>\n    </style>\n    <property name="child">\n      <object class="GtkEntry" id="title_entry">\n        <property name="halign">center</property>\n        <property name="valign">center</property>\n        <property name="text" bind-source="AdwTabViewDemoPage" bind-property="title" bind-flags="bidirectional"/>\n      </object>\n    </property>\n  </template>\n</interface>\n\n'
 
-_W = TypeVar('_W', bound=type)
+_W = TypeVar('_W', bound=type[Gtk.Widget])
 
 CLASS_NAME = 'AdwTabViewDemoPage'
 PARENT = Adw.Bin
@@ -33,4 +33,4 @@ def template(cls: _W) -> _W:
         setattr(cls, attribute, Gtk.Template.Child(object_id))
     for name in HANDLERS:
         setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))
-    return Gtk.Template(string=_UI)(cls)  # type: ignore[no-any-return]
+    return Gtk.Template(string=_UI)(cls)

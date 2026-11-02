@@ -290,9 +290,10 @@ NAMESPACE_EXTRAS = {
 # pycairo's classes, which GTK's drawing functions take and return.
 CAIRO = {"Context", "Surface", "FontOptions", "Region", "Matrix", "Pattern", "ScaledFont", "FontFace", "RectangleInt"}
 GTK_EXTRAS = """\
+_WidgetT = _TypeVar("_WidgetT", bound=_builtins.type[Widget])
 class Template:
     def __init__(self, *, string: _Any = ..., filename: _str = ..., resource_path: _str = ...) -> None: ...
-    def __call__(self, cls: _Any) -> _Any: ...
+    def __call__(self, cls: _WidgetT) -> _WidgetT: ...
     @staticmethod
     def Child(name: _str = ..., internal: _bool = ...) -> _Any: ...
     @staticmethod
@@ -555,6 +556,9 @@ class Generator:
             return "_dict[_Any, _Any]"
         if name == "GObject.Callback" or (name == "Callback" and namespace == "GObject"):
             return "_Callable[..., _Any]"
+        # PyGObject converts a GValue to and from a plain Python value, whichever way it goes.
+        if name == "GObject.Value" or (name == "Value" and namespace == "GObject"):
+            return "_Any"
         return self.reference(name, namespace)
 
     def hidden_parameters(self, element):

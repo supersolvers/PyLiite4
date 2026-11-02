@@ -4605,7 +4605,7 @@ class Breakpoint(GObject.Object, Gtk.Buildable):
 
         This signal is emitted before resetting the setter values.
         """
-    def add_setter(self, object: GObject.Object, property: _str, value: GObject.Value | None = ...) -> None:
+    def add_setter(self, object: GObject.Object, property: _str, value: _Any = ...) -> None:
         """Adds a setter to self.
 
         The setter will automatically set property on object to value when
@@ -4648,7 +4648,7 @@ class Breakpoint(GObject.Object, Gtk.Buildable):
             property: the target property
             value: the value to set
         """
-    def add_setters(self, objects: _list[GObject.Object], names: _list[_str], values: _list[GObject.Value]) -> None:
+    def add_setters(self, objects: _list[GObject.Object], names: _list[_str], values: _list[_Any]) -> None:
         """Adds n_setters setters to self.
 
         This is a convenience function for adding multiple setters at once.
@@ -13708,7 +13708,7 @@ class Sidebar(Gtk.Widget):
     def activated(self) -> _BoundSignal[_Callable[[Sidebar, _int], None]]:
         """Emitted when an item at index has been activated."""
     @property
-    def drop(self) -> _BoundSignal[_Callable[[Sidebar, _int, GObject.Value, Gdk.DragAction], _bool]]:
+    def drop(self) -> _BoundSignal[_Callable[[Sidebar, _int, _Any, Gdk.DragAction], _bool]]:
         """Emitted when content is dropped onto the item at index.
 
         The content must be of one of the types set up via
@@ -13726,7 +13726,7 @@ class Sidebar(Gtk.Widget):
         See Gtk.DropTarget.enter.
         """
     @property
-    def drop_value_loaded(self) -> _BoundSignal[_Callable[[Sidebar, _int, GObject.Value], Gdk.DragAction]]:
+    def drop_value_loaded(self) -> _BoundSignal[_Callable[[Sidebar, _int, _Any], Gdk.DragAction]]:
         """Emitted when the dropped content is preloaded for the item at index.
 
         In order for data to be preloaded, Sidebar.props.drop_preload
@@ -17167,7 +17167,7 @@ class TabBar(Gtk.Widget):
     props: _TabBarProps  # type: ignore[assignment]
     def __init__(self, *, autohide: _bool = ..., end_action_widget: Gtk.Widget = ..., expand_tabs: _bool = ..., extra_drag_preload: _bool = ..., inverted: _bool = ..., start_action_widget: Gtk.Widget = ..., view: TabView = ..., can_focus: _Any = ..., can_target: _Any = ..., css_classes: _Any = ..., css_name: _Any = ..., cursor: _Any = ..., focus_on_click: _Any = ..., focusable: _Any = ..., halign: _Any = ..., has_tooltip: _Any = ..., height_request: _Any = ..., hexpand: _Any = ..., hexpand_set: _Any = ..., layout_manager: _Any = ..., limit_events: _Any = ..., margin_bottom: _Any = ..., margin_end: _Any = ..., margin_start: _Any = ..., margin_top: _Any = ..., name: _Any = ..., opacity: _Any = ..., overflow: _Any = ..., receives_default: _Any = ..., sensitive: _Any = ..., tooltip_markup: _Any = ..., tooltip_text: _Any = ..., valign: _Any = ..., vexpand: _Any = ..., vexpand_set: _Any = ..., visible: _Any = ..., width_request: _Any = ..., accessible_role: _Any = ..., **properties: _Any) -> None: ...
     @property
-    def extra_drag_drop(self) -> _BoundSignal[_Callable[[TabBar, TabPage, GObject.Value], _bool]]:
+    def extra_drag_drop(self) -> _BoundSignal[_Callable[[TabBar, TabPage, _Any], _bool]]:
         """Emitted when content is dropped onto a tab.
 
         The content must be of one of the types set up via
@@ -17176,7 +17176,7 @@ class TabBar(Gtk.Widget):
         See Gtk.DropTarget.drop.
         """
     @property
-    def extra_drag_value(self) -> _BoundSignal[_Callable[[TabBar, TabPage, GObject.Value | None], Gdk.DragAction]]:
+    def extra_drag_value(self) -> _BoundSignal[_Callable[[TabBar, TabPage, _Any], Gdk.DragAction]]:
         """Emitted when the dropped content is preloaded.
 
         In order for data to be preloaded, TabBar.props.extra_drag_preload
@@ -17600,7 +17600,7 @@ class TabOverview(Gtk.Widget):
         TabView and return it.
         """
     @property
-    def extra_drag_drop(self) -> _BoundSignal[_Callable[[TabOverview, TabPage, GObject.Value], _bool]]:
+    def extra_drag_drop(self) -> _BoundSignal[_Callable[[TabOverview, TabPage, _Any], _bool]]:
         """Emitted when content is dropped onto a tab.
 
         The content must be of one of the types set up via
@@ -17609,7 +17609,7 @@ class TabOverview(Gtk.Widget):
         See Gtk.DropTarget.drop.
         """
     @property
-    def extra_drag_value(self) -> _BoundSignal[_Callable[[TabOverview, TabPage, GObject.Value | None], Gdk.DragAction]]:
+    def extra_drag_value(self) -> _BoundSignal[_Callable[[TabOverview, TabPage, _Any], Gdk.DragAction]]:
         """Emitted when the dropped content is preloaded.
 
         In order for data to be preloaded, TabOverview.props.extra_drag_preload

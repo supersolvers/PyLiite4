@@ -83,7 +83,7 @@ def compile_template(root: ET.Element, template: ET.Element, source: str, source
     modules = {parent_module, "GObject"} | {annotation.split(".")[0] for _, _, annotation in children}
     children_class = f"{gtype_name}Children"
     lines = module_header(source_name, modules, None if resource else source)
-    lines += ["_W = TypeVar('_W', bound=type)", "",
+    lines += ["_W = TypeVar('_W', bound=type[Gtk.Widget])", "",
               *([f"RESOURCE = {resource!r}"] if resource else []),
               f"CLASS_NAME = {gtype_name!r}",
               f"PARENT = {parent_type}",
@@ -106,8 +106,7 @@ def compile_template(root: ET.Element, template: ET.Element, source: str, source
               "        setattr(cls, attribute, Gtk.Template.Child(object_id))",
               "    for name in HANDLERS:",
               "        setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))",
-              f"    return Gtk.Template({'resource_path=RESOURCE' if resource else 'string=_UI'})(cls)"
-              "  # type: ignore[no-any-return]", ""]
+              f"    return Gtk.Template({'resource_path=RESOURCE' if resource else 'string=_UI'})(cls)", ""]
     return "\n".join(lines)
 
 

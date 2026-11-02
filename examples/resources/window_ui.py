@@ -4,7 +4,7 @@ from typing import Any, TypeVar, cast
 
 from PyLiite4 import Adw, GObject, Gtk
 
-_W = TypeVar('_W', bound=type)
+_W = TypeVar('_W', bound=type[Gtk.Widget])
 
 RESOURCE = '/org/example/PyLiite4Resources/window.ui'
 CLASS_NAME = 'ExampleResourcesWindow'
@@ -32,4 +32,4 @@ def template(cls: _W) -> _W:
         setattr(cls, attribute, Gtk.Template.Child(object_id))
     for name in HANDLERS:
         setattr(cls, name, Gtk.Template.Callback(name)(getattr(cls, name)))
-    return Gtk.Template(resource_path=RESOURCE)(cls)  # type: ignore[no-any-return]
+    return Gtk.Template(resource_path=RESOURCE)(cls)

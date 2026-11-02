@@ -593,7 +593,7 @@ class Clipboard(GObject.Object):
             a new `Gdk.Texture`
         """
     @_overload
-    def read_value_async(self, type: _GTypeLike, io_priority: _int, cancellable: Gio.Cancellable | None = ...) -> _Awaitable[GObject.Value]:
+    def read_value_async(self, type: _GTypeLike, io_priority: _int, cancellable: Gio.Cancellable | None = ...) -> _Awaitable[_Any]:
         """Asynchronously request the self contents converted to the given
         type.
 
@@ -609,7 +609,7 @@ class Clipboard(GObject.Object):
         """
     @_overload
     def read_value_async(self, type: _GTypeLike, io_priority: _int, cancellable: Gio.Cancellable | None, callback: Gio.AsyncReadyCallback | None) -> None: ...
-    def read_value_finish(self, result: Gio.AsyncResult) -> GObject.Value:
+    def read_value_finish(self, result: Gio.AsyncResult) -> _Any:
         """Finishes an asynchronous clipboard read.
 
         See Gdk.Clipboard.read_value_async().
@@ -641,7 +641,7 @@ class Clipboard(GObject.Object):
         Returns:
             True if setting the clipboard succeeded
         """
-    def set(self, value: GObject.Value) -> None:
+    def set(self, value: _Any) -> None:
         """Sets the self to contain the given value.
 
         Args:
@@ -922,7 +922,7 @@ class ContentDeserializer(GObject.Object, Gio.AsyncResult):
         Returns:
             the user data for this deserializer
         """
-    def get_value(self) -> GObject.Value:
+    def get_value(self) -> _Any:
         """Gets the `GObject.Value` to store the deserialized object in.
 
         Returns:
@@ -1243,7 +1243,7 @@ class ContentProvider(GObject.Object):
     @property
     def content_changed(self) -> _SignalMethod[_Callable[[ContentProvider], None], _Callable[[], None]]:
         """Emits the ::content-changed signal."""
-    def get_value(self) -> _tuple[_bool, GObject.Value]:
+    def get_value(self) -> _tuple[_bool, _Any]:
         """Gets the contents of self stored in value.
 
         The value will have been initialized to the `GObject.Type` the value should be
@@ -1319,7 +1319,7 @@ class ContentProvider(GObject.Object):
             a new `Gdk.ContentProvider`
         """
     @classmethod
-    def new_for_value(cls, value: GObject.Value) -> ContentProvider:
+    def new_for_value(cls, value: _Any) -> ContentProvider:
         """Create a content provider that provides the given value.
 
         Args:
@@ -1356,7 +1356,7 @@ class ContentProvider(GObject.Object):
     def do_content_changed(self) -> None:
         """The virtual method behind content_changed(), for subclasses to override."""
     def do_detach_clipboard(self, clipboard: Clipboard) -> None: ...
-    def do_get_value(self) -> _tuple[_bool, GObject.Value]:
+    def do_get_value(self) -> _tuple[_bool, _Any]:
         """The virtual method behind get_value(), for subclasses to override."""
     def do_ref_formats(self) -> ContentFormats:
         """The virtual method behind ref_formats(), for subclasses to override."""
@@ -1452,7 +1452,7 @@ class ContentSerializer(GObject.Object, Gio.AsyncResult):
         Returns:
             the user data for this serializer
         """
-    def get_value(self) -> GObject.Value:
+    def get_value(self) -> _Any:
         """Gets the `GObject.Value` to read the object to serialize from.
 
         Returns:
@@ -2407,7 +2407,7 @@ class Display(GObject.Object):
         Returns:
             the primary clipboard
         """
-    def get_setting(self, name: _str, value: GObject.Value) -> _bool:
+    def get_setting(self, name: _str, value: _Any) -> _bool:
         """Retrieves a desktop-wide setting such as double-click time
         for the self.
 
@@ -3752,7 +3752,7 @@ class Drop(GObject.Object):
             out_mime_type: return location for the used mime type
         """
     @_overload
-    def read_value_async(self, type: _GTypeLike, io_priority: _int, cancellable: Gio.Cancellable | None = ...) -> _Awaitable[GObject.Value]:
+    def read_value_async(self, type: _GTypeLike, io_priority: _int, cancellable: Gio.Cancellable | None = ...) -> _Awaitable[_Any]:
         """Asynchronously request the drag operation's contents converted
         to the given type.
 
@@ -3768,7 +3768,7 @@ class Drop(GObject.Object):
         """
     @_overload
     def read_value_async(self, type: _GTypeLike, io_priority: _int, cancellable: Gio.Cancellable | None, callback: Gio.AsyncReadyCallback | None) -> None: ...
-    def read_value_finish(self, result: Gio.AsyncResult) -> GObject.Value:
+    def read_value_finish(self, result: Gio.AsyncResult) -> _Any:
         """Finishes an async drop read.
 
         See Gdk.Drop.read_value_async().
@@ -13967,7 +13967,7 @@ def content_deserialize_async(stream: Gio.InputStream, mime_type: _str, type: _G
         callback: callback to call when the operation is done
     """
 
-def content_deserialize_finish(result: Gio.AsyncResult) -> _tuple[_bool, GObject.Value]:
+def content_deserialize_finish(result: Gio.AsyncResult) -> _tuple[_bool, _Any]:
     """Finishes a content deserialization operation.
 
     Args:
@@ -14007,7 +14007,7 @@ def content_register_serializer(type: _GTypeLike, mime_type: _str, serialize: Co
         serialize: the callback
     """
 
-def content_serialize_async(stream: Gio.OutputStream, mime_type: _str, value: GObject.Value, io_priority: _int, cancellable: Gio.Cancellable | None = ..., callback: Gio.AsyncReadyCallback | None = ...) -> None:
+def content_serialize_async(stream: Gio.OutputStream, mime_type: _str, value: _Any, io_priority: _int, cancellable: Gio.Cancellable | None = ..., callback: Gio.AsyncReadyCallback | None = ...) -> None:
     """Serialize content and write it to the given output stream, asynchronously.
 
     The default I/O priority is GLib.PRIORITY_DEFAULT (i.e. 0), and lower numbers

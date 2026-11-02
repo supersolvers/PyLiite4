@@ -28,9 +28,10 @@ from PyLiite4 import Pango
 
 _GTypeLike = GObject.GType | _builtins.type
 
+_WidgetT = _TypeVar("_WidgetT", bound=_builtins.type[Widget])
 class Template:
     def __init__(self, *, string: _Any = ..., filename: _str = ..., resource_path: _str = ...) -> None: ...
-    def __call__(self, cls: _Any) -> _Any: ...
+    def __call__(self, cls: _WidgetT) -> _WidgetT: ...
     @staticmethod
     def Child(name: _str = ..., internal: _bool = ...) -> _Any: ...
     @staticmethod
@@ -943,7 +944,7 @@ class Accessible(GObject.GInterface):
         Args:
             state: the platform state to update
         """
-    def update_property(self, properties: _list[AccessibleProperty], values: _list[GObject.Value]) -> None:
+    def update_property(self, properties: _list[AccessibleProperty], values: _list[_Any]) -> None:
         """Updates an array of accessible properties.
 
         This function should be called by `Gtk.Widget` types whenever an accessible
@@ -955,7 +956,7 @@ class Accessible(GObject.GInterface):
             properties: an array of accessible properties
             values: an array of `GValues`, one for each property
         """
-    def update_relation(self, relations: _list[AccessibleRelation], values: _list[GObject.Value]) -> None:
+    def update_relation(self, relations: _list[AccessibleRelation], values: _list[_Any]) -> None:
         """Updates an array of accessible relations.
 
         This function should be called by `Gtk.Widget` types whenever an accessible
@@ -967,7 +968,7 @@ class Accessible(GObject.GInterface):
             relations: an array of accessible relations
             values: an array of `GValues`, one for each relation
         """
-    def update_state(self, states: _list[AccessibleState], values: _list[GObject.Value]) -> None:
+    def update_state(self, states: _list[AccessibleState], values: _list[_Any]) -> None:
         """Updates an array of accessible states.
 
         This function should be called by `Gtk.Widget` types whenever an accessible
@@ -1285,7 +1286,7 @@ class AccessibleProperty(GObject.GEnum):
     interactions of the current element. Value type: string
     """
     @staticmethod
-    def init_value(property: AccessibleProperty, value: GObject.Value) -> None:
+    def init_value(property: AccessibleProperty, value: _Any) -> None:
         """Initializes value with the appropriate type for the property.
 
         This function is mostly meant for language bindings, in conjunction
@@ -1466,7 +1467,7 @@ class AccessibleRelation(GObject.GEnum):
     This relation is managed by GTK and should not be set from application code.
     """
     @staticmethod
-    def init_value(relation: AccessibleRelation, value: GObject.Value) -> None:
+    def init_value(relation: AccessibleRelation, value: _Any) -> None:
         """Initializes value with the appropriate type for the relation.
 
         This function is mostly meant for language bindings, in conjunction
@@ -1764,7 +1765,7 @@ class AccessibleState(GObject.GEnum):
     Value type: boolean.
     """
     @staticmethod
-    def init_value(state: AccessibleState, value: GObject.Value) -> None:
+    def init_value(state: AccessibleState, value: _Any) -> None:
         """Initializes value with the appropriate type for the state.
 
         This function is mostly meant for language bindings, in conjunction
@@ -5723,7 +5724,7 @@ class Buildable(GObject.GInterface):
          unless you need to perform special cleanup actions. `Gtk.Window` sets
          the `GtkWidget:visible` property here.
         """
-    def do_set_buildable_property(self, builder: Builder, name: _str, value: GObject.Value) -> None:
+    def do_set_buildable_property(self, builder: Builder, name: _str, value: _Any) -> None:
         """Sets a property of a buildable object.
          It is normally not necessary to implement this, GObject.Object.set_property()
          is used by default. `Gtk.Window` implements this to delay showing itself
@@ -6429,7 +6430,7 @@ class Builder(GObject.Object):
         Args:
             domain: the translation domain
         """
-    def value_from_string(self, pspec: GObject.ParamSpec, string: _str) -> _tuple[_bool, GObject.Value]:
+    def value_from_string(self, pspec: GObject.ParamSpec, string: _str) -> _tuple[_bool, _Any]:
         """Demarshals a value from a string.
 
         This function calls GObject.Value.init() on the value argument,
@@ -6450,7 +6451,7 @@ class Builder(GObject.Object):
             True on success
             value: the `GObject.Value` to store the result in
         """
-    def value_from_string_type(self, type: _GTypeLike, string: _str) -> _tuple[_bool, GObject.Value]:
+    def value_from_string_type(self, type: _GTypeLike, string: _str) -> _tuple[_bool, _Any]:
         """Demarshals a value from a string.
 
         Unlike Gtk.Builder.value_from_string(), this function
@@ -7926,7 +7927,7 @@ class CellArea(GObject.InitiallyUnowned, Buildable, CellLayout):
         Returns:
             the model column, or -1
         """
-    def cell_get_property(self, renderer: CellRenderer, property_name: _str, value: GObject.Value) -> None:
+    def cell_get_property(self, renderer: CellRenderer, property_name: _str, value: _Any) -> None:
         """Gets the value of a cell property for renderer in self.
 
         Deprecated since 4.10.
@@ -7936,7 +7937,7 @@ class CellArea(GObject.InitiallyUnowned, Buildable, CellLayout):
             property_name: the name of the property to get
             value: a location to return the value
         """
-    def cell_set_property(self, renderer: CellRenderer, property_name: _str, value: GObject.Value) -> None:
+    def cell_set_property(self, renderer: CellRenderer, property_name: _str, value: _Any) -> None:
         """Sets a cell property for renderer in self.
 
         Deprecated since 4.10.
@@ -8380,7 +8381,7 @@ class CellArea(GObject.InitiallyUnowned, Buildable, CellLayout):
         """The virtual method behind foreach(), for subclasses to override."""
     def do_foreach_alloc(self, context: CellAreaContext, widget: Widget, cell_area: Gdk.Rectangle, background_area: Gdk.Rectangle, callback: CellAllocCallback) -> None:
         """The virtual method behind foreach_alloc(), for subclasses to override."""
-    def do_get_cell_property(self, renderer: CellRenderer, property_id: _int, value: GObject.Value, pspec: GObject.ParamSpec) -> None:
+    def do_get_cell_property(self, renderer: CellRenderer, property_id: _int, value: _Any, pspec: GObject.ParamSpec) -> None:
         """This should be implemented to report the values of
           child cell properties for a given child `Gtk.CellRenderer`.
         """
@@ -8398,7 +8399,7 @@ class CellArea(GObject.InitiallyUnowned, Buildable, CellLayout):
         """The virtual method behind is_activatable(), for subclasses to override."""
     def do_remove(self, renderer: CellRenderer) -> None:
         """The virtual method behind remove(), for subclasses to override."""
-    def do_set_cell_property(self, renderer: CellRenderer, property_id: _int, value: GObject.Value, pspec: GObject.ParamSpec) -> None:
+    def do_set_cell_property(self, renderer: CellRenderer, property_id: _int, value: _Any, pspec: GObject.ParamSpec) -> None:
         """This should be implemented to handle changes in child
           cell properties for a given `Gtk.CellRenderer` that were previously
           installed on the `GtkCellAreaClass` with Gtk.CellArea.install_cell_property().
@@ -13812,14 +13813,14 @@ class _ConstantExpressionProps(_ExpressionProps):
 class ConstantExpression(Expression):
     """A constant value in a `Gtk.Expression`."""
     props: _ConstantExpressionProps  # type: ignore[assignment]
-    def get_value(self) -> GObject.Value:
+    def get_value(self) -> _Any:
         """Gets the value that a constant expression evaluates to.
 
         Returns:
             the value
         """
     @classmethod
-    def new_for_value(cls, value: GObject.Value) -> ConstantExpression:
+    def new_for_value(cls, value: _Any) -> ConstantExpression:
         """Creates an expression that always evaluates to the given `value`.
 
         Args:
@@ -15841,7 +15842,7 @@ class DragIcon(Widget, Native, Root):
             the `Gtk.DragIcon`
         """
     @staticmethod
-    def create_widget_for_value(value: GObject.Value) -> Widget | None:
+    def create_widget_for_value(value: _Any) -> Widget | None:
         """Creates a widget that can be used as a drag icon for the given
         value.
 
@@ -16680,7 +16681,7 @@ class _DropTargetProps(_EventControllerProps):
     """
     formats: Gdk.ContentFormats
     preload: _bool
-    value: GObject.Value
+    value: _Any
 
 class DropTarget(EventController):
     """An event controller to receive Drag-and-Drop operations.
@@ -16777,7 +16778,7 @@ class DropTarget(EventController):
         Gtk.DropTarget.reject() if required.
         """
     @property
-    def drop(self) -> _BoundSignal[_Callable[[DropTarget, GObject.Value, _float, _float], _bool]]:
+    def drop(self) -> _BoundSignal[_Callable[[DropTarget, _Any, _float, _float], _bool]]:
         """Emitted on the drop site when the user drops the data onto the widget.
 
         The signal handler must determine whether the pointer position is in
@@ -16851,7 +16852,7 @@ class DropTarget(EventController):
         Returns:
             True if drop data should be preloaded
         """
-    def get_value(self) -> GObject.Value | None:
+    def get_value(self) -> _Any:
         """Gets the current drop data, as a `GObject.Value`.
 
         Returns:
@@ -16936,7 +16937,7 @@ class DropTarget(EventController):
     @preload.setter
     def preload(self, value: _bool) -> None: ...
     @property
-    def value(self) -> GObject.Value:
+    def value(self) -> _Any:
         """The value for this drop operation.
 
         This is None if the data has not been loaded yet or no drop
@@ -17516,7 +17517,7 @@ class Editable(GObject.GInterface):
             n_chars: width in chars
         """
     @staticmethod
-    def delegate_get_property(object: GObject.Object, prop_id: _int, value: GObject.Value, pspec: GObject.ParamSpec) -> _bool:
+    def delegate_get_property(object: GObject.Object, prop_id: _int, value: _Any, pspec: GObject.ParamSpec) -> _bool:
         """Gets a property of the `Gtk.Editable` delegate for object.
 
         This is helper function that should be called in the `get_property`
@@ -17533,7 +17534,7 @@ class Editable(GObject.GInterface):
             True if the property was found
         """
     @staticmethod
-    def delegate_set_property(object: GObject.Object, prop_id: _int, value: GObject.Value, pspec: GObject.ParamSpec) -> _bool:
+    def delegate_set_property(object: GObject.Object, prop_id: _int, value: _Any, pspec: GObject.ParamSpec) -> _bool:
         """Sets a property on the `Gtk.Editable` delegate for object.
 
         This is a helper function that should be called in the `set_property`
@@ -20675,7 +20676,7 @@ class ExpressionWatch:
     The contents of `Gtk.ExpressionWatch` should only be accessed through the
     provided API.
     """
-    def evaluate(self, value: GObject.Value) -> _bool:
+    def evaluate(self, value: _Any) -> _bool:
         """Evaluates the watched expression and on success stores the result
         in `value`.
 
@@ -34061,7 +34062,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Returns:
             An unset `Gtk.TreeIter` to set to the new row
         """
-    def insert_with_values(self, position: _int, columns: _list[_int], values: _list[GObject.Value]) -> TreeIter:
+    def insert_with_values(self, position: _int, columns: _list[_int], values: _list[_Any]) -> TreeIter:
         """A variant of Gtk.ListStore.insert_with_values() which
         takes the columns and values as two arrays, instead of
         varargs.
@@ -34164,7 +34165,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Args:
             types: An array length n of `GObject.Type`s
         """
-    def set_value(self, iter: TreeIter, column: _int, value: GObject.Value) -> None:
+    def set_value(self, iter: TreeIter, column: _int, value: _Any) -> None:
         """Sets the data in the cell specified by iter and column.
         The type of value must be convertible to the type of the
         column.
@@ -34176,7 +34177,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
             column: column number to modify
             value: new value for the cell
         """
-    def set(self, iter: TreeIter, columns: _list[_int], values: _list[GObject.Value]) -> None:
+    def set(self, iter: TreeIter, columns: _list[_int], values: _list[_Any]) -> None:
         """A variant of Gtk.ListStore.set_valist() which
         takes the columns and values as two arrays, instead of
         varargs. This function is mainly intended for
@@ -59183,7 +59184,7 @@ class TreeDragDest(GObject.GInterface):
     Deprecated since 4.10: List views use widgets to display their contents.
       You can use Gtk.DropTarget to implement a drop destination
     """
-    def drag_data_received(self, dest: TreePath, value: GObject.Value) -> _bool:
+    def drag_data_received(self, dest: TreePath, value: _Any) -> _bool:
         """Asks the `Gtk.TreeDragDest` to insert a row before the path dest,
         deriving the contents of the row from value. If dest is
         outside the tree so that inserting before it is impossible, False
@@ -59200,7 +59201,7 @@ class TreeDragDest(GObject.GInterface):
         Returns:
             whether a new row was created before position dest
         """
-    def row_drop_possible(self, dest_path: TreePath, value: GObject.Value) -> _bool:
+    def row_drop_possible(self, dest_path: TreePath, value: _Any) -> _bool:
         """Determines whether a drop is possible before the given dest_path,
         at the same depth as dest_path. i.e., can we drop the data in
         value at that location. dest_path does not have to
@@ -59216,9 +59217,9 @@ class TreeDragDest(GObject.GInterface):
         Returns:
             True if a drop is possible before dest_path
         """
-    def do_drag_data_received(self, dest: TreePath, value: GObject.Value) -> _bool:
+    def do_drag_data_received(self, dest: TreePath, value: _Any) -> _bool:
         """The virtual method behind drag_data_received(), for subclasses to override."""
-    def do_row_drop_possible(self, dest_path: TreePath, value: GObject.Value) -> _bool:
+    def do_row_drop_possible(self, dest_path: TreePath, value: _Any) -> _bool:
         """The virtual method behind row_drop_possible(), for subclasses to override."""
 
 class TreeDragDestIface:
@@ -60268,7 +60269,7 @@ class TreeModel(GObject.GInterface):
         Returns:
             a newly-allocated string
         """
-    def get_value(self, iter: TreeIter, column: _int) -> GObject.Value:
+    def get_value(self, iter: TreeIter, column: _int) -> _Any:
         """Initializes and sets value to that at column.
 
         When done with value, GObject.Value.unset() needs to be called
@@ -60461,7 +60462,7 @@ class TreeModel(GObject.GInterface):
         """The virtual method behind get_n_columns(), for subclasses to override."""
     def do_get_path(self, iter: TreeIter) -> TreePath:
         """The virtual method behind get_path(), for subclasses to override."""
-    def do_get_value(self, iter: TreeIter, column: _int) -> GObject.Value:
+    def do_get_value(self, iter: TreeIter, column: _int) -> _Any:
         """The virtual method behind get_value(), for subclasses to override."""
     def do_iter_children(self, parent: TreeIter | None = ...) -> _tuple[_bool, TreeIter]:
         """Sets iter to point to the first child of parent.
@@ -60773,7 +60774,7 @@ class TreeModelFilter(GObject.Object, TreeDragSource, TreeModel):
         Args:
             func: A `Gtk.TreeModelFilterVisibleFunc`, the visible function
         """
-    def do_modify(self, child_model: TreeModel, iter: TreeIter, value: GObject.Value, column: _int) -> None: ...
+    def do_modify(self, child_model: TreeModel, iter: TreeIter, value: _Any, column: _int) -> None: ...
     def do_visible(self, child_model: TreeModel, iter: TreeIter) -> _bool: ...
     @property
     def child_model(self) -> TreeModel:
@@ -61855,7 +61856,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Returns:
             An unset `Gtk.TreeIter` to set to the new row
         """
-    def insert_with_values(self, parent: TreeIter | None, position: _int, columns: _list[_int], values: _list[GObject.Value]) -> TreeIter:
+    def insert_with_values(self, parent: TreeIter | None, position: _int, columns: _list[_int], values: _list[_Any]) -> TreeIter:
         """A variant of Gtk.TreeStore.insert_with_values() which takes
         the columns and values as two arrays, instead of varargs.
 
@@ -61989,7 +61990,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Args:
             types: An array of `GObject.Type` types, one for each column
         """
-    def set_value(self, iter: TreeIter, column: _int, value: GObject.Value) -> None:
+    def set_value(self, iter: TreeIter, column: _int, value: _Any) -> None:
         """Sets the data in the cell specified by iter and column.
 
         The type of value must be convertible to the type of the
@@ -62002,7 +62003,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
             column: column number to modify
             value: new value for the cell
         """
-    def set(self, iter: TreeIter, columns: _list[_int], values: _list[GObject.Value]) -> None:
+    def set(self, iter: TreeIter, columns: _list[_int], values: _list[_Any]) -> None:
         """A variant of Gtk.TreeStore.set_valist() which takes
         the columns and values as two arrays, instead of using variadic
         arguments.
@@ -70466,7 +70467,7 @@ def tree_create_row_drag_content(tree_model: TreeModel, path: TreePath) -> Gdk.C
         a new `Gdk.ContentProvider`
     """
 
-def tree_get_row_drag_data(value: GObject.Value) -> _tuple[_bool, TreeModel | None, TreePath | None]:
+def tree_get_row_drag_data(value: _Any) -> _tuple[_bool, TreeModel | None, TreePath | None]:
     """Obtains a tree_model and path from value of target type
     GTK_TYPE_TREE_ROW_DATA.
 
@@ -70486,7 +70487,7 @@ def tree_get_row_drag_data(value: GObject.Value) -> _tuple[_bool, TreeModel | No
 
 
 
-def value_dup_expression(value: GObject.Value) -> Expression | None:
+def value_dup_expression(value: _Any) -> Expression | None:
     """Retrieves the `Gtk.Expression` stored inside the given `value`, and acquires
     a reference to it.
 
@@ -70497,7 +70498,7 @@ def value_dup_expression(value: GObject.Value) -> Expression | None:
         a `Gtk.Expression`
     """
 
-def value_get_expression(value: GObject.Value) -> Expression | None:
+def value_get_expression(value: _Any) -> Expression | None:
     """Retrieves the `Gtk.Expression` stored inside the given `value`.
 
     Args:
@@ -70507,7 +70508,7 @@ def value_get_expression(value: GObject.Value) -> Expression | None:
         a `Gtk.Expression`
     """
 
-def value_set_expression(value: GObject.Value, expression: Expression) -> None:
+def value_set_expression(value: _Any, expression: Expression) -> None:
     """Stores the given `Gtk.Expression` inside `value`.
 
     The `GObject.Value` will acquire a reference to the `expression`.
@@ -70517,7 +70518,7 @@ def value_set_expression(value: GObject.Value, expression: Expression) -> None:
         expression: a `Gtk.Expression`
     """
 
-def value_take_expression(value: GObject.Value, expression: Expression | None = ...) -> None:
+def value_take_expression(value: _Any, expression: Expression | None = ...) -> None:
     """Stores the given `Gtk.Expression` inside `value`.
 
     This function transfers the ownership of the `expression` to the `GObject.Value`.

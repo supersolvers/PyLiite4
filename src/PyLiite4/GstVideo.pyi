@@ -5683,7 +5683,7 @@ class VideoOverlay(GObject.GInterface):
             last_prop_id: The first free property ID to use
         """
     @staticmethod
-    def set_property(object: GObject.Object, last_prop_id: _int, property_id: _int, value: GObject.Value) -> _bool:
+    def set_property(object: GObject.Object, last_prop_id: _int, property_id: _int, value: _Any) -> _bool:
         """This helper shall be used by classes implementing the GstVideo.VideoOverlay
         interface that want the render rectangle to be controllable using
         properties. This helper will parse and set the render rectangle calling
@@ -7729,7 +7729,7 @@ def video_meta_api_get_type() -> GObject.GType: ...
 
 
 
-def video_multiview_get_doubled_height_modes() -> GObject.Value:
+def video_multiview_get_doubled_height_modes() -> _Any:
     """Returns:
         A const GObject.Value containing a list of stereo video modes
 
@@ -7738,7 +7738,7 @@ def video_multiview_get_doubled_height_modes() -> GObject.Value:
             caps negotiations. Currently this is top-bottom and row-interleaved.
     """
 
-def video_multiview_get_doubled_size_modes() -> GObject.Value:
+def video_multiview_get_doubled_size_modes() -> _Any:
     """Returns:
         A const GObject.Value containing a list of stereo video modes
 
@@ -7748,7 +7748,7 @@ def video_multiview_get_doubled_size_modes() -> GObject.Value:
             'checkerboard' layout.
     """
 
-def video_multiview_get_doubled_width_modes() -> GObject.Value:
+def video_multiview_get_doubled_width_modes() -> _Any:
     """Returns:
         A const GObject.Value containing a list of stereo video modes
 
@@ -7758,7 +7758,7 @@ def video_multiview_get_doubled_width_modes() -> GObject.Value:
             and column-interleaved.
     """
 
-def video_multiview_get_mono_modes() -> GObject.Value:
+def video_multiview_get_mono_modes() -> _Any:
     """Returns:
         A const GObject.Value containing a list of mono video modes
 
@@ -7766,7 +7766,7 @@ def video_multiview_get_mono_modes() -> GObject.Value:
             modes (mono/left/right) for use in caps negotiations.
     """
 
-def video_multiview_get_unpacked_modes() -> GObject.Value:
+def video_multiview_get_unpacked_modes() -> _Any:
     """Returns:
         A const GObject.Value containing a list of 'unpacked' stereo video modes
 

@@ -3,6 +3,7 @@
 import ast
 import importlib
 import importlib.util
+import inspect
 import subprocess
 import sys
 from pathlib import Path
@@ -62,6 +63,10 @@ def test_class_members_exist(namespace):
             else:
                 continue
             if member_name.startswith("__") or member_name == "props" or hasattr(cls, member_name):
+                continue
+            # Attributes that a Python class, such as PyGObject's Gtk.TreeModelRow, sets in __init__.
+            if (isinstance(member, ast.AnnAssign) and not issubclass(cls, GObject.GBoxed | GObject.Object)
+                    and f"self.{member_name} =" in inspect.getsource(cls.__init__)):
                 continue
             if member_name.startswith("do_") and member_name[3:] in vfunc_names(cls):
                 continue
@@ -204,8 +209,48 @@ more: bool = GLib.MainContext.default().iteration()
 font = Pango.FontDescription("Sans 12")
 # A callback's user data before other arguments is an argument of its own.
 found: bool = buffer.get_start_iter().forward_find_char(lambda char, data: char == "!", None, None)
+# GObject.Value converts to and from plain values.
+box.update_property([Gtk.AccessibleProperty.LABEL], ["Box"])
+same: str = Gtk.ConstantExpression.new_for_value("x").get_value()
 """)
     assert result.returncode == 0, result.stdout
+
+
+TREE_MODEL_CODE = """
+from PyLiite4 import Gtk
+
+store = Gtk.ListStore(str, int)
+first = store.append(["a", 1])
+store.insert(0, ["b", 2])
+store.set(first, 0, "c", 1, 3)
+store.set(first, [0, 1], ["d", 4])
+store.set(first, {0: "e"})
+name, count = store[first]
+values: list[object] = store[0][:]
+store[0] = ["f", 5]
+following: Gtk.TreeIter | None = store.iter_next(store.get_iter(0))
+got: tuple[object, ...] = store.get(first, 0, 1)
+rows = [(row[0], row.path.get_indices()) for row in store]
+del store[0]
+tree = Gtk.TreeStore(str)
+tree.append(tree.append(None, ["root"]), ["child"])
+path = Gtk.TreePath((0, 1))
+indices = [len(path), *path, Gtk.TreePath(3) < path]
+"""
+
+
+def test_type_checker_accepts_tree_models(tmp_path):
+    """PyGObject's Gtk.ListStore, TreeStore and TreeModel overrides, which most code using GTK 3's tree views relies on."""
+    result = mypy(tmp_path, TREE_MODEL_CODE)
+    assert result.returncode == 0, result.stdout
+
+
+def test_tree_model_code_runs():
+    """What the stubs say about the tree models is what PyGObject does."""
+    namespace: dict[str, object] = {}
+    exec(TREE_MODEL_CODE, namespace)
+    assert namespace["rows"] == [("f", [0]), ("e", [1])]
+    assert namespace["indices"] == [2, 0, 1, False]
 
 
 def test_user_data_before_other_arguments_is_passed():

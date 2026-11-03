@@ -10,7 +10,7 @@ from builtins import int as _builtin_int, list as _list, str as _str, str as _bu
 from builtins import tuple as _tuple
 import asyncio as _asyncio
 from collections.abc import Awaitable as _Awaitable, Callable as _Callable
-from collections.abc import Coroutine as _Coroutine, Iterator as _Iterator
+from collections.abc import Coroutine as _Coroutine, Iterator as _Iterator, Sequence as _Sequence
 from typing import Any as _Any, Generic as _Generic, TypeVar as _TypeVar, overload as _overload
 
 from PyLiite4 import cairo as _cairo
@@ -28,6 +28,33 @@ from PyLiite4 import Pango
 
 _GTypeLike = GObject.GType | _builtins.type
 
+class TreeModelRow:
+    model: TreeModel
+    iter: TreeIter
+    def __init__(self, model: TreeModel, iter_or_path: TreeIter | TreePath) -> None: ...
+    @_builtins.property
+    def path(self) -> TreePath: ...
+    @_builtins.property
+    def next(self) -> TreeModelRow | None: ...
+    @_builtins.property
+    def previous(self) -> TreeModelRow | None: ...
+    @_builtins.property
+    def parent(self) -> TreeModelRow | None: ...
+    def get_next(self) -> TreeModelRow | None: ...
+    def get_previous(self) -> TreeModelRow | None: ...
+    def get_parent(self) -> TreeModelRow | None: ...
+    @_overload
+    def __getitem__(self, key: _int) -> _Any: ...
+    @_overload
+    def __getitem__(self, key: _builtins.slice) -> _list[_Any]: ...
+    def __setitem__(self, key: _int | _builtins.slice, value: _Any) -> None: ...
+    # Through __getitem__, a column at a time.
+    def __iter__(self) -> _Iterator[_Any]: ...
+    def iterchildren(self) -> TreeModelRowIter: ...
+class TreeModelRowIter:
+    def __init__(self, model: TreeModel, aiter: TreeIter | None) -> None: ...
+    def __next__(self) -> TreeModelRow: ...
+    def __iter__(self) -> TreeModelRowIter: ...
 _WidgetT = _TypeVar("_WidgetT", bound=_builtins.type[Widget])
 class Template:
     def __init__(self, *, string: _Any = ..., filename: _str = ..., resource_path: _str = ...) -> None: ...
@@ -34004,7 +34031,14 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
     Deprecated since 4.10: Use Gio.ListStore instead
     """
     props: _ListStoreProps  # type: ignore[assignment]
-    def append(self) -> TreeIter:
+    def __init__(self, *column_types: _GTypeLike) -> None: ...
+    @_overload
+    def set(self, treeiter: TreeIter, columns: _Sequence[_int], values: _Sequence[_Any], /) -> None: ...
+    @_overload
+    def set(self, treeiter: TreeIter, values: _dict[_int, _Any], /) -> None: ...
+    @_overload
+    def set(self, treeiter: TreeIter, /, *columns_and_values: _Any) -> None: ...
+    def append(self, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Appends a new row to self.  iter will be changed to point to this new
         row.  The row will be empty after this function is called.  To fill in
         values, you need to call Gtk.ListStore.set() or Gtk.ListStore.set_value().
@@ -34019,7 +34053,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
 
         Deprecated since 4.10: Use list models
         """
-    def insert(self, position: _int) -> TreeIter:
+    def insert(self, position: _int, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Creates a new row at position.  iter will be changed to point to this new
         row.  If position is -1 or is larger than the number of rows on the list,
         then the new row will be appended to the list. The row will be empty after
@@ -34034,7 +34068,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Returns:
             An unset `Gtk.TreeIter` to set to the new row
         """
-    def insert_after(self, sibling: TreeIter | None = ...) -> TreeIter:
+    def insert_after(self, sibling: TreeIter | None, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Inserts a new row after sibling. If sibling is None, then the row will be
         prepended to the beginning of the list. iter will be changed to point to
         this new row. The row will be empty after this function is called. To fill
@@ -34048,7 +34082,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Returns:
             An unset `Gtk.TreeIter` to set to the new row
         """
-    def insert_before(self, sibling: TreeIter | None = ...) -> TreeIter:
+    def insert_before(self, sibling: TreeIter | None, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Inserts a new row before sibling. If sibling is None, then the row will
         be appended to the end of the list. iter will be changed to point to this
         new row. The row will be empty after this function is called. To fill in
@@ -34115,7 +34149,7 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
             iter: A `Gtk.TreeIter`
             position: A `Gtk.TreeIter`
         """
-    def prepend(self) -> TreeIter:
+    def prepend(self, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Prepends a new row to self. iter will be changed to point to this new
         row. The row will be empty after this function is called. To fill in
         values, you need to call Gtk.ListStore.set() or Gtk.ListStore.set_value().
@@ -34176,20 +34210,6 @@ class ListStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
             iter: A valid `Gtk.TreeIter` for the row being modified
             column: column number to modify
             value: new value for the cell
-        """
-    def set(self, iter: TreeIter, columns: _list[_int], values: _list[_Any]) -> None:
-        """A variant of Gtk.ListStore.set_valist() which
-        takes the columns and values as two arrays, instead of
-        varargs. This function is mainly intended for
-        language-bindings and in case the number of columns to
-        change is not known until run-time.
-
-        Deprecated since 4.10: Use list models
-
-        Args:
-            iter: A valid `Gtk.TreeIter` for the row being modified
-            columns: an array of column numbers
-            values: an array of GValues
         """
     def swap(self, a: TreeIter, b: TreeIter) -> None:
         """Swaps a and b in self. Note that this function only works with
@@ -60147,6 +60167,14 @@ class TreeModel(GObject.GInterface):
             path: a `Gtk.TreePath` pointing to the inserted row
             iter: a valid `Gtk.TreeIter` pointing to the inserted row
         """
+    def __len__(self) -> _int: ...
+    def __bool__(self) -> _bool: ...
+    def __getitem__(self, key: TreeIter | TreePath | _int | _str | _tuple[_int, ...]) -> TreeModelRow: ...
+    def __setitem__(self, key: TreeIter | TreePath | _int | _str | _tuple[_int, ...], value: _Sequence[_Any]) -> None: ...
+    def __delitem__(self, key: TreeIter | TreePath | _int | _str | _tuple[_int, ...]) -> None: ...
+    def __iter__(self) -> TreeModelRowIter: ...
+    def set_row(self, treeiter: TreeIter, row: _Sequence[_Any]) -> None: ...
+    def get(self, treeiter: TreeIter, *columns: _int) -> _tuple[_Any, ...]: ...
     def filter_new(self, root: TreePath | None = ...) -> TreeModel:
         """Creates a new `Gtk.TreeModel`, with self as the child_model
         and root as the virtual root.
@@ -60327,7 +60355,7 @@ class TreeModel(GObject.GInterface):
         Returns:
             the number of children of iter
         """
-    def iter_next(self, iter: TreeIter) -> _bool:
+    def iter_next(self, aiter: TreeIter) -> TreeIter | None:
         """Sets iter to point to the node following it at the current level.
 
         If there is no next iter, False is returned and iter is set
@@ -60378,7 +60406,7 @@ class TreeModel(GObject.GInterface):
         Returns:
             the new `Gtk.TreeIter` to set to the parent
         """
-    def iter_previous(self, iter: TreeIter) -> _bool:
+    def iter_previous(self, aiter: TreeIter) -> TreeIter | None:
         """Sets iter to point to the previous node at the current level.
 
         If there is no previous iter, False is returned and iter is
@@ -61058,6 +61086,14 @@ class TreePath:
 
     Deprecated since 4.10.
     """
+    def __init__(self, path: _int | _str | _Sequence[_int] = ...) -> None: ...
+    def __iter__(self) -> _Iterator[_int]: ...
+    def __len__(self) -> _int: ...
+    def __getitem__(self, index: _int) -> _int: ...
+    def __lt__(self, other: TreePath) -> _bool: ...
+    def __le__(self, other: TreePath) -> _bool: ...
+    def __gt__(self, other: TreePath) -> _bool: ...
+    def __ge__(self, other: TreePath) -> _bool: ...
     def append_index(self, index_: _int) -> None:
         """Appends a new index to a path.
 
@@ -61763,7 +61799,14 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
     Deprecated since 4.10: Use Gtk.TreeListModel instead
     """
     props: _TreeStoreProps  # type: ignore[assignment]
-    def append(self, parent: TreeIter | None = ...) -> TreeIter:
+    def __init__(self, *column_types: _GTypeLike) -> None: ...
+    @_overload
+    def set(self, treeiter: TreeIter, columns: _Sequence[_int], values: _Sequence[_Any], /) -> None: ...
+    @_overload
+    def set(self, treeiter: TreeIter, values: _dict[_int, _Any], /) -> None: ...
+    @_overload
+    def set(self, treeiter: TreeIter, /, *columns_and_values: _Any) -> None: ...
+    def append(self, parent: TreeIter | None, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Appends a new row to self.
 
         If parent is non-None, then it will append the new row after the last
@@ -61786,7 +61829,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
 
         Deprecated since 4.10: Use Gtk.TreeListModel instead
         """
-    def insert(self, parent: TreeIter | None, position: _int) -> TreeIter:
+    def insert(self, parent: TreeIter | None, position: _int, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Creates a new row at position.
 
         If parent is non-None, then the row will be made a child of parent.
@@ -61808,7 +61851,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Returns:
             An unset `Gtk.TreeIter` to set to the new row
         """
-    def insert_after(self, parent: TreeIter | None = ..., sibling: TreeIter | None = ...) -> TreeIter:
+    def insert_after(self, parent: TreeIter | None, sibling: TreeIter | None, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Inserts a new row after sibling.
 
         If sibling is None, then the row will be prepended to parent’s children.
@@ -61832,7 +61875,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
         Returns:
             An unset `Gtk.TreeIter` to set to the new row
         """
-    def insert_before(self, parent: TreeIter | None = ..., sibling: TreeIter | None = ...) -> TreeIter:
+    def insert_before(self, parent: TreeIter | None, sibling: TreeIter | None, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Inserts a new row before sibling.
 
         If sibling is None, then the row will be appended to parent’s children.
@@ -61943,7 +61986,7 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
             iter: A `Gtk.TreeIter`
             position: A `Gtk.TreeIter`
         """
-    def prepend(self, parent: TreeIter | None = ...) -> TreeIter:
+    def prepend(self, parent: TreeIter | None, row: _Sequence[_Any] | None = ...) -> TreeIter:
         """Prepends a new row to self.
 
         If parent is non-None, then it will prepend the new row before the first
@@ -62002,21 +62045,6 @@ class TreeStore(GObject.Object, Buildable, TreeDragDest, TreeDragSource, TreeMod
             iter: A valid `Gtk.TreeIter` for the row being modified
             column: column number to modify
             value: new value for the cell
-        """
-    def set(self, iter: TreeIter, columns: _list[_int], values: _list[_Any]) -> None:
-        """A variant of Gtk.TreeStore.set_valist() which takes
-        the columns and values as two arrays, instead of using variadic
-        arguments.
-
-        This function is mainly intended for language bindings or in case
-        the number of columns to change is not known until run-time.
-
-        Deprecated since 4.10: Use Gtk.TreeListModel instead
-
-        Args:
-            iter: A valid `Gtk.TreeIter` for the row being modified
-            columns: an array of column numbers
-            values: an array of GValues
         """
     def swap(self, a: TreeIter, b: TreeIter) -> None:
         """Swaps a and b in the same level of self.

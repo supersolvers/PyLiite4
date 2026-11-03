@@ -10,7 +10,7 @@ from builtins import int as _builtin_int, list as _list, str as _str, str as _bu
 from builtins import tuple as _tuple
 import asyncio as _asyncio
 from collections.abc import Awaitable as _Awaitable, Callable as _Callable
-from collections.abc import Coroutine as _Coroutine, Iterator as _Iterator
+from collections.abc import Coroutine as _Coroutine, Iterator as _Iterator, Sequence as _Sequence
 from typing import Any as _Any, Generic as _Generic, TypeVar as _TypeVar, overload as _overload
 
 from PyLiite4 import cairo as _cairo

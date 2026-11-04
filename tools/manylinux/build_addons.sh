@@ -59,9 +59,7 @@ autotools_package hunspell https://github.com/hunspell/hunspell/releases/downloa
 autotools_package enchant https://github.com/rrthomas/enchant/releases/download/v2.8.21/enchant-2.8.21.tar.gz . \
     --disable-static --enable-relocatable --with-hunspell --without-aspell --without-hspell --without-nuspell \
     --without-voikko --without-zemberek --without-applespell
-# A Checker made without a provider takes the default one without a reference, then releases one when freed.
-patch_once "$(fetch $GNOME/libspelling/0.4/libspelling-0.4.10.tar.xz)" libspelling-checker-ref.patch
-meson_package libspelling $GNOME/libspelling/0.4/libspelling-0.4.10.tar.xz -Denchant=enabled -Dintrospection=enabled \
+meson_package libspelling $GNOME/libspelling/0.4/libspelling-0.4.11.tar.xz -Denchant=enabled -Dintrospection=enabled \
     -Dvapi=false -Ddocs=false -Dsysprof=false
 
 meson_package vte $GNOME/vte/0.84/vte-0.84.1.tar.xz -Dgtk3=false -Dgtk4=true -Dgir=true -Dvapi=false -Ddocs=false \

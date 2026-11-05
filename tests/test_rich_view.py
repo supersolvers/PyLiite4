@@ -156,8 +156,11 @@ VIEW = """
 
 
     def test_streaming_a_long_reply_stays_quick(gtkbot):
-        # A reply re-rendered every 90 ms as it streams, as Ziggy does: each update re-renders only its end.
-        view = shown(gtkbot, "")
+        # A reply re-rendered every 90 ms as it streams, as Ziggy does: each update re-renders only its end. In a
+        # scroller, as there: without one, each update resizes the window, and GTK lays out and draws it all again.
+        view = RichView(left_margin=8, right_margin=8)
+        gtkbot.show(Gtk.Window(child=Gtk.ScrolledWindow(child=view), default_width=420, default_height=500))
+        gtkbot.wait_until(lambda: view.get_width() > 0)
         paragraphs = [f"<p>Paragraph {n} with <b>some</b> <code>code</code> and a <a href='https://x.org/{n}'>link</a>"
                       f" in it, long enough to wrap over a couple of lines in a narrow view.</p>" for n in range(150)]
         times, full_times = [], []

@@ -7,7 +7,7 @@ def on_drop(_drop: Gtk.DropTarget, value: Gtk.ListBoxRow, _x: float, y: float) -
     target_row = list.get_row_at_y(y)
     target_index = target_row.get_index()
 
-    # If value or the target row is null, do not accept the drop
+    # A drop without a value or a target row isn't accepted.
     if not value or not target_row:
         return False
 
@@ -15,7 +15,7 @@ def on_drop(_drop: Gtk.DropTarget, value: Gtk.ListBoxRow, _x: float, y: float) -
     list.insert(value, target_index)
     target_row.set_state_flags(Gtk.StateFlags.NORMAL, True)
 
-    # If everything is successful, return True to accept the drop
+    # Returning True accepts the drop.
     return True
 
 
@@ -61,7 +61,7 @@ drop_target = Gtk.DropTarget.new(Gtk.ListBoxRow, Gdk.DragAction.MOVE)
 
 list.add_controller(drop_target)
 
-# Iterate over ListBox children
+# Each row is a drag source, and is highlighted while a drag is over it.
 for row in list:
     drop_controller = Gtk.DropControllerMotion()
 
@@ -72,16 +72,16 @@ for row in list:
     row.add_controller(drag_source)
     row.add_controller(drop_controller)
 
-    # Drag handling
+    # Dragging
     drag_source.prepare.connect(on_prepare, row)
 
     drag_source.drag_begin.connect(on_drag_begin, row)
 
-    # Update row visuals during DnD operation
+    # The row under a drag is highlighted.
     drop_controller.enter.connect(lambda _target, _x, _y, row: list.drag_highlight_row(row), row)
 
     drop_controller.leave.connect(lambda _target: list.drag_unhighlight_row())
 
 
-# Drop Handling
+# Dropping
 drop_target.drop.connect(on_drop)

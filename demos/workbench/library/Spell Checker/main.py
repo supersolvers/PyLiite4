@@ -7,9 +7,9 @@ GtkSource.init()
 buffer: GtkSource.Buffer = workbench.builder.get_object("buffer")
 text_view: Gtk.TextView = workbench.builder.get_object("text_view")
 
-# Spell checking setup
+# Spell checking
 checker = Spelling.Checker.get_default()
-checker.set_language("en_US")  # set to U.S English
+checker.set_language("en_US")
 adapter = Spelling.TextBufferAdapter.new(buffer, checker)
 extra_menu = adapter.get_menu_model()
 

@@ -43,9 +43,9 @@ def pulse_progress() -> None:
         return True
 
     counter = 0
-    # Time after which progress bar is pulsed
+    # Milliseconds between pulses of the progress bar
     pulse_period = 500
-    # Duration of animation
+    # Milliseconds the animation lasts
     duration = 10000
     increment = pulse_period / duration
     GLib.timeout_add(pulse_period, on_pulse)

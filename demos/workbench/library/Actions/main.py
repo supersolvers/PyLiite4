@@ -33,7 +33,7 @@ demo_group.add_action(bookmarks_action)
 # Action with state
 toggle_action = Gio.SimpleAction(
     name="toggle",
-    # Boolean actions dont need parameters for activation
+    # Boolean actions don't need a parameter for activation.
     state=GLib.Variant.new_boolean(False),
 )
 

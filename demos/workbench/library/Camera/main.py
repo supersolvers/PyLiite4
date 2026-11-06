@@ -14,10 +14,8 @@ button: Gtk.Button = workbench.builder.get_object("button")
 
 
 def on_bus_message(_self: Gst.Bus, message: Gst.Message) -> None:
-    # Check the message type
     message_type = message.type
 
-    # Handle different message types
     match message_type:
         case Gst.MessageType.ERROR:
             error_message = message.parse_error()
@@ -30,22 +28,20 @@ def handle_camera() -> None:
     fd_pipewire_remote = portal.open_pipewire_remote_for_camera()
     print("Pipewire remote opened for camera")
 
-    # Create the pipeline
     pipeline = Gst.Pipeline()
 
-    # Create elements
     source = Gst.ElementFactory.make("pipewiresrc", "source")
-    queue = Gst.ElementFactory.make("queue", "queue")  # add a queue element
+    queue = Gst.ElementFactory.make("queue", "queue")
     paintable_sink = Gst.ElementFactory.make(
         "gtk4paintablesink",
         "paintable_sink",
     )
     glsinkbin = Gst.ElementFactory.make("glsinkbin", "glsinkbin")
 
-    # Set up and Link Pipeline
+    # Setting up and linking the pipeline
     source.set_property(
         "fd", fd_pipewire_remote
-    )  # fd_pipewire_remote is the file descriptor obtained from libportal
+    )  # fd_pipewire_remote is the file descriptor obtained from libportal.
     glsinkbin.set_property("sink", paintable_sink)
 
     pipeline.add(source)
@@ -57,13 +53,12 @@ def handle_camera() -> None:
     paintable = paintable_sink.get_property("paintable")
     output.set_paintable(paintable)
 
-    # Start the pipeline
     pipeline.set_state(Gst.State.PLAYING)
 
-    # Handle cleanup on application exit
+    # The pipeline stops when the output widget is destroyed, as on application exit.
     output.destroy.connect(lambda _: pipeline.set_state(Gst.State.NULL))
 
-    # Set up the bus
+    # The bus reports errors and the end of the stream to on_bus_message().
     bus = pipeline.get_bus()
     bus.add_signal_watch()
     bus.message.connect(on_bus_message)

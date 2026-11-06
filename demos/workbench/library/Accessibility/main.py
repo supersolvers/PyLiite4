@@ -8,23 +8,21 @@ custom_button: Adw.Bin = workbench.builder.get_object("custom_button")
 def toggle_button(button: Gtk.Widget) -> None:
     checked = button.get_state_flags() & Gtk.StateFlags.CHECKED != 0
 
-    # Invert the current state
     checked = not checked
     pressed = Gtk.AccessibleTristate.TRUE if checked else Gtk.AccessibleTristate.FALSE
 
-    # Update the accessible state
+    # The PRESSED accessible state tells assistive technologies whether the button is down.
     state = GObject.Value()
     state.init(GObject.TYPE_INT)
     state.set_int(pressed)
     button.update_state([Gtk.AccessibleState.PRESSED], [state])
 
-    # Update the widget state (i.e. CSS pseudo-class)
+    # The CHECKED state flag sets the widget's :checked CSS pseudo-class.
     if checked:
         button.set_state_flags(Gtk.StateFlags.CHECKED, False)
     else:
         button.unset_state_flags(Gtk.StateFlags.CHECKED)
 
-    # Grab the focus
     button.grab_focus()
 
 

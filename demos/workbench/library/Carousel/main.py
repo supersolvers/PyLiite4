@@ -11,12 +11,12 @@ orientation_row: Adw.ComboRow = workbench.builder.get_object("orientation_row")
 
 carousel.page_changed.connect(lambda *_: print("Page Changed"))
 
-# Scroll Wheel Switch
+# The scroll wheel switch
 sw_switch.set_active(carousel.get_allow_scroll_wheel())
 
 sw_switch.notify["active"].connect(lambda *_: carousel.set_allow_scroll_wheel(sw_switch.get_active()))
 
-# Long Swipe Switch
+# The long swipe switch
 ls_switch.set_active(carousel.get_allow_long_swipes())
 
 ls_switch.notify["active"].connect(lambda *_: carousel.set_allow_long_swipes(ls_switch.get_active()))

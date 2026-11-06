@@ -12,7 +12,7 @@ angle = 0
 
 
 def draw(_self: Gtk.DrawingArea, cr: cairo.Context, _width: int, _height: int) -> None:
-    # Draw triangle in context
+    # The triangle, rotated by the scale's angle about (150, 150)
     cr.translate(150, 150)
     cr.rotate(angle)
 

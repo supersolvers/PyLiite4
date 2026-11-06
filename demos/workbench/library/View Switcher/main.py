@@ -6,14 +6,14 @@ notifications_page: Adw.ViewStackPage = workbench.builder.get_object("page3")
 notification_list: Gtk.ListBox = workbench.builder.get_object("notification_list")
 
 notifications_count = 5
-# object.props.<property_name> can be used also instead of get and set functions
+# object.props.<property_name> can be used instead of the get and set methods.
 notifications_page.props.badge_number = notifications_count
 
 
 def on_button_clicked(button: Gtk.Button, *_: object) -> None:
     notifications_page.props.badge_number -= 1
     notification_list.remove(button.get_ancestor(Adw.ActionRow))
-    # get_ancestor method gets the most recent parent of the type provided
+    # get_ancestor() returns the nearest ancestor of the given type.
 
     if notifications_page.props.badge_number == 0:
         notifications_page.props.needs_attention = False

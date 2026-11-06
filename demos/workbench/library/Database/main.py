@@ -43,11 +43,9 @@ def open_cb(adapter: Gom.Adapter, result: Gio.AsyncResult) -> None:
     _res = adapter.open_finish(result)
     repository = Gom.Repository(adapter=adapter)
 
-    # Set up table and primary key
     ItemClass.set_table("items")
     ItemClass.set_primary_key("id")
 
-    # Perform automatic migration
     repository.automatic_migrate_async(1, [ItemClass], migrate_cb)
 
 
@@ -92,7 +90,7 @@ def load() -> None:
     text = search_entry.get_text() or ""
 
     data_model.remove_all()
-    # Create a filter for Text matching
+    # A glob filter matches the items whose text contains the search text.
     filter = Gom.Filter.new_glob(ItemClass, "text", f"*{text}*")
     repository.find_async(ItemClass, filter, find_cb)
 

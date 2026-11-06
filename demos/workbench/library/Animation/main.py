@@ -54,8 +54,8 @@ animation_spring = Adw.SpringAnimation(
     value_to=1,
     spring_params=params,
     target=target_spring,
-    initial_velocity=1.0,  # If amplitude of oscillation < epsilon, animation stops
-    epsilon=0.001,
+    initial_velocity=1.0,
+    epsilon=0.001,  # The animation stops once the oscillation's amplitude is below epsilon.
     clamp=False,
 )
 

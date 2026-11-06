@@ -9,7 +9,7 @@ change_file: Gtk.Button = workbench.builder.get_object("change_file")
 uri_launch: Gtk.Button = workbench.builder.get_object("uri_launch")
 uri_details: Gtk.Entry = workbench.builder.get_object("uri_details")
 
-# File Launcher
+# File launcher
 
 file = Gio.File.new_for_uri(workbench.resolve("workbench.txt"))
 file_launcher = Gtk.FileLauncher(
@@ -53,7 +53,7 @@ change_file.clicked.connect(
     lambda _: Gtk.FileDialog().open(workbench.window, None, on_file_opened)
 )
 
-# URI Launcher
+# URI launcher
 
 uri_launch.clicked.connect(
     lambda _: Gtk.UriLauncher(uri=uri_details.get_text()).launch(

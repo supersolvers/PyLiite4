@@ -21,9 +21,8 @@ entry: Gtk.PasswordEntry = workbench.builder.get_object("entry")
 label_strength: Gtk.Label = workbench.builder.get_object("label_strength")
 
 
-# This is not a secure way to estimate password strength
-# Use appropriate solutions instead
-# such as https://github.com/dropbox/zxcvbn
+# This isn't a secure way to estimate password strength; use an appropriate solution instead, such as
+# https://github.com/dropbox/zxcvbn.
 def estimate_password_strength(_entry: Gtk.PasswordEntry, _text: GObject.ParamSpec) -> None:
     level = min(math.ceil(len(entry.get_text()) / 2), 6)
 

@@ -51,14 +51,12 @@ justification_row.notify["selected"].connect(
 
 
 def on_style_class_selected(_row: Adw.ComboRow, _item: GObject.ParamSpec) -> None:
-    # Remove all existing style classes
     for style_class in style_classes:
         label.remove_css_class(style_class)
 
     if style_row.get_selected() == 0:
         return
 
-    # Add the new style class
     new_style_class = style_classes[style_row.get_selected()]
     label.add_css_class(new_style_class)
 

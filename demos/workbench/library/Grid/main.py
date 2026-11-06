@@ -19,24 +19,23 @@ button_ids = [
 
 def on_clicked(button: Gtk.Button) -> None:
     global step
-    # check access for user action
+    # A square with an icon has already been played.
     image: Gtk.Image = button.get_child()
     if image.get_icon_name():
         return
-    # store and show user action
+    # The player's move is a cross.
     image.set_from_icon_name("cross-large-symbolic")
-    # calculate pc reaction
+    # The computer answers on a random free square.
     pc_is_thinking = True
     while pc_is_thinking:
         pc_is_thinking_row = str(randint(0, 2))
         pc_is_thinking_col = str(randint(0, 2))
-        # make pc reaction if possible
         temp: Gtk.Button = workbench.builder.get_object(
             f"button{pc_is_thinking_row}{pc_is_thinking_col}"
         )
         temp_image: Gtk.Image = temp.get_child()
         if not temp_image.get_icon_name():
-            # store and show pc reaction
+            # The computer's move is a circle.
             temp_image.set_from_icon_name("circle-outline-thick-symbolic")
             pc_is_thinking = False
             step += 2

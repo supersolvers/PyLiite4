@@ -7,14 +7,14 @@ from demos.workbench import workbench
 map_widget: Shumate.SimpleMap = workbench.builder.get_object("map_widget")
 registry = Shumate.MapSourceRegistry.new_with_defaults()
 
-# Use OpenStreetMap as the source
+# The map's source is OpenStreetMap.
 map_source = registry.get_by_id(Shumate.MAP_SOURCE_OSM_MAPNIK)
 viewport = map_widget.get_viewport()
 
 map_widget.set_map_source(map_source)
 map_widget.get_map().center_on(0, 0)
 
-# Reference map source used by MarkerLayer
+# MarkerLayer places its markers by the viewport's reference map source.
 viewport.set_reference_map_source(map_source)
 viewport.set_zoom_level(5)
 

@@ -14,7 +14,7 @@ style_manager = Adw.StyleManager.get_default()
 
 dm_switch.set_active(style_manager.get_dark())
 
-# When the Switch is toggled, set the color scheme
+# Toggling the switch sets the color scheme.
 dm_switch.notify["active"].connect(
     lambda *_: style_manager.set_color_scheme(
         Adw.ColorScheme.FORCE_DARK
@@ -23,7 +23,7 @@ dm_switch.notify["active"].connect(
     ),
 )
 
-# Preferences dialogs can display subpages
+# Preferences dialogs can display subpages.
 subpage_row.activated.connect(lambda *_: dialog.push_subpage(subpage))
 
 subpage_button.clicked.connect(lambda *_: dialog.pop_subpage())

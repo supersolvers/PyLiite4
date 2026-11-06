@@ -71,7 +71,7 @@ def on_swipe(_self: Gtk.GestureSwipe, vel_x: float, _vel_y: float) -> None:
         stack.set_visible_child_name("stack_picture_2")
 
 
-# Key controller to detect when the Ctrl key is pressed and released
+# A key controller detects when the Ctrl key is pressed and released.
 key_controller = Gtk.EventControllerKey()
 window.add_controller(key_controller)
 key_controller.key_pressed.connect(on_key_pressed)
@@ -79,7 +79,7 @@ key_controller.key_released.connect(on_key_released)
 
 ctrl_button.clicked.connect(on_clicked)
 
-# Detect pointer button press and release events
+# A click gesture detects pointer button presses and releases.
 gesture_click = Gtk.GestureClick(button=0)
 gesture_click.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
 window.add_controller(gesture_click)

@@ -1,4 +1,4 @@
-# Pango is a text layout library. It can e.g. be used for formatting text
+# Pango is a text layout library; one of its uses is formatting text.
 # https://gjs-docs.gnome.org/pango10~1.0/
 from PyLiite4 import Gtk, Pango
 
@@ -8,12 +8,12 @@ label: Gtk.Label = workbench.builder.get_object("label")
 
 
 def update_attributes() -> None:
-    # A Pango Attribute List is used to style the label
+    # A Pango.AttrList styles the label.
     label.set_attributes(rainbow_attributes(label.get_label()))
 
 
-# Generates an Attribute List that styles the label in rainbow colors.
-# The `text` parameter is needed to detect string length + position of spaces
+# Builds a Pango.AttrList that styles the label in rainbow colors. It takes the text to know its length and where its
+# spaces are.
 def rainbow_attributes(text: str) -> Pango.AttrList:
     rainbow_colors = (
         "#D00",
@@ -25,29 +25,28 @@ def rainbow_attributes(text: str) -> Pango.AttrList:
         "#C3C",
     )
 
-    # Create a color array with the length needed to color all the letters
+    # The colors, repeated until there's one for every letter.
     color_array: list[str] = []
     i = 0
     while i < len(text):
         color_array += rainbow_colors
         i = len(color_array)
 
-    # Independent variable from `i` in the following loop to avoid spaces "consuming" a color
+    # A counter separate from `i` in the loop below, so that spaces don't "consume" a color.
     color_idx = 0
 
     attr_list_string = ""
     for i in range(len(text)):
-        # Skip space characters
         if text[i] != " ":
             start_idx = i
             end_idx = i + 1
 
             color = color_array[color_idx]
             color_idx += 1
-            # See comment below
+            # The format of this string is linked below.
             attr_list_string += f"{start_idx} {end_idx} foreground {color},"
 
-    # For more info about the syntax for this function, see:
+    # The string's syntax is described at
     # https://docs.gtk.org/Pango/method.AttrList.to_string.html
     return Pango.attr_list_from_string(attr_list_string)
 

@@ -31,7 +31,7 @@ def create_confirmation_dialog(*_args: object) -> None:
     dialog.add_response("cancel", "Cancel")
     dialog.add_response("replace", "Replace")
 
-    # Use DESTRUCTIVE appearance to draw attention to the potentially damaging consequences of this action
+    # The DESTRUCTIVE appearance draws attention to the potentially damaging consequences of this action.
     dialog.set_response_appearance("replace", Adw.ResponseAppearance.DESTRUCTIVE)
 
     dialog.choose(workbench.window, None, on_response_selected)
@@ -59,7 +59,7 @@ def create_advanced_dialog(*_args: object) -> None:
     dialog.add_response("cancel", "Cancel")
     dialog.add_response("login", "Login")
 
-    # Use SUGGESTED appearance to mark important responses such as the affirmative action
+    # The SUGGESTED appearance marks important responses, such as the affirmative action.
     dialog.set_response_appearance("login", Adw.ResponseAppearance.SUGGESTED)
 
     entry = Gtk.PasswordEntry(show_peek_icon=True)

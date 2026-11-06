@@ -13,7 +13,7 @@ def save_file(_button: Gtk.Button) -> None:
 
 
 def on_save(file_dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
-    # "save_finish" returns a Gio.File you can write to
+    # save_finish() returns a Gio.File to write to.
     try:
         file = file_dialog.save_finish(result)
     except GLib.Error as error:
@@ -28,5 +28,4 @@ def on_replace_contents(file: Gio.File, result: Gio.AsyncResult) -> None:
     print(f"File {file.get_basename()} saved")
 
 
-# Handle button click
 button.clicked.connect(save_file)

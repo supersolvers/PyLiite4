@@ -13,7 +13,7 @@ print("SVG intrisic size", {"width": width, "height": height})
 
 def draw(_self: Gtk.DrawingArea, cr: cairo.Context, width: int, height: int) -> None:
     print("drawing SVG at", {"width": width, "height": height})
-    # Like Rsvg.Handle.render_document(), fit the document in the viewport, keeping its aspect ratio
+    # Like Rsvg.Handle.render_document(), fit the document in the viewport, keeping its aspect ratio.
     pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(svg, width, height, True)
     Gdk.cairo_set_source_pixbuf(cr, pixbuf, (width - pixbuf.get_width()) / 2, (height - pixbuf.get_height()) / 2)
     cr.paint()

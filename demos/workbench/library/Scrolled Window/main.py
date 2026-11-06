@@ -30,8 +30,7 @@ def on_animation_done(_animation: Adw.Animation) -> None:
 
 
 def create_scrollbar_anim(scrollbar: Gtk.Scrollbar, direction: int) -> Adw.TimedAnimation:
-    # direction = 0 -> Animates to Start
-    # direction = 1 -> Animates to End
+    # A direction of 0 animates to the start, and 1 to the end.
     adjustment = scrollbar.get_adjustment()
     target = Adw.PropertyAnimationTarget.new(adjustment, "value")
     animation = Adw.TimedAnimation(
@@ -79,7 +78,7 @@ def on_value_changed(adj: Gtk.Adjustment) -> None:
         button_end.set_sensitive(False)
         button_start.set_sensitive(True)
     else:
-        # Disable buttons if scrollbar is auto-scrolling
+        # The buttons are insensitive while the scrollbar is auto-scrolling.
         button_end.set_sensitive(not auto_scrolling)
         button_start.set_sensitive(not auto_scrolling)
 

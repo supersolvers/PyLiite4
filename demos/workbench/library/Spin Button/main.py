@@ -28,6 +28,5 @@ hours.output.connect(on_value_changed)
 minutes.output.connect(on_value_changed)
 
 
-# This only works for one direction
-# Add any extra logic to account for wrapping in both directions
+# This only works for one direction; wrapping in both directions needs extra logic.
 minutes.wrapped.connect(lambda *_args: hours.spin(Gtk.SpinType.STEP_FORWARD, 1))

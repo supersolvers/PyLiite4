@@ -103,7 +103,7 @@ def on_location_updated(
     heading_label.set_label(str(heading))
     description_label.set_label(description)
 
-    # Convert UNIX timestamp to local date and time string
+    # The UNIX timestamp, as a local date and time
     timestamp = GLib.DateTime.new_from_unix_local(timestamp_s)
     formatted_timestamp = timestamp.format("%c")
     timestamp_label.set_label(formatted_timestamp)

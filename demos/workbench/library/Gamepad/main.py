@@ -47,16 +47,15 @@ def on_absolute_axis_event(device: Manette.Device, event: Manette.Event) -> None
 def on_device(_: Manette.Monitor | None, device: Manette.Device) -> None:
     print("Device connected:", device.get_name())
 
-    # Face and Shoulder Buttons
+    # Face and shoulder buttons
     device.button_press_event.connect(on_button_press_event)
 
-    # Face and Shoulder Buttons
     device.button_release_event.connect(on_button_release_event)
 
     # D-pads
     device.hat_axis_event.connect(on_hat_axis_event)
 
-    # Analog Axis - Triggers and Joysticks
+    # Analog axes: triggers and joysticks
     device.absolute_axis_event.connect(on_absolute_axis_event)
 
     devices.add(device)

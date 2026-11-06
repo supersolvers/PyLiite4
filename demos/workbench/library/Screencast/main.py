@@ -23,12 +23,10 @@ def on_session_start(session: Xdp.Session, result: Gio.AsyncResult) -> None:
 
     pw_remote = session.open_pipewire_remote()
 
-    # Create the pipeline
     pipeline = Gst.Pipeline()
 
-    # Create elements
     source = Gst.ElementFactory.make("pipewiresrc", "source")
-    queue = Gst.ElementFactory.make("queue", "queue")  # add a queue element
+    queue = Gst.ElementFactory.make("queue", "queue")
     paintable_sink = Gst.ElementFactory.make(
         "gtk4paintablesink",
         "paintable_sink",
@@ -38,19 +36,18 @@ def on_session_start(session: Xdp.Session, result: Gio.AsyncResult) -> None:
         print("The pipewiresrc, gtk4paintablesink and glsinkbin GStreamer elements are needed", file=sys.stderr)
         return
 
-    # Set up and Link Pipeline
-    source.set_property("fd", pw_remote)  # pw_remote is the file descriptor obtained from libportal
+    # Setting up and linking the pipeline
+    source.set_property("fd", pw_remote)  # pw_remote is the file descriptor obtained from libportal.
 
-    # Obtain the node id from the screencast session
     streams = session.get_streams()
 
-    # Assuming there's only one stream for simplicity
+    # The node id comes from the session's first stream: for simplicity, this assumes there's only one.
     node_id = streams[0][0]
     if not node_id:
         print("No available node id", file=sys.stderr)
         return
 
-    # Set the path property of pipewiresrc
+    # pipewiresrc's path property names the PipeWire node to record.
     source.set_property("path", str(node_id))
 
     glsinkbin.set_property("sink", paintable_sink)
@@ -64,10 +61,9 @@ def on_session_start(session: Xdp.Session, result: Gio.AsyncResult) -> None:
     paintable = paintable_sink.get_property("paintable")
     output.set_paintable(paintable)
 
-    # Start the pipeline
     pipeline.set_state(Gst.State.PLAYING)
 
-    # Handle cleanup on application exit
+    # The pipeline stops when the output widget is destroyed, as on application exit.
     output.destroy.connect(lambda _: pipeline.set_state(Gst.State.NULL))
 
 

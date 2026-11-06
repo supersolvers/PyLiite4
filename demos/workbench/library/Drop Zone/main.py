@@ -90,7 +90,7 @@ def add_class(cl: str) -> bool:
 
 bin: Adw.Bin = workbench.builder.get_object("bin")
 
-# Universal drop target for any String data
+# A drop target for any string data
 string_drop_target = Gtk.DropTarget.new(
     GObject.TYPE_STRING,
     Gdk.DragAction.COPY,
@@ -100,13 +100,13 @@ bin.add_controller(string_drop_target)
 
 string_drop_target.drop.connect(on_string_drop)
 
-# Drop Target for Files
+# A drop target for files
 file_drop_target = Gtk.DropTarget.new(Gio.File, Gdk.DragAction.COPY)
 bin.add_controller(file_drop_target)
 file_drop_target.drop.connect(on_file_drop)
 
 
-# Drop Hover Effect
+# The hover effect
 
 file_drop_target.enter.connect(lambda _target, _x, _y: add_class("overlay-drag-area"))
 

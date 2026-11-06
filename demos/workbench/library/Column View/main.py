@@ -40,7 +40,7 @@ books = {
     "Itinerary of a Dramatist": ("Rodolfo Usigli", 1940),
 }
 
-# Create the data model
+# The data model
 data_model: Gio.ListStore[Book] = Gio.ListStore(item_type=Book)
 for title, book_info in books.items():
     data_model.append(Book(title=title, author=book_info[0], year=book_info[1]))

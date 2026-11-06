@@ -8,8 +8,7 @@ linkbutton: Gtk.LinkButton = workbench.builder.get_object("linkbutton")
 def on_activate_link(button: Gtk.LinkButton) -> bool:
     print(f"About to activate {button.get_uri()}")
 
-    # Return True if handling the link manually, or
-    # False to let the default behavior continue
+    # Returning True says the link was handled here; False lets the default behavior continue.
     return False
 
 

@@ -17,7 +17,8 @@ def on_selected(_portal: Xdp.Portal, task: Gio.AsyncResult) -> None:
 
 
 def on_clicked(_button: Gtk.Button) -> None:
-    # result is a GVariant of the form (ddd), containing red, green and blue components in the range [0,1]
+    # The result, which on_selected() unpacks, is a GVariant of the form (ddd): the red, green and blue components,
+    # in the range [0,1].
     portal.pick_color(parent, None, on_selected)
 
 

@@ -13,7 +13,7 @@ class Chessboard(Gtk.Widget):
 
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
-        # initialize colors
+        # Colors
         self.black_squares_color = Gdk.RGBA()
         self.black_squares_color.parse("Gray")
         self.white_squares_color = Gdk.RGBA()
@@ -21,7 +21,7 @@ class Chessboard(Gtk.Widget):
         self.knight_color = Gdk.RGBA()
         self.knight_color.parse("SaddleBrown")
 
-        # initialize knight position and contour
+        # The knight's position and contour
         self.x = self.y = 4 * self.SQUARE_SIZE - self.PIECE_SIZE // 2
         self.initial_x, self.initial_y = self.x, self.y
         # Made by SVG Repo: https://www.svgrepo.com/svg/380957/chess-piece-knight-strategy
@@ -31,7 +31,7 @@ class Chessboard(Gtk.Widget):
         self.knight_stroke = Gsk.Stroke(line_width=2.0)
         _, self.knight_bounds = self.knight_path.get_stroke_bounds(self.knight_stroke)
 
-        # Add drag gesture and connect it to signals
+        # Dragging moves the knight.
         self.gesture = Gtk.GestureDrag()
         self.add_controller(self.gesture)
         self.gesture.drag_begin.connect(self.on_drag_begin)
@@ -40,10 +40,10 @@ class Chessboard(Gtk.Widget):
         self.gesture_started = False
 
     def do_snapshot(self, snapshot: Gtk.Snapshot) -> None:
-        # Draw chessboard by repeating a 2x2 block of squares
+        # The chessboard repeats a 2x2 block of squares.
         bounds = Graphene.Rect().init(0, 0, self.BOARD_SIZE, self.BOARD_SIZE)
         child_bounds = Graphene.Rect().init(0, 0, 2 * self.SQUARE_SIZE, 2 * self.SQUARE_SIZE)
-        snapshot.push_repeat(bounds, child_bounds)  # start of repeated part
+        snapshot.push_repeat(bounds, child_bounds)  # Start of the repeated part
 
         r11 = Graphene.Rect()
         r11.init(0, 0, self.SQUARE_SIZE, self.SQUARE_SIZE)
@@ -58,9 +58,9 @@ class Chessboard(Gtk.Widget):
         r22.init(self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE)
         snapshot.append_color(self.white_squares_color, r22)
 
-        snapshot.pop()  # end of repeated part
+        snapshot.pop()  # End of the repeated part
 
-        # Draw knight anchored on position (self.x, self.y)
+        # The knight, anchored at (self.x, self.y)
         anchor = Graphene.Point().init(self.x, self.y)
         factor = self.PIECE_SIZE / self.knight_bounds.get_width()
         transformation = Gsk.Transform().translate(anchor).scale(factor, factor)

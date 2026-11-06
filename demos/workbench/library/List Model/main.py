@@ -20,7 +20,7 @@ model.items_changed.connect(
     ),
 )
 
-# Filter-Model
+# Filter model
 search_expression = Gtk.PropertyExpression.new(
     Gtk.StringObject,
     None,

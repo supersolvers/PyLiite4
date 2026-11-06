@@ -4,7 +4,7 @@ from demos.workbench import workbench
 
 calendar: Gtk.Calendar = workbench.builder.get_object("calendar")
 
-# calendar.get_date() returns a GLib.DateTime object
+# calendar.get_date() returns a GLib.DateTime.
 # https://docs.gtk.org/glib/struct.DateTime.html
 
 calendar.notify["day"].connect(lambda *_: print(calendar.get_date().format("%e")))

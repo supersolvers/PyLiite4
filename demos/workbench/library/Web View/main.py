@@ -9,7 +9,7 @@ button_stop: Gtk.Button = workbench.builder.get_object("button_stop")
 url_bar: Gtk.Entry = workbench.builder.get_object("url_bar")
 web_view: WebKit.WebView = workbench.builder.get_object("web_view")
 
-# URL bar displays the current loaded page
+# The URL bar shows the URI of the loaded page.
 web_view.bind_property(
     "uri",
     url_bar.get_buffer(),
@@ -36,7 +36,7 @@ def on_load_changed(_self: WebKit.WebView, load_event: WebKit.LoadEvent) -> None
 
 
 def on_load_failed(_self: WebKit.WebView, _load_event: WebKit.LoadEvent, fail_url: str, error: GLib.Error) -> bool:
-    # Loading failed as a result of calling stop_loading
+    # Calling stop_loading() makes the load fail with CANCELLED.
     if error.matches(WebKit.NetworkError, WebKit.NetworkError.CANCELLED):
         return False
 

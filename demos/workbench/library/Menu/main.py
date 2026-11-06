@@ -10,7 +10,7 @@ label.insert_action_group("text", text_group)
 text_state = {"italic": False, "bold": False, "foreground": "green"}
 
 
-# Helper function to create a PangoAttrList from text_state
+# Builds a Pango.AttrList from text_state.
 def state_to_attr(state: dict[str, bool | str]) -> Pango.AttrList:
     attrs = []
     if state["bold"]:

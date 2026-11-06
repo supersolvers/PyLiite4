@@ -13,7 +13,7 @@ clickable icons and widgets which can also replace a character
 
 from PyLiite4 import Gdk, GLib, Gtk, Pango
 
-PANGO_SCALE_X_LARGE = 1.2 * 1.2  # a C macro, not in the introspection data
+PANGO_SCALE_X_LARGE = 1.2 * 1.2  # A C macro, not in the introspection data.
 
 
 def insert_link(buffer: Gtk.TextBuffer, iter: Gtk.TextIter, text: str, page: int) -> None:
@@ -178,7 +178,7 @@ def released_cb(gesture: Gtk.GestureClick, n_press: int, x: float, y: float, tex
 
     buffer = text_view.get_buffer()
 
-    # we shouldn't follow a link if the user has selected something
+    # A link isn't followed while the user has something selected.
     _, start, end = buffer.get_selection_bounds()
     if start.get_offset() != end.get_offset():
         return

@@ -57,7 +57,7 @@ def gsk_path_point_get_position(point: GskPathPoint, path: Gsk.Path) -> Graphene
 
 def gsk_path_point_get_tangent(point: GskPathPoint, path: Gsk.Path,
                                direction: Gsk.PathDirection) -> tuple[float, float]:
-    # graphene_vec2_t is a 16-byte aligned SIMD value
+    # graphene_vec2_t is a 16-byte aligned SIMD value.
     buffer = (ctypes.c_float * 8)()
     address = (ctypes.addressof(buffer) + 15) & ~15
     _gtk.gsk_path_point_get_tangent(ctypes.byref(point), hash(path), int(direction), address)
@@ -145,7 +145,7 @@ def gtk_path_transform_op(op: Gsk.PathOperation, pts: list[Graphene.Point], n_pt
     return True
 
 
-# C passes -1: every operation
+# C passes -1: every operation.
 ALL_OPERATIONS = Gsk.PathForeachFlags.QUAD | Gsk.PathForeachFlags.CUBIC | Gsk.PathForeachFlags.CONIC
 
 
@@ -267,18 +267,18 @@ class GtkPathWidget(Gtk.Widget):
         width = self.get_width()
         height = self.get_height()
 
-        # frosted glass the background
+        # The background, as frosted glass
         snapshot.push_blur(100)
         self.background.snapshot(snapshot, width, height)
         snapshot.append_color(rgba(1, 1, 1, 0.6), Graphene.Rect().init(0, 0, width, height))
         snapshot.pop()
 
-        # draw the text
+        # The text
         if self.text_path:
             snapshot.push_fill(self.text_path, Gsk.FillRule.WINDING)
             self.background.snapshot(snapshot, width, height)
 
-            # ... with an emboss effect
+            # The text gets an emboss effect.
             stroke = Gsk.Stroke.new(2.0)
             snapshot.translate(Graphene.Point().init(1, 1))
             snapshot.push_stroke(self.text_path, stroke)
@@ -288,13 +288,13 @@ class GtkPathWidget(Gtk.Widget):
             snapshot.pop()
 
         if self._editable and self.line_path:
-            # draw the control line
+            # The control line
             stroke = Gsk.Stroke.new(1.0)
             snapshot.push_stroke(self.line_path, stroke)
             snapshot.append_color(rgba(0, 0, 0, 1), Graphene.Rect().init(0, 0, width, height))
             snapshot.pop()
 
-            # draw the points
+            # The points
             builder = Gsk.PathBuilder.new()
             for i in range(4):
                 builder.add_circle(Graphene.Point().init(self.points[i].x * width, self.points[i].y * height),

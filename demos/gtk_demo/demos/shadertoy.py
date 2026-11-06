@@ -40,7 +40,6 @@ def clear_clicked_cb(button: Gtk.Button) -> None:
 
 def close_window(widget: Gtk.Widget) -> None:
     global demo_window, shadertoy, textbuffer
-    # Reset the state
     demo_window = None
     shadertoy = None
     textbuffer = None

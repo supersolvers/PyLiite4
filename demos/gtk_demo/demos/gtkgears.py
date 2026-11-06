@@ -131,22 +131,22 @@ log = logging.getLogger(__name__)
 @dataclass
 class VertexStrip:
     """Struct describing the vertices in triangle strip"""
-    # The first vertex in the strip
+    # The first vertex in the strip.
     first: int = 0
-    # The number of consecutive vertices in the strip after the first
+    # The number of consecutive vertices in the strip after the first.
     count: int = 0
 
 
 @dataclass
 class Gear:
     """Struct representing a gear."""
-    # The vertices comprising the gear, GEAR_VERTEX_STRIDE floats each
+    # The vertices comprising the gear, GEAR_VERTEX_STRIDE floats each.
     vertices: list[float] = field(default_factory=list)
-    # The number of vertices comprising the gear
+    # The number of vertices comprising the gear.
     nvertices: int = 0
-    # The triangle strips comprising the gear
+    # The triangle strips comprising the gear.
     strips: list[VertexStrip] = field(default_factory=list)
-    # The number of triangle strips comprising the gear
+    # The number of triangle strips comprising the gear.
     nstrips: int = 0
 
 
@@ -161,7 +161,7 @@ def create_gear(inner_radius: float, outer_radius: float, width: float, teeth: i
     """
     gear = Gear()
 
-    # Calculate the radii used in the gear
+    # The radii used in the gear
     r0 = inner_radius
     r1 = outer_radius - tooth_depth / 2.0
     r2 = outer_radius + tooth_depth / 2.0
@@ -177,7 +177,7 @@ def create_gear(inner_radius: float, outer_radius: float, width: float, teeth: i
     normal = [0.0, 0.0, 0.0]
 
     for i in range(teeth):
-        # A set of helpers for making the creation of the gears easier, as the C macros
+        # Helpers that make creating the gears easier, as the C macros do.
         def set_normal(x: float, y: float, z: float) -> None:
             normal[:] = [x, y, z]
 
@@ -199,14 +199,14 @@ def create_gear(inner_radius: float, outer_radius: float, width: float, teeth: i
             gear_vert(p2, -1)
             gear_vert(p2, 1)
 
-        # Calculate needed sin/cos for various angles
+        # The sines and cosines of the angles a tooth needs.
         s = [math.sin(i * 2.0 * math.pi / teeth + da * k) for k in range(5)]
         c = [math.cos(i * 2.0 * math.pi / teeth + da * k) for k in range(5)]
 
         def gear_point(r: float, da: int) -> tuple[float, float]:
             return r * c[da], r * s[da]
 
-        # Create the 7 points (only x,y coords) used to draw a tooth
+        # The 7 points, x and y only, that a tooth is drawn with.
         p = [
             gear_point(r2, 1),
             gear_point(r2, 2),
@@ -320,15 +320,12 @@ def invert(m: list[float]) -> None:
     t = [0.0] * 16
     identity(t)
 
-    # Extract and invert the translation part 't'. The inverse of a
-    # translation matrix can be calculated by negating the translation
-    # coordinates.
+    # The translation part, t, inverted: negating a translation's coordinates inverts it.
     t[12] = -m[12]
     t[13] = -m[13]
     t[14] = -m[14]
 
-    # Invert the rotation part 'r'. The inverse of a rotation matrix is
-    # equal to its transpose.
+    # The rotation part, r, inverted: a rotation matrix's inverse is its transpose.
     m[12] = m[13] = m[14] = 0
     transpose(m)
 
@@ -441,38 +438,36 @@ class GtkGears(Gtk.GLArea):
     def __init__(self, **properties: object) -> None:
         super().__init__(**properties)
 
-        # The view rotation [x, y, z]
+        # The view rotation, [x, y, z].
         self.view_rot = [0.0] * GTK_GEARS_N_AXIS
         self.view_rot[GTK_GEARS_X_AXIS] = 20.0
         self.view_rot[GTK_GEARS_Y_AXIS] = 30.0
         self.view_rot[GTK_GEARS_Z_AXIS] = 20.0
 
-        # The Vertex Array Object
+        # The Vertex Array Object.
         self.vao = 0
-        # The shader program
+        # The shader program.
         self.program = 0
 
-        # The gears
         self.gear1: Gear | None = None
         self.gear2: Gear | None = None
         self.gear3: Gear | None = None
 
-        # The Vertex Buffer Objects holding the vertices in the graphics card
+        # The Vertex Buffer Objects holding the vertices in the graphics card.
         self.gear_vbo = [0, 0, 0]
 
-        # The location of the shader uniforms
+        # The locations of the shader uniforms.
         self.ModelViewProjectionMatrix_location = 0
         self.NormalMatrix_location = 0
         self.LightSourcePosition_location = 0
         self.MaterialColor_location = 0
 
-        # The current gear rotation angle
+        # The current gear rotation angle, in degrees.
         self.angle = 0.0
 
-        # The projection matrix
         self.ProjectionMatrix = [0.0] * 16
 
-        # The direction of the directional light for the scene
+        # The direction of the directional light for the scene.
         self.LightSourcePosition = [5.0, 5.0, 10.0, 1.0]
 
         self.first_frame_time = 0
@@ -483,53 +478,43 @@ class GtkGears(Gtk.GLArea):
     def draw_gear(self, gear: Gear, gear_vbo: int, transform: list[float], x: float, y: float, angle: float,
                   color: list[float]) -> None:
         """Draws a gear at x, y, rotated by angle, in color, with the current transformation matrix."""
-        # Translate and rotate the gear
         model_view = list(transform)
         translate(model_view, x, y, 0)
         rotate(model_view, 2 * math.pi * angle / 360.0, 0, 0, 1)
 
-        # Create and set the ModelViewProjectionMatrix
         model_view_projection = list(self.ProjectionMatrix)
         multiply(model_view_projection, model_view)
 
         glUniformMatrix4fv(self.ModelViewProjectionMatrix_location, 1, GL_FALSE, floats(model_view_projection))
 
-        # Create and set the NormalMatrix. It's the inverse transpose of the
-        # ModelView matrix.
+        # The NormalMatrix is the inverse transpose of the ModelView matrix.
         normal_matrix = list(model_view)
         invert(normal_matrix)
         transpose(normal_matrix)
         glUniformMatrix4fv(self.NormalMatrix_location, 1, GL_FALSE, floats(normal_matrix))
 
-        # Set the gear color
         glUniform4fv(self.MaterialColor_location, 1, floats(color))
 
-        # Set the vertex buffer object to use
         glBindBuffer(GL_ARRAY_BUFFER, gear_vbo)
 
-        # Set up the position of the attributes in the vertex buffer object
+        # Each vertex is 6 floats: its position, then its normal.
         size = ctypes.sizeof(GLfloat)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * size, 0)
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * size, 3 * size)
 
-        # Enable the attributes
         glEnableVertexAttribArray(0)
         glEnableVertexAttribArray(1)
 
-        # Draw the triangle strips that comprise the gear
         for strip in gear.strips:
             glDrawArrays(GL_TRIANGLE_STRIP, strip.first, strip.count)
 
-        # Disable the attributes
         glDisableVertexAttribArray(1)
         glDisableVertexAttribArray(0)
 
-    # new window size or exposure
+    # Called for a new window size or exposure.
     def do_resize(self, width: int, height: int) -> None:
-        # Update the projection matrix
         perspective(self.ProjectionMatrix, 60.0, width / height, 1.0, 1024.0)
 
-        # Set the viewport
         glViewport(0, 0, width, height)
 
     def do_render(self, context: Gdk.GLContext) -> bool:
@@ -543,13 +528,11 @@ class GtkGears(Gtk.GLArea):
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        # Translate and rotate the view
         translate(transform, 0, 0, -20)
         rotate(transform, 2 * math.pi * self.view_rot[0] / 360.0, 1, 0, 0)
         rotate(transform, 2 * math.pi * self.view_rot[1] / 360.0, 0, 1, 0)
         rotate(transform, 2 * math.pi * self.view_rot[2] / 360.0, 0, 0, 1)
 
-        # Draw the gears
         self.draw_gear(self.gear1, self.gear_vbo[0], transform, -3.0, -2.0, self.angle, red)
         self.draw_gear(self.gear2, self.gear_vbo[1], transform, 3.1, -2.0, -2 * self.angle - 9.0, green)
         self.draw_gear(self.gear3, self.gear_vbo[2], transform, -3.1, 4.2, -2 * self.angle - 25.0, blue)
@@ -568,13 +551,13 @@ class GtkGears(Gtk.GLArea):
         glEnable(GL_CULL_FACE)
         glEnable(GL_DEPTH_TEST)
 
-        # Create the VAO
+        # The VAO
         vao = GLuint()
         glGenVertexArrays(1, ctypes.byref(vao))
         glBindVertexArray(vao)
         self.vao = vao.value
 
-        # Compile the vertex shader
+        # The vertex shader
         if self.get_api() == Gdk.GLAPI.GLES:
             p = vertex_shader_gles
         else:
@@ -585,7 +568,7 @@ class GtkGears(Gtk.GLArea):
         glGetShaderInfoLog(v, ctypes.sizeof(msg), None, msg)
         log.debug("vertex shader info: %s", msg.value.decode())
 
-        # Compile the fragment shader
+        # The fragment shader
         if self.get_api() == Gdk.GLAPI.GLES:
             p = fragment_shader_gles
         else:
@@ -596,7 +579,7 @@ class GtkGears(Gtk.GLArea):
         glGetShaderInfoLog(f, ctypes.sizeof(msg), None, msg)
         log.debug("fragment shader info: %s", msg.value.decode())
 
-        # Create and link the shader program
+        # The shader program
         program = glCreateProgram()
         glAttachShader(program, v)
         glAttachShader(program, f)
@@ -611,20 +594,18 @@ class GtkGears(Gtk.GLArea):
         glDeleteShader(v)
         glDeleteShader(f)
 
-        # Enable the shaders
         glUseProgram(program)
         self.program = program
 
-        # Get the locations of the uniforms so we can access them
         self.ModelViewProjectionMatrix_location = glGetUniformLocation(program, b"ModelViewProjectionMatrix")
         self.NormalMatrix_location = glGetUniformLocation(program, b"NormalMatrix")
         self.LightSourcePosition_location = glGetUniformLocation(program, b"LightSourcePosition")
         self.MaterialColor_location = glGetUniformLocation(program, b"MaterialColor")
 
-        # Set the LightSourcePosition uniform which is constant throughout the program
+        # The LightSourcePosition uniform is constant throughout the program, so it's set once.
         glUniform4fv(self.LightSourcePosition_location, 1, floats(self.LightSourcePosition))
 
-        # make the gears, and store the vertices of each in a vertex buffer object (VBO)
+        # The gears, each with its vertices in a vertex buffer object (VBO)
         self.gear1 = create_gear(1.0, 4.0, 1.0, 20, 0.7)
         self.gear2 = create_gear(0.5, 2.0, 2.0, 10, 0.7)
         self.gear3 = create_gear(1.3, 2.0, 0.5, 10, 0.7)
@@ -640,7 +621,6 @@ class GtkGears(Gtk.GLArea):
     def do_unrealize(self) -> None:
         self.make_current()
         if self.get_error() is None:
-            # Release the resources associated with OpenGL
             for vbo in self.gear_vbo:
                 if vbo != 0:
                     glDeleteBuffers(1, ctypes.byref(GLuint(vbo)))
@@ -663,7 +643,7 @@ class GtkGears(Gtk.GLArea):
         frame_time = frame_clock.get_frame_time()
 
         if self.first_frame_time == 0:
-            # No need for changes on first frame
+            # Nothing changes on the first frame.
             self.first_frame_time = frame_time
             if self.fps_label:
                 self.fps_label.set_label("FPS: ---")

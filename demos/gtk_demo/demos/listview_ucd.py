@@ -112,7 +112,7 @@ def ucd_model_new() -> Gio.ListModel:
 
 
 def printable(codepoint: int) -> str:
-    # g_unichar_to_utf8() of the character, if g_unichar_isprint()
+    # g_unichar_to_utf8() of the character, if g_unichar_isprint().
     return chr(codepoint) if unichar_isprint(codepoint) else ""
 
 
@@ -278,7 +278,7 @@ def remove_provider(provider: Gtk.StyleProvider) -> None:
 
 def destroyed(win: Gtk.Window) -> None:
     global window
-    # g_object_set_data_full() with remove_provider() as the destroy notify
+    # g_object_set_data_full() with remove_provider() as the destroy notify.
     remove_provider(win.provider)
     window = None
 

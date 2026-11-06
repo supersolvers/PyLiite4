@@ -13,7 +13,6 @@ progress_bar: Gtk.ProgressBar | None = None
 
 
 def apply_changes_gradually(data: Gtk.Assistant) -> bool:
-    # Work, work, work...
     fraction = progress_bar.get_fraction()
     fraction += 0.05
 
@@ -27,7 +26,7 @@ def apply_changes_gradually(data: Gtk.Assistant) -> bool:
 
 
 def on_assistant_apply(widget: Gtk.Assistant) -> None:
-    # Start a timer to simulate changes taking a few seconds to apply.
+    # A timer simulates changes that take a few seconds to apply.
     GLib.timeout_add(100, apply_changes_gradually, widget)
 
 
@@ -42,10 +41,8 @@ def on_assistant_prepare(widget: Gtk.Assistant, page: Gtk.Widget) -> None:
     title = f"Sample assistant ({current_page + 1} of {n_pages})"
     widget.set_title(title)
 
-    # The fourth page (counting from zero) is the progress page.  The
-    # user clicked Apply to get here so we tell the assistant to commit,
-    # which means the changes up to this point are permanent and cannot
-    # be cancelled or revisited.
+    # The fourth page (counting from zero) is the progress page. The user clicked Apply to get here, so the assistant
+    # commits: the changes up to this point are permanent and can't be cancelled or revisited.
     if current_page == 3:
         widget.commit()
 
@@ -127,8 +124,7 @@ def create_page4(assistant: Gtk.Assistant) -> None:
 
     progress_bar.update_property([Gtk.AccessibleProperty.LABEL], ["Applying changes"])
 
-    # This prevents the assistant window from being
-    # closed while we're "busy" applying changes.
+    # Keeps the assistant window from being closed while it's "busy" applying changes.
     assistant.set_page_complete(progress_bar, False)
 
 

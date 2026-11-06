@@ -9,7 +9,6 @@ import os
 
 from PyLiite4 import Gdk, GLib, GObject, Gtk
 
-# Include the puzzle piece
 from .puzzlepiece import gtk_puzzle_piece_new
 from .paintable_animated import gtk_nuclear_animation_new
 
@@ -27,7 +26,7 @@ height = 3
 pos_x = 0
 pos_y = 0
 
-# The sounds that are playing, kept until they end
+# The sounds that are playing, kept until they end.
 playing: set[Gtk.MediaStream] = set()
 
 
@@ -51,57 +50,47 @@ def celebrate(win: bool) -> None:
 def move_puzzle(grid: Gtk.Grid, dx: int, dy: int) -> bool:
     global pos_x, pos_y
 
-    # We don't move anything if the puzzle is solved
+    # A solved puzzle doesn't move.
     if solved:
         return False
 
-    # Return False if we can't move to where the call
-    # wants us to move.
+    # Nor does a move that would leave the grid.
     if ((dx < 0 and pos_x < -dx)
             or dx + pos_x >= width
             or (dy < 0 and pos_y < -dy)
             or dy + pos_y >= height):
         return False
 
-    # Compute the new position
     next_x = pos_x + dx
     next_y = pos_y + dy
 
-    # Get the current and next image
+    # The piece moves from the next image into the empty current one.
     pos = grid.get_child_at(pos_x, pos_y)
     next = grid.get_child_at(next_x, next_y)
 
-    # Move the displayed piece.
     piece = next.get_paintable()
     pos.set_paintable(piece)
     next.set_paintable(None)
 
-    # Update the current position
     pos_x = next_x
     pos_y = next_y
 
-    # Return True because we successfully moved the piece
     return True
 
 
 def shuffle_puzzle(grid: Gtk.Grid) -> None:
-    # Do this many random moves
+    # The number of random moves.
     n_steps = width * height * 50
 
     for i in range(n_steps):
-        # Get a random number for the direction to move in
         direction = GLib.random_int_range(0, 4)
         if direction == 0:
-            # left
             move_puzzle(grid, -1, 0)
         elif direction == 1:
-            # up
             move_puzzle(grid, 0, -1)
         elif direction == 2:
-            # right
             move_puzzle(grid, 1, 0)
         elif direction == 3:
-            # down
             move_puzzle(grid, 0, 1)
         else:
             raise AssertionError("not reached")
@@ -110,32 +99,30 @@ def shuffle_puzzle(grid: Gtk.Grid) -> None:
 def check_solved(grid: Gtk.Grid) -> bool:
     global solved
 
-    # Nothing to check if the puzzle is already solved
+    # A puzzle that is already solved needs no check.
     if solved:
         return True
 
-    # If the empty cell isn't in the bottom right,
-    # the puzzle is obviously not solved
+    # The puzzle can't be solved unless the empty cell is in the bottom right.
     if pos_x != width - 1 or pos_y != height - 1:
         return False
 
-    # Check that all pieces are in the right position
+    # Every piece has to be in its right position.
     for y in range(height):
         for x in range(width):
             picture = grid.get_child_at(x, y)
             piece = picture.get_paintable()
 
-            # empty cell
+            # The empty cell has no piece to check.
             if piece is None:
                 continue
 
             if piece.get_x() != x or piece.get_y() != y:
                 return False
 
-    # We solved the puzzle!
     solved = True
 
-    # Fill the empty cell to show that we're done.
+    # Filling the empty cell shows that the puzzle is done.
     picture = grid.get_child_at(0, 0)
     piece = picture.get_paintable()
 
@@ -152,9 +139,7 @@ def puzzle_key_pressed(grid: Gtk.Widget, args: GLib.Variant | None) -> bool:
     dx, dy = args.unpack()
 
     if not move_puzzle(grid, dx, dy):
-        # Make the error sound and then return True.
-        # We handled this key, even though we didn't
-        # do anything to the puzzle.
+        # The error sound. The key still counts as handled, even though the puzzle didn't change.
         grid.error_bell()
         return True
 
@@ -207,7 +192,6 @@ def add_move_binding(controller: Gtk.ShortcutController, keyval: int, kp_keyval:
 def start_puzzle(paintable: Gdk.Paintable) -> None:
     global solved, pos_x, pos_y
 
-    # Create a new grid
     grid = Gtk.Grid()
     grid.set_focusable(True)
     frame.set_child(grid)
@@ -217,8 +201,7 @@ def start_puzzle(paintable: Gdk.Paintable) -> None:
     frame.set_ratio(aspect_ratio)
     frame.set_obey_child(False)
 
-    # Add shortcuts so people can use the arrow
-    # keys to move the puzzle
+    # Shortcuts, so the arrow keys move the puzzle.
     controller = Gtk.ShortcutController()
     controller.set_scope(Gtk.ShortcutScope.LOCAL)
     add_move_binding(controller, Gdk.KEY_Left, Gdk.KEY_KP_Left, -1, 0)
@@ -231,19 +214,18 @@ def start_puzzle(paintable: Gdk.Paintable) -> None:
     controller.pressed.connect(puzzle_button_pressed, grid)
     grid.add_controller(controller)
 
-    # Make sure the cells have equal size
+    # The cells all have the same size.
     grid.set_row_homogeneous(True)
     grid.set_column_homogeneous(True)
 
-    # Reset the variables
     solved = False
     pos_x = width - 1
     pos_y = height - 1
 
-    # add a picture for every cell
+    # A picture for every cell.
     for y in range(height):
         for x in range(width):
-            # Don't paint anything for the sliding part of the video
+            # The empty cell, where pieces slide in, shows nothing.
             if x == pos_x and y == pos_y:
                 piece = None
             else:

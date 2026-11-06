@@ -212,8 +212,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         vbox.set_margin_bottom(10)
         window.set_child(vbox)
 
-        # A combobox demonstrating cell renderers, separators and
-        #  insensitive rows
+        # A combobox demonstrating cell renderers, separators and insensitive rows
         frame = Gtk.Frame(label="Items with icons")
         vbox.append(frame)
 
@@ -244,7 +243,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
 
         combo.set_active(0)
 
-        # A combobox demonstrating trees.
+        # A combobox demonstrating trees
         frame = Gtk.Frame(label="Where are we ?")
         vbox.append(frame)
 
@@ -268,7 +267,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         iter = model.get_iter(path)
         combo.set_active_iter(iter)
 
-        # A GtkComboBoxEntry with validation
+        # A combobox with an entry, with validation
         frame = Gtk.Frame(label="Editable")
         vbox.append(frame)
 

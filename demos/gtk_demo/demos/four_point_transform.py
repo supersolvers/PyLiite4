@@ -35,7 +35,7 @@ def unit_to(p1: Graphene.Point3D, p2: Graphene.Point3D, p3: Graphene.Point3D,
 
     u = Graphene.Matrix().init_from_vec4(vv1, vv2, vv3, p)
 
-    # solve x * u = vv4
+    # Solves x * u = vv4.
 
     for i in range(4):
         for j in range(4):

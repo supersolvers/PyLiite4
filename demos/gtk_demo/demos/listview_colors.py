@@ -178,9 +178,9 @@ class GtkColorList(GObject.Object, Gio.ListModel):
     __gtype_name__ = "GtkColorList"
 
     def __init__(self, **properties: object) -> None:
-        # C allocates all N_COLORS slots; a dict holds only the colors made so far
+        # C allocates all N_COLORS slots; a dict holds only the colors made so far.
         self.colors: dict[int, GtkColor] = {}
-        self._size = 0  # How many colors we allow
+        self._size = 0  # How many colors are allowed.
         self.limit = 0
 
         data = Gio.resources_lookup_data("/listview_colors/color.names.txt", Gio.ResourceLookupFlags.NONE)
@@ -382,7 +382,7 @@ def limit_changed_cb2(dropdown: Gtk.DropDown, pspec: GObject.ParamSpec, label: G
     string = format_number(limit)
     length = len(string)
 
-    label.set_width_chars(length + 2)  # for " /"
+    label.set_width_chars(length + 2)  # Room for " /" as well.
 
 
 def items_changed_cb(model: Gio.ListModel, position: int, removed: int, added: int, label: Gtk.Label) -> None:
@@ -427,7 +427,7 @@ def update_selection_average(model: Gio.ListModel, position: int, removed: int, 
         blue += color._color.blue
 
     if n == 0:
-        # C divides by zero here and gets a NaN color, which draws nothing
+        # C divides by zero here and gets a NaN color, which draws nothing.
         picture.set_paintable(None)
         return
 
@@ -437,7 +437,7 @@ def update_selection_average(model: Gio.ListModel, position: int, removed: int, 
 
 def update_progress_cb(model: Gtk.SortListModel, pspec: GObject.ParamSpec, progress: Gtk.ProgressBar) -> None:
     total = model.get_n_items()
-    total = max(total, 1)  # avoid div by 0 below
+    total = max(total, 1)  # Avoids a division by 0 below.
     pending = model.get_pending()
 
     progress.set_visible(pending != 0)

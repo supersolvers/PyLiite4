@@ -19,7 +19,7 @@ class Demo2Widget(Gtk.Widget):
 
     def __init__(self, **properties: object) -> None:
         super().__init__(**properties)
-        # here is where we use our custom layout manager. C sets it with gtk_widget_class_set_layout_manager_type(),
+        # The widget uses the custom layout manager. C sets it with gtk_widget_class_set_layout_manager_type(),
         # but when GTK creates a Python layout manager during the widget's construction, PyGObject gives it the
         # widget's Python wrapper, so it is set per instance instead.
         self.set_layout_manager(Demo2Layout())
@@ -81,7 +81,7 @@ class Demo2Widget(Gtk.Widget):
     def do_snapshot(self, snapshot: Gtk.Snapshot) -> None:
         child = self.get_first_child()
         while child is not None:
-            # our layout manager sets this for children that are out of view
+            # The layout manager clears this for children that are out of view.
             if child.get_child_visible():
                 self.snapshot_child(child, snapshot)
             child = child.get_next_sibling()
@@ -94,7 +94,7 @@ Demo2Widget.install_action("rotate", "(ii)", Demo2Widget.rotate_sphere)
 
 
 def add_binding_action(keyval: int, mods: Gdk.ModifierType, action_name: str, format: str, *args: object) -> None:
-    # gtk_widget_class_add_binding_action() is variadic, so it is done with the shortcut it adds
+    # gtk_widget_class_add_binding_action() is variadic, so it is done with the shortcut it adds.
     Demo2Widget.add_shortcut(Gtk.Shortcut(trigger=Gtk.KeyvalTrigger.new(keyval, mods),
                                           action=Gtk.NamedAction.new(action_name),
                                           arguments=GLib.Variant(format, args)))

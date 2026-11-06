@@ -11,7 +11,7 @@ from collections.abc import Callable
 
 from PyLiite4 import Gdk, Graphene, Gsk, Gtk
 
-# This enumeration determines the paint order
+# The faces are painted in this order.
 FACE_BACK = 0
 FACE_LEFT = 1
 FACE_BOTTOM = 2
@@ -27,7 +27,7 @@ class Face:
         self.css_class = css_class
 
 
-# Map face widgets to CSS classes
+# Each face's widget, with its CSS class.
 faces = [Face("")] * N_FACES
 faces[FACE_BACK] = Face("back")
 faces[FACE_LEFT] = Face("left")
@@ -49,13 +49,12 @@ def create_faces() -> Gtk.Widget:
     p = face_size * 3.
 
     for i in range(N_FACES):
-        # Add a face
         faces[i].face = Gtk.Frame()
         faces[i].face.set_size_request(face_size, face_size)
         faces[i].face.add_css_class(faces[i].css_class)
         fixed.put(faces[i].face, 0, 0)
 
-        # Set up the transformation for each face
+        # The face's transformation
         transform = Gsk.Transform.new().translate(Graphene.Point().init(w, h))
         transform = transform.perspective(p)
         transform = transform.rotate_3d(-30., Graphene.Vec3.x_axis())
@@ -91,7 +90,7 @@ provider: Gtk.CssProvider | None = None
 def close_window(widget: Gtk.Window) -> None:
     global provider
 
-    # Reset the state
+    # Resets the state, so a reopened window starts afresh.
     for i in range(N_FACES):
         faces[i].face = None
 

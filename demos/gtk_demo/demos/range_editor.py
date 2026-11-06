@@ -237,7 +237,7 @@ class RangeEditor(Gtk.Widget):
     # Setters
 
     def set_values(self, value1: float, value2: float) -> None:
-        # C's g_return_if_fail() checks
+        # C's g_return_if_fail() checks.
         if not (self._lower <= value1 <= value2 <= self._upper):
             return
 

@@ -19,7 +19,7 @@ long_pressed = False
 
 def touchpad_swipe_gesture_begin(gesture: Gtk.Gesture, sequence: Gdk.EventSequence | None,
                                  widget: Gtk.Widget) -> bool:
-    # Disallow touchscreen events here
+    # Touchscreen events, which come with a sequence, are denied here.
     if sequence is not None:
         gesture.set_state(Gtk.EventSequenceState.DENIED)
     return sequence is None
@@ -127,7 +127,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         gesture.set_propagation_phase(Gtk.PropagationPhase.BUBBLE)
         drawing_area.add_controller(gesture)
 
-        # 3fg swipe for touchpads
+        # Three-finger swipe for touchpads
         gesture = Gtk.GestureSwipe(n_points=3)
         gesture.begin.connect(touchpad_swipe_gesture_begin, drawing_area)
         gesture.swipe.connect(swipe_gesture_swept, drawing_area)

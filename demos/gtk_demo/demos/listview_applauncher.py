@@ -16,11 +16,9 @@ def create_application_list() -> Gio.ListModel:
     Unfortunately various older APIs do not provide list models, so we create
     our own.
     """
-    # We use a GListStore here, which is a simple array-like list implementation
-    # for manual management.
-    # List models need to know what type of data they provide, so we need to
-    # provide the type here. As we want to do a list of applications, GAppInfo
-    # is the object we provide.
+    # A GListStore is a simple array-like list implementation for manual management.
+    # List models need to know what type of data they provide, so the type is given here. This is a list of
+    # applications, so the items are GAppInfos.
     store = Gio.ListStore(item_type=Gio.AppInfo)
 
     apps = Gio.AppInfo.get_all()
@@ -59,7 +57,7 @@ def bind_listitem_cb(factory: Gtk.ListItemFactory, list_item: Gtk.ListItem) -> N
 
     icon = app_info.get_icon()
     # C passes a missing icon to gtk_image_set_from_gicon(), which clears the image, but the introspection data
-    # doesn't allow None there
+    # doesn't allow None there.
     if icon is not None:
         image.set_from_gicon(icon)
     else:
@@ -68,12 +66,10 @@ def bind_listitem_cb(factory: Gtk.ListItemFactory, list_item: Gtk.ListItem) -> N
     list_item.set_accessible_label(app_info.get_display_name())
 
 
-# In more complex code, we would also need functions to unbind and teardown
-# the listitem, but this is simple code, so the default implementations are
-# enough. If we had connected signals, this step would have been necessary.
+# More complex code would also need functions to unbind and tear down the listitem. Here the default
+# implementations are enough; with signals connected, this step would be necessary.
 #
-# The GtkSignalListItemFactory documentation contains more information about
-# this step.
+# The GtkSignalListItemFactory documentation contains more information about this step.
 
 
 def activate_cb(list: Gtk.ListView, position: int) -> None:
@@ -86,15 +82,12 @@ def activate_cb(list: Gtk.ListView, position: int) -> None:
     """
     app_info = list.get_model().get_item(position)
 
-    # Prepare the context for launching the application and launch it. This
-    # code is explained in detail in the documentation for GdkAppLaunchContext
-    # and GAppInfo.
+    # The documentation for GdkAppLaunchContext and GAppInfo explains launching an application in detail.
     context = list.get_display().get_app_launch_context()
     try:
         app_info.launch(None, context)
     except GLib.Error as error:
-        # And because error handling is important, even a simple demo has it:
-        # We display an error dialog that something went wrong.
+        # Error handling is important, so even a simple demo has it: an error dialog says what went wrong.
         dialog = Gtk.AlertDialog(message=f"Could not launch {app_info.get_display_name()}")
         dialog.set_detail(error.message)
         dialog.show(list.get_root())
@@ -114,41 +107,33 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
     global window
 
     if window is None:
-        # Create a window and set a few defaults
         window = Gtk.Window()
         window.set_default_size(640, 320)
         window.set_display(do_widget.get_display())
         window.set_title("Application Launcher")
         window.close_request.connect(close_request)
 
-        # The GtkListitemFactory is what is used to create GtkListItems
-        # to display the data from the model. So it is absolutely necessary
-        # to create one.
-        # We will use a GtkSignalListItemFactory because it is the simplest
-        # one to use. Different ones are available for different use cases.
-        # The most powerful one is GtkBuilderListItemFactory which uses
-        # GtkBuilder .ui files, so it requires little code.
+        # A GtkListItemFactory creates the GtkListItems that display the data from the model, so a list view
+        # can't do without one.
+        # GtkSignalListItemFactory is the simplest one to use. Different ones are available for different use
+        # cases; the most powerful is GtkBuilderListItemFactory, which uses GtkBuilder .ui files, so it requires
+        # little code.
         factory = Gtk.SignalListItemFactory()
         factory.setup.connect(setup_listitem_cb)
         factory.bind.connect(bind_listitem_cb)
 
-        # And of course we need to set the data model. Here we call the function
-        # we wrote above that gives us the list of applications. Then we set
-        # it on the list widget.
-        # The list will now take items from the model and use the factory
-        # to create as many listitems as it needs to show itself to the user.
+        # The list view also needs the data model, here the list of applications from create_application_list().
+        # The list takes items from the model and uses the factory to create as many listitems as it needs to
+        # show itself to the user.
         model = create_application_list()
 
-        # Create the list widget here.
         list = Gtk.ListView.new(Gtk.SingleSelection.new(model), factory)
 
-        # We connect the activate signal here. It's the function we defined
-        # above for launching the selected application.
+        # The activate signal launches the selected application.
         list.activate.connect(activate_cb)
 
-        # List widgets should always be contained in a GtkScrolledWindow,
-        # because otherwise they might get too large or they might not
-        # be scrollable.
+        # List widgets should always be contained in a GtkScrolledWindow, because otherwise they might get too
+        # large or they might not be scrollable.
         sw = Gtk.ScrolledWindow()
         window.set_child(sw)
         sw.set_child(list)

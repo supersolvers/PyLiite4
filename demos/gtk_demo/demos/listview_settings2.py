@@ -59,7 +59,7 @@ def item_value_changed(entry: Gtk.Entry, pspec: GObject.ParamSpec, item: Gtk.Lis
 
         GLib.log_default_handler(None, GLib.LogLevelFlags.LEVEL_WARNING, f"Not a valid value for {name}")
 
-    # revert
+    # Invalid text rings the error bell and reverts to the setting's current value.
     entry.error_bell()
 
     value = self.get_property("value")

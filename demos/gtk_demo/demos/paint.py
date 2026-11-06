@@ -170,7 +170,7 @@ class DrawingArea(Gtk.Widget):
 
 def on_pad_button_activate(action: Gio.SimpleAction, parameter: GLib.Variant | None, area: DrawingArea,
                            color: str) -> None:
-    # C keeps the colour name on the action with g_object_set_data()
+    # C keeps the colour name on the action with g_object_set_data().
     rgba = Gdk.RGBA()
     rgba.parse(color)
     area.set_color(rgba)

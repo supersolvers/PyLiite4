@@ -59,7 +59,7 @@ class Demo2Layout(Gtk.LayoutManager):
         position = self.position
         offset = self.offset
 
-        # for simplicity, assume all children are the same size
+        # For simplicity, all children are assumed to be the same size.
         _, child_req = widget.get_first_child().get_preferred_size()
         w = child_req.width
         h = child_req.height
@@ -94,13 +94,13 @@ class Demo2Layout(Gtk.LayoutManager):
                 q3 = Graphene.Point3D().init(x0 + SX(r, t_2, p_2), y0 + SY(r, t_2, p_2), SZ(r, t_2, p_2))
                 q4 = Graphene.Point3D().init(x0 + SX(r, t_1, p_2), y0 + SY(r, t_1, p_2), SZ(r, t_1, p_2))
 
-                # Get a matrix that moves p1 -> q1, p2 -> q2, ...
+                # A matrix that moves p1 -> q1, p2 -> q2, ...
                 m = perspective_3d(p1, p2, p3, p4, q1, q2, q3, q4)
 
                 transform = Gsk.Transform.new().matrix(m)
 
-                # Since our matrix was built for transforming points with z = 1,
-                # prepend a translation to the z = 1 plane.
+                # The matrix was built for transforming points with z = 1, so a translation to the z = 1 plane is
+                # prepended.
                 transform = transform.translate_3d(Graphene.Point3D().init(0, 0, 1))
 
                 child.allocate(w, h, -1, transform)

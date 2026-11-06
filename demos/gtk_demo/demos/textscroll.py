@@ -20,24 +20,20 @@ def scroll_to_end(textview: Gtk.TextView) -> bool:
 
     buffer = textview.get_buffer()
 
-    # Get "end" mark. It's located at the end of buffer because
-    # of right gravity
+    # The "end" mark stays at the end of the buffer because it has right gravity.
     mark = buffer.get_mark("end")
     iter = buffer.get_iter_at_mark(mark)
 
-    # and insert some text at its position, the iter will be
-    # revalidated after insertion to point to the end of inserted text
+    # Text inserted at the mark's position revalidates the iter to point to the end of the inserted text.
     spaces = " " * scroll_to_end_count
     scroll_to_end_count += 1
     buffer.insert(iter, "\n")
     buffer.insert(iter, spaces)
     buffer.insert(iter, f"Scroll to end scroll to end scroll to end scroll to end {scroll_to_end_count}")
 
-    # Now scroll the end mark onscreen.
     textview.scroll_mark_onscreen(mark)
 
-    # Emulate typewriter behavior, shift to the left if we
-    # are far enough to the right.
+    # Like a typewriter, the text shifts back to the left once it is far enough to the right.
     if scroll_to_end_count > 150:
         scroll_to_end_count = 0
 
@@ -50,11 +46,9 @@ def scroll_to_bottom(textview: Gtk.TextView) -> bool:
 
     buffer = textview.get_buffer()
 
-    # Get end iterator
     iter = buffer.get_end_iter()
 
-    # and insert some text at it, the iter will be revalidated
-    # after insertion to point to the end of inserted text
+    # Text inserted at the iter revalidates it to point to the end of the inserted text.
     spaces = " " * scroll_to_bottom_count
     scroll_to_bottom_count += 1
     buffer.insert(iter, "\n")
@@ -62,19 +56,16 @@ def scroll_to_bottom(textview: Gtk.TextView) -> bool:
     buffer.insert(iter, "Scroll to bottom scroll to bottom scroll "
                         f"to bottom scroll to bottom {scroll_to_bottom_count}")
 
-    # Move the iterator to the beginning of line, so we don't scroll
-    # in horizontal direction
+    # The iter moves to the beginning of the line, so the view doesn't scroll horizontally.
     iter.set_line_offset(0)
 
-    # and place the mark at iter. the mark will stay there after we
-    # insert some text at the end because it has left gravity.
+    # The mark has left gravity, so it stays at the iter when more text is inserted at the end.
     mark = buffer.get_mark("scroll")
     buffer.move_mark(mark, iter)
 
-    # Scroll the mark onscreen.
     textview.scroll_mark_onscreen(mark)
 
-    # Shift text back if we got enough to the right.
+    # The text shifts back once it is far enough to the right.
     if scroll_to_bottom_count > 40:
         scroll_to_bottom_count = 0
 
@@ -86,23 +77,17 @@ def setup_scroll(textview: Gtk.TextView, to_end: bool) -> int:
     iter = buffer.get_end_iter()
 
     if to_end:
-        # If we want to scroll to the end, including horizontal scrolling,
-        # then we just create a mark with right gravity at the end of the
-        # buffer. It will stay at the end unless explicitly moved with
-        # gtk_text_buffer_move_mark.
+        # Scrolling to the end, horizontally too, takes a mark with right gravity at the end of the buffer. It
+        # stays at the end unless move_mark() moves it.
         buffer.create_mark("end", iter, False)
 
-        # Add scrolling timeout.
         return GLib.timeout_add(50, scroll_to_end, textview)
     else:
-        # If we want to scroll to the bottom, but not scroll horizontally,
-        # then an end mark won't do the job. Just create a mark so we can
-        # use it with gtk_text_view_scroll_mark_onscreen, we'll position it
-        # explicitly when needed. Use left gravity so the mark stays where
-        # we put it after inserting new text.
+        # Scrolling to the bottom without scrolling horizontally can't use an end mark. This mark is only there
+        # for scroll_mark_onscreen(), and is positioned explicitly when needed; it has left gravity, so it stays
+        # where it was put when new text is inserted.
         buffer.create_mark("scroll", iter, True)
 
-        # Add scrolling timeout.
         return GLib.timeout_add(100, scroll_to_bottom, textview)
 
 
@@ -118,8 +103,7 @@ def create_text_view(hbox: Gtk.Box, to_end: bool) -> None:
 
     timeout = setup_scroll(textview, to_end)
 
-    # Remove the timeout in destroy handler, so we don't try to
-    # scroll destroyed widget.
+    # The destroy handler removes the timeout, so nothing tries to scroll a destroyed widget.
     textview.destroy.connect(remove_timeout, timeout)
 
 

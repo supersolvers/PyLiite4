@@ -37,7 +37,7 @@ def connect_input(spin_button: Gtk.SpinButton, handler: Callable[[Gtk.SpinButton
 
 def spinbutton_hex_spin_input(spin_button: Gtk.SpinButton) -> tuple[int, float]:
     buf = spin_button.get_text()
-    # As strtol (buf, &err, 16): the longest hexadecimal prefix, and an error if anything follows it
+    # As strtol (buf, &err, 16): the longest hexadecimal prefix, and an error if anything follows it.
     match = re.match(r"\s*([+-]?)(?:0[xX](?=[0-9a-fA-F]))?([0-9a-fA-F]*)", buf)
     res = float(int(match[1] + match[2], 16)) if match[2] else 0.0
     if match.end() < len(buf):

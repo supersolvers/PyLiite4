@@ -61,7 +61,7 @@ def gsk_path_point_get_position(point: GskPathPoint, path: Gsk.Path) -> Graphene
 
 def gsk_path_point_get_tangent(point: GskPathPoint, path: Gsk.Path,
                                direction: Gsk.PathDirection) -> tuple[float, float]:
-    # graphene_vec2_t is a 16-byte aligned SIMD value
+    # graphene_vec2_t is a 16-byte aligned SIMD value.
     buffer = (ctypes.c_float * 8)()
     address = (ctypes.addressof(buffer) + 15) & ~15
     _gtk.gsk_path_point_get_tangent(ctypes.byref(point), hash(path), int(direction), address)
@@ -101,7 +101,7 @@ def _gsk_stroke_set_dashes(stroke: Gsk.Stroke, dashes: str | None) -> None:
     for string in strings:
         string = string.strip()
         try:
-            # g_ascii_strtod() parses nothing from an empty string, and leaves nothing behind
+            # g_ascii_strtod() parses nothing from an empty string, and leaves nothing behind.
             f = float(string) if string else 0.0
         except ValueError:
             msg = f"Failed to parse '{string}' as number"
@@ -172,7 +172,7 @@ def point_cb(op: Gsk.PathOperation, pts: list[Graphene.Point], n_ts: int, weight
     return True
 
 
-# C passes -1: every operation
+# C passes -1: every operation.
 ALL_OPERATIONS = Gsk.PathForeachFlags.QUAD | Gsk.PathForeachFlags.CUBIC | Gsk.PathForeachFlags.CONIC
 
 
@@ -306,7 +306,7 @@ class PathExplorer(Gtk.Widget):
         self.update_closest_point()
 
     def set_path(self, path: Gsk.Path | None) -> None:
-        # C hands gsk_path_ref() a NULL path, from text that doesn't parse, and fails a check; just ignore it
+        # C hands gsk_path_ref() a NULL path, from text that doesn't parse, and fails a check; this ignores it.
         if path is None:
             return
 

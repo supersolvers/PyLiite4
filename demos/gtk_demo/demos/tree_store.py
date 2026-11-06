@@ -22,11 +22,11 @@ class TreeItem:
     tim: bool = False
     owen: bool = False
     dave: bool = False
-    world_holiday: bool = False  # shared by the European hackers
+    world_holiday: bool = False  # Shared by the European hackers.
     children: list["TreeItem"] = field(default_factory=list)
 
 
-# columns
+# Columns
 (
     HOLIDAY_NAME_COLUMN,
     ALEX_COLUMN,
@@ -40,7 +40,7 @@ class TreeItem:
     NUM_COLUMNS,
 ) = range(9)
 
-# tree data
+# Tree data
 january = [
     TreeItem("New Years Day", True, True, True, True, False, True),
     TreeItem("Presidential Inauguration", False, True, False, True, False, False),
@@ -136,7 +136,6 @@ toplevel = [
 
 
 def create_model() -> Gtk.TreeModel:
-    # create tree store
     model = Gtk.TreeStore.new([GObject.TYPE_STRING,
                                GObject.TYPE_BOOLEAN,
                                GObject.TYPE_BOOLEAN,
@@ -146,7 +145,7 @@ def create_model() -> Gtk.TreeModel:
                                GObject.TYPE_BOOLEAN,
                                GObject.TYPE_BOOLEAN])
 
-    # add data to the tree store
+    # A row for each month, with its holidays as children.
     for month in toplevel:
         iter = model.append(None)
         model.set(iter, {
@@ -160,7 +159,6 @@ def create_model() -> Gtk.TreeModel:
             WORLD_COLUMN: False,
         })
 
-        # add children
         for holiday in month.children:
             child_iter = model.append(iter)
             model.set(child_iter, {
@@ -180,14 +178,11 @@ def create_model() -> Gtk.TreeModel:
 def item_toggled(cell: Gtk.CellRendererToggle, path_str: str, model: Gtk.TreeStore, column: int) -> None:
     path = Gtk.TreePath.new_from_string(path_str)
 
-    # get toggled iter
     iter = model.get_iter(path)
     toggle_item = model.get_value(iter, column)
 
-    # do something with the value
     toggle_item = not toggle_item
 
-    # set new value
     model.set_value(iter, column, toggle_item)
 
 
@@ -196,14 +191,14 @@ def add_toggle_column(treeview: Gtk.TreeView, model: Gtk.TreeModel, title: str, 
     renderer = Gtk.CellRendererToggle()
     renderer.set_property("xalign", 0.0)
 
-    # C keeps the column in the renderer's object data
+    # C keeps the column in the renderer's object data.
     renderer.toggled.connect(item_toggled, model, column_id)
 
     attributes = {"active": column_id, "visible": VISIBLE_COLUMN}
     if activatable:
         attributes["activatable"] = WORLD_COLUMN
     treeview.insert_column_with_attributes(-1, title, renderer, **attributes)
-    # PyGObject's insert_column_with_attributes() returns None rather than the number of columns
+    # PyGObject's insert_column_with_attributes() returns None rather than the number of columns.
     col_offset = treeview.get_n_columns()
 
     column = treeview.get_column(col_offset - 1)
@@ -214,7 +209,7 @@ def add_toggle_column(treeview: Gtk.TreeView, model: Gtk.TreeModel, title: str, 
 def add_columns(treeview: Gtk.TreeView) -> None:
     model = treeview.get_model()
 
-    # column for holiday names
+    # The holiday names
     renderer = Gtk.CellRendererText()
     renderer.set_property("xalign", 0.0)
 
@@ -223,19 +218,14 @@ def add_columns(treeview: Gtk.TreeView) -> None:
     column = treeview.get_column(col_offset - 1)
     column.set_clickable(True)
 
-    # alex column
     add_toggle_column(treeview, model, "Alex", ALEX_COLUMN, True)
 
-    # havoc column
     add_toggle_column(treeview, model, "Havoc", HAVOC_COLUMN, False)
 
-    # tim column
     add_toggle_column(treeview, model, "Tim", TIM_COLUMN, True)
 
-    # owen column
     add_toggle_column(treeview, model, "Owen", OWEN_COLUMN, False)
 
-    # dave column
     add_toggle_column(treeview, model, "Dave", DAVE_COLUMN, False)
 
 
@@ -248,7 +238,6 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
     global window
 
     if window is None:
-        # create window, etc
         window = Gtk.Window()
         window.set_display(do_widget.get_display())
         window.set_title("Tree Store")
@@ -268,10 +257,8 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         vbox.append(sw)
 
-        # create model
         model = create_model()
 
-        # create tree view
         treeview = Gtk.TreeView.new_with_model(model)
         treeview.set_vexpand(True)
         treeview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
@@ -280,7 +267,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
 
         sw.set_child(treeview)
 
-        # expand all rows after the treeview widget has been realized
+        # All rows expand once the tree view has been realized.
         treeview.realize.connect(Gtk.TreeView.expand_all)
         window.set_default_size(650, 400)
 

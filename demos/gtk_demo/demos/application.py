@@ -242,7 +242,7 @@ class DemoApplicationWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def update_statusbar(self, buffer: Gtk.TextBuffer) -> None:
-        # clear any previous message, underflow is allowed
+        # Clears any previous message; popping when there is none is allowed.
         pop_message(self.status)
 
         count = buffer.get_char_count()

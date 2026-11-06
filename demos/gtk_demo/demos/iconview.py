@@ -28,10 +28,10 @@ def load_pixbufs() -> None:
     global file_pixbuf, folder_pixbuf
 
     if file_pixbuf:
-        return  # already loaded earlier
+        return  # Already loaded earlier.
 
     file_pixbuf = GdkPixbuf.Pixbuf.new_from_resource(FILE_NAME)
-    # resources must load successfully
+    # The demo's own resources must load.
     assert file_pixbuf
 
     folder_pixbuf = GdkPixbuf.Pixbuf.new_from_resource(FOLDER_NAME)
@@ -39,11 +39,8 @@ def load_pixbufs() -> None:
 
 
 def fill_store(store: Gtk.ListStore) -> None:
-    # First clear the store
     store.clear()
 
-    # Now go through the directory and extract all the file
-    # information
     try:
         dir = GLib.Dir.open(parent, 0)
     except GLib.Error:
@@ -51,7 +48,7 @@ def fill_store(store: Gtk.ListStore) -> None:
 
     name = dir.read_name()
     while name is not None:
-        # We ignore hidden files that start with a '.'
+        # Hidden files, which start with a '.', are left out.
         if name[0] != '.':
             path = os.path.join(parent, name)
 
@@ -66,8 +63,7 @@ def fill_store(store: Gtk.ListStore) -> None:
 
 
 def sort_func(model: Gtk.TreeModel, a: Gtk.TreeIter, b: Gtk.TreeIter, user_data: object) -> int:
-    # We need this function because we want to sort
-    # folders before files.
+    # Sorts folders before files, which the default sort wouldn't.
 
     is_dir_a, name_a = model.get(a, COL_IS_DIRECTORY, COL_DISPLAY_NAME)
     is_dir_b, name_b = model.get(b, COL_IS_DIRECTORY, COL_DISPLAY_NAME)
@@ -85,7 +81,6 @@ def sort_func(model: Gtk.TreeModel, a: Gtk.TreeIter, b: Gtk.TreeIter, user_data:
 def create_store() -> Gtk.ListStore:
     store = Gtk.ListStore(str, str, GdkPixbuf.Pixbuf, bool)
 
-    # Set sort column and function
     store.set_default_sort_func(sort_func, None)
     store.set_sort_column_id(Gtk.TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, Gtk.SortType.ASCENDING)
 
@@ -101,12 +96,10 @@ def item_activated(icon_view: Gtk.IconView, tree_path: Gtk.TreePath, store: Gtk.
     if not is_dir:
         return
 
-    # Replace parent with path and re-fill the model
     parent = path
 
     fill_store(store)
 
-    # Sensitize the up button
     up_button.set_sensitive(True)
 
 
@@ -119,7 +112,7 @@ def up_clicked(item: Gtk.Button, store: Gtk.ListStore) -> None:
 
     fill_store(store)
 
-    # Maybe de-sensitize the up button
+    # There's no going up from the root.
     up_button.set_sensitive(parent != "/")
 
 
@@ -130,7 +123,6 @@ def home_clicked(item: Gtk.Button, store: Gtk.ListStore) -> None:
 
     fill_store(store)
 
-    # Sensitize the up button
     up_button.set_sensitive(True)
 
 
@@ -181,7 +173,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
 
         vbox.append(sw)
 
-        # Create the store and fill it with the contents of '/'
+        # The view starts at '/'.
         parent = "/"
         store = create_store()
         fill_store(store)
@@ -189,18 +181,14 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         icon_view = Gtk.IconView.new_with_model(store)
         icon_view.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
 
-        # Connect to the "clicked" signal of the "Up" tool button
         up_button.clicked.connect(up_clicked, store)
 
-        # Connect to the "clicked" signal of the "Home" tool button
         home_button.clicked.connect(home_clicked, store)
 
-        # We now set which model columns that correspond to the text
-        # and pixbuf of each item
+        # The model columns that hold each item's text and pixbuf.
         icon_view.set_text_column(COL_DISPLAY_NAME)
         icon_view.set_pixbuf_column(COL_PIXBUF)
 
-        # Connect to the "item-activated" signal
         icon_view.item_activated.connect(item_activated, store)
         sw.set_child(icon_view)
 

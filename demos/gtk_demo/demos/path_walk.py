@@ -122,7 +122,7 @@ class GtkPathWalk(Gtk.Widget):
 
         super().__init__(**properties)
 
-        # Data taken from
+        # The data is taken from
         # https://commons.wikimedia.org/wiki/Maps_of_the_world#/media/File:Simplified_blank_world_map_without_Antartica_(no_borders).svg
         data = Gio.resources_lookup_data("/path_walk/path_world.txt", Gio.ResourceLookupFlags.NONE)
         path = Gsk.Path.parse(data.get_data().decode())

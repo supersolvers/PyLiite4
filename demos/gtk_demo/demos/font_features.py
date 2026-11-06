@@ -97,7 +97,7 @@ def MAKE_TAG(tag: str) -> int:
 
 
 def hb_tag_from_string(s: str) -> int:
-    # hb_tag_from_string(): pad with spaces to four characters
+    # As hb_tag_from_string(): padded with spaces to four characters.
     return MAKE_TAG((s + "    ")[:4])
 
 
@@ -115,10 +115,10 @@ HB_LANGUAGE_INVALID = None
 
 # {{{ open-type-layout.h
 
-# Registered OpenType layout tags, see
-# https://www.microsoft.com/typography/otspec/featuretags.htm
+# Registered OpenType layout tags; see
+# https://www.microsoft.com/typography/otspec/featuretags.htm.
 
-# These don't include ss01 - ss19 and cv01 - cv99
+# These don't include ss01 - ss19 and cv01 - cv99.
 open_type_layout_features = [
     (MAKE_TAG("aalt"), "Access All Alternates"),
     (MAKE_TAG("abvf"), "Above-base Forms"),
@@ -381,7 +381,7 @@ def basic_value_changed(adjustment: Gtk.Adjustment, data: Gtk.Entry) -> None:
 
 
 def strtod(text: str) -> float:
-    # g_strtod(): the longest prefix that is a number, or 0
+    # As g_strtod(): the longest prefix that is a number, or 0.
     match = re.match(r"\s*[-+]?(\d+\.?\d*([eE][-+]?\d+)?|\.\d+([eE][-+]?\d+)?|inf(inity)?|nan)", text, re.IGNORECASE)
     return float(match.group(0)) if match else 0.0
 
@@ -439,7 +439,7 @@ def ensure_range(start: int, end: int, desc: Pango.FontDescription | None, featu
     else:
         range = Range(start, end)
 
-        # g_list_insert_sorted()
+        # Inserted in order, as g_list_insert_sorted() does.
         position = 0
         while position < len(demo.ranges) and compare_range(range, demo.ranges[position]) > 0:
             position += 1
@@ -497,7 +497,7 @@ def feat_toggled_cb(check_button: Gtk.CheckButton) -> None:
 
 
 def get_default(feat: Gtk.Widget) -> Gtk.CheckButton | None:
-    # g_object_get_data (feat, "default")
+    # As g_object_get_data (feat, "default") in C.
     return getattr(feat, "default_button", None)
 
 
@@ -740,7 +740,7 @@ def script_sort(item1: ScriptLang, item2: ScriptLang, data: object) -> int:
     a = item1.langname
     b = item2.langname
 
-    # strcmp()
+    # As strcmp(): compares the UTF-8 bytes.
     a_bytes, b_bytes = a.encode(), b.encode()
     return (a_bytes > b_bytes) - (a_bytes < b_bytes)
 
@@ -756,7 +756,7 @@ def update_script_combo() -> None:
     pango_font = get_pango_font()
     hb_font = pango_font_get_hb_font(pango_font)
 
-    # TagPairs, keyed by script tag and language tag: (script_tag, lang_tag, script_index, lang_index)
+    # TagPairs, keyed by script tag and language tag: (script_tag, lang_tag, script_index, lang_index).
     tags: dict[tuple[int, int], tuple[int, int, int, int]] = {}
 
     tags[(0, 0)] = (0, 0, 0, 0)
@@ -817,11 +817,11 @@ def get_name(hbface: int, id: int) -> str | None:
 
 
 def update_features() -> None:
-    # set feature presence checks from the font features
+    # Sets the feature presence checks from the font features.
 
     selected = demo.script_lang.get_selected_item()
 
-    if selected.lang_tag == 0:  # None is selected
+    if selected.lang_tag == 0:  # The "None" language is selected.
         for item in demo.feature_items:
             item.feat.set_visible(True)
             item.feat.get_parent().set_visible(True)
@@ -940,7 +940,7 @@ def add_font_variations() -> str:
         tag = hb_tag_to_string(axis.tag)
         value = axis.adjustment.get_value()
 
-        # g_ascii_dtostr()
+        # As g_ascii_dtostr(): enough digits to read back the same value.
         s += f"{sep}{tag}={value:.17g}"
         sep = ","
 
@@ -992,7 +992,7 @@ def start_or_stop_axis_animation(button: Gtk.Button, axis: Axis) -> None:
 
 
 def name_get_utf8(hb_face: int, name_id: int, size: int) -> str:
-    # hb_ot_name_get_utf8() into a char[size]
+    # hb_ot_name_get_utf8() writes into a char[size], as in C.
     name = ctypes.create_string_buffer(size)
     name_len = ctypes.c_uint(size)
     hb_ot_name_get_utf8(hb_face, name_id, HB_LANGUAGE_INVALID, ctypes.byref(name_len), name)
@@ -1088,7 +1088,7 @@ def instance_changed(combo: Gtk.DropDown, pspec: GObject.ParamSpec) -> None:
 
         axis = demo.axes.get(ai[i].tag)
         if axis:
-            # g_signal_handlers_block_by_func (axis->adjustment, unset_instance, NULL)
+            # As g_signal_handlers_block_by_func (axis->adjustment, unset_instance, NULL) in C.
             with axis.adjustment.value_changed.blocked(axis.unset_instance_handler):
                 axis.adjustment.set_value(value)
 
@@ -1115,7 +1115,7 @@ def add_font_plane(i: int) -> None:
         demo.variations_grid.attach(plane, 0, i, 3, 1)
 
 
-# FIXME: This doesn't work if the font has an avar table
+# FIXME: This doesn't work if the font has an avar table.
 def denorm_coord(axis: hb_ot_var_axis_info_t, coord: int) -> float:
     r = coord / 16384.0
 
@@ -1414,7 +1414,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         font_features_font_changed()
 
         window_ref = window.weak_ref()
-        # g_object_set_data_full() with demo_free() as the destroy notify
+        # As g_object_set_data_full() with demo_free() as the destroy notify.
         window.weak_ref(demo_free, demo)
 
         update_display()

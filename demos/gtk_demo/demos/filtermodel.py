@@ -59,7 +59,7 @@ def cell_edited(cell: Gtk.CellRendererSpin, path_string: str, new_text: str, sto
     try:
         val = int(new_text)
     except ValueError:
-        # As atoi()
+        # As with atoi(), text that isn't a number gives 0.
         val = 0
 
     store.set(iter, column, val)

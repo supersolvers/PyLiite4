@@ -60,7 +60,7 @@ def parse_color(spec: str) -> Gdk.RGBA:
 def gtk_logo_paintable_new() -> Gdk.Paintable:
     self = GtkLogoPaintable()
 
-    # Paths and colors extracted from gtk-logo.svg
+    # The paths and colors come from gtk-logo.svg.
     self.path = [
         Gsk.Path.parse("m3.12,66.17 -2.06,-51.46 32.93,24.7 v55.58 l-30.87,-28.82 z"),
         Gsk.Path.parse("m34,95 49.4,-20.58 4.12,-51.46 -53.52,16.47 v55.58 z"),

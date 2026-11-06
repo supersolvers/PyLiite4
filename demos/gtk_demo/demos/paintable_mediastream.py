@@ -18,10 +18,9 @@ from .paintable import gtk_nuclear_icon_new, gtk_nuclear_snapshot, rgba
 
 window: Gtk.Window | None = None
 
-# Do a full rotation in 5 seconds.
+# A full rotation takes 5 seconds.
 #
-# We do not save steps here but real timestamps.
-# GtkMediaStream uses microseconds, so we will do so, too.
+# This stream keeps real timestamps rather than steps, in microseconds as GtkMediaStream does.
 DURATION = 5 * GLib.USEC_PER_SEC
 
 
@@ -32,34 +31,25 @@ class GtkNuclearMediaStream(Gtk.MediaStream):
 
     def __init__(self) -> None:
         super().__init__()
-        # This variable stores the progress of our video.
+        # The progress of the video.
         self.progress = 0
 
-        # This variable stores the timestamp of the last
-        # time we updated the progress variable when the
-        # video is currently playing.
-        # This is so that we can always accurately compute the
-        # progress we've had, even if the timeout does not
-        # exactly work.
+        # When the progress was last updated while the video plays. The progress is computed from it, so it stays
+        # accurate even if the timeout doesn't fire exactly on time.
         self.last_time = 0
 
-        # This variable again holds the ID of the timer that
-        # updates our progress variable. Nothing changes about
-        # how this works compared to the previous example.
+        # The ID of the timer that updates the progress, as in the previous example.
         self.source_id = 0
 
-        # This time, we don't have to add a timer here, because media
-        # streams start paused.
-        #
-        # However, media streams need to tell GTK once they are initialized,
-        # so we do that here.
+        # Media streams start paused, so no timer is added here. They do need to tell GTK once they are
+        # initialized.
         self.stream_prepared(False, True, True, DURATION)
 
-    # GtkMediaStream is a GdkPaintable. So when we want to display video,
-    # we have to implement the interface, just like in the animation example.
+    # GtkMediaStream is a GdkPaintable, so displaying video means implementing that interface, as in the
+    # animation example.
 
     def do_snapshot(self, snapshot: Gdk.Snapshot, width: float, height: float) -> None:
-        # We call the function from the previous example here.
+        # The drawing function from the previous example.
         gtk_nuclear_snapshot(snapshot,
                              rgba(0, 0, 0, 1),  # black
                              rgba(0.9, 0.75, 0.15, 1.0),  # yellow
@@ -67,53 +57,44 @@ class GtkNuclearMediaStream(Gtk.MediaStream):
                              360 * self.progress // DURATION)
 
     def do_get_current_image(self) -> Gdk.Paintable:
-        # Same thing as with the animation
+        # As in the animation.
         return gtk_nuclear_icon_new(360 * self.progress // DURATION)
 
     def do_get_flags(self) -> Gdk.PaintableFlags:
-        # And same thing as with the animation over here, too.
+        # As in the animation.
         return Gdk.PaintableFlags.STATIC_SIZE
 
     def do_play(self) -> bool:
-        # If we're already at the end of the stream, we don't want
-        # to start playing and exit early.
+        # A stream that is already at its end doesn't start playing.
         if self.progress >= DURATION:
             return False
 
-        # This time, we add the source only when we start playing.
+        # The source is added only when playing starts.
         # C removes it when the stream is finalized; the timeout only holds the stream weakly instead.
         self.source_id = GLib.timeout_add(10, gtk_nuclear_media_stream_step, weakref.ref(self))
 
-        # We also want to initialize our time, so that we can
-        # do accurate updates.
+        # The start time, which the updates measure from.
         self.last_time = GLib.get_monotonic_time()
 
-        # We successfully started playing, so we return TRUE here.
+        # Playing started.
         return True
 
     def do_pause(self) -> None:
-        # This function will be called when a playing stream
-        # gets paused.
-        # So we remove the updating source here and set it
-        # back to 0 so that the finalize function doesn't try
-        # to remove it again.
+        # Called when a playing stream is paused. It removes the updating source and sets its ID back to 0, so
+        # nothing tries to remove it again.
         GLib.source_remove(self.source_id)
         self.source_id = 0
         self.last_time = 0
 
     def do_seek(self, timestamp: int) -> None:
-        # This is optional functionality for media streams,
-        # but not being able to seek is kinda boring.
-        # And it's trivial to implement, so let's go for it.
+        # Seeking is optional for media streams, but trivial to implement here.
         self.progress = timestamp
 
-        # Media streams are asynchronous, so seeking can take a while.
-        # We however don't need that functionality, so we can just
-        # report success.
+        # Media streams are asynchronous, so seeking can take a while. This one seeks at once, so it reports
+        # success straight away.
         self.seek_success()
 
-        # We also have to update our timestamp and tell the
-        # paintable interface about the seek
+        # The stream's timestamp and the paintable both need to know about the seek.
         self.update(self.progress)
         self.invalidate_contents()
 
@@ -123,38 +104,31 @@ def gtk_nuclear_media_stream_step(data: weakref.ref) -> bool:
     if nuclear is None:
         return GLib.SOURCE_REMOVE
 
-    # Compute the time that has elapsed since the last time we were called
-    # and add it to our current progress.
+    # The time elapsed since the last call adds to the progress.
     current_time = GLib.main_current_source().get_time()
     nuclear.progress += current_time - nuclear.last_time
 
-    # Check if we've ended
     if nuclear.progress > DURATION:
         if nuclear.get_loop():
-            # We're looping. So make the progress loop using modulo
+            # A looping stream wraps the progress around.
             nuclear.progress %= DURATION
         else:
-            # Just make sure we don't overflow
+            # Otherwise the progress stops at the end rather than run past it.
             nuclear.progress = DURATION
 
-    # Update the last time to the current timestamp.
     nuclear.last_time = current_time
 
-    # Update the timestamp of the media stream
+    # The media stream's timestamp.
     nuclear.update(nuclear.progress)
 
-    # We also need to invalidate our contents again.
-    # After all, we are a video and not just an audio stream.
+    # The contents change too: this is a video, not just an audio stream.
     nuclear.invalidate_contents()
 
-    # Now check if we have finished playing and if so,
-    # tell the media stream. The media stream will then
-    # call our pause function to pause the stream.
+    # A stream that has finished playing tells the media stream, which then calls do_pause() to pause it.
     if nuclear.progress >= DURATION:
         nuclear.stream_ended()
 
-    # The timeout function is removed by the pause function,
-    # so we can just always return this value.
+    # do_pause() removes the timeout, so it can always continue here.
     return GLib.SOURCE_CONTINUE
 
 

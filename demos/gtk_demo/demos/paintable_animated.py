@@ -17,10 +17,7 @@ from .paintable import gtk_nuclear_icon_new, gtk_nuclear_snapshot, rgba
 
 window: Gtk.Window | None = None
 
-# Do a full rotation in 5 seconds.
-# We will register the timeout for doing a single step to
-# be executed every 10ms, which means after 1000 steps
-# 10s will have elapsed.
+# A full rotation takes 5 seconds: the timeout does a single step every 10ms, so 500 steps take 5s.
 MAX_PROGRESS = 500
 
 
@@ -31,26 +28,22 @@ class GtkNuclearAnimation(GObject.Object, Gdk.Paintable):
         super().__init__()
         self.draw_background = False
 
-        # This variable stores the progress of our animation.
-        # We just count upwards until we hit MAX_PROGRESS and
-        # then start from scratch.
+        # The progress of the animation. It counts upwards until it hits MAX_PROGRESS, then starts from scratch.
         self.progress = 0
 
-        # Add a timer here that constantly updates our animations.
-        # We want to update it often enough to guarantee a smooth animation.
+        # A timer updates the animation, often enough for it to look smooth.
         #
-        # Ideally, we'd attach to the frame clock, but because we do
-        # not have it available here, we just use a regular timeout
-        # that hopefully triggers often enough to be smooth.
+        # Ideally this would attach to the frame clock, but a paintable has none, so a regular timeout stands in
+        # and should trigger often enough to be smooth.
         #
         # C removes the timeout when the paintable is finalized. Python can't hook finalization, so the
         # timeout holds the paintable weakly and removes itself once the paintable is gone.
         self.source_id = GLib.timeout_add(10, gtk_nuclear_animation_step, weakref.ref(self))
 
-    # Again, we implement the functionality required by the GdkPaintable interface
+    # The GdkPaintable interface
 
     def do_snapshot(self, snapshot: Gdk.Snapshot, width: float, height: float) -> None:
-        # We call the function from the previous example here.
+        # The drawing function from the previous example.
         gtk_nuclear_snapshot(snapshot,
                              rgba(0, 0, 0, 1),  # black
                              rgba(0.9, 0.75, 0.15, 1.0) if self.draw_background  # yellow
@@ -59,18 +52,13 @@ class GtkNuclearAnimation(GObject.Object, Gdk.Paintable):
                              360 * self.progress // MAX_PROGRESS)
 
     def do_get_current_image(self) -> Gdk.Paintable:
-        # For non-static paintables, this function needs to be implemented.
-        # It must return a static paintable with the same contents
-        # as this one currently has.
-        #
-        # Luckily we added the rotation property to the nuclear icon
-        # object previously, so we can just return an instance of that one.
+        # Non-static paintables must implement this. It returns a static paintable with the same contents as this
+        # one has now: the nuclear icon has a rotation property, so an instance of it does.
         return gtk_nuclear_icon_new(360 * self.progress // MAX_PROGRESS)
 
     def do_get_flags(self) -> Gdk.PaintableFlags:
-        # This time, we cannot set the static contents flag because our animation
-        # changes the contents.
-        # However, our size still doesn't change, so report that flag.
+        # The animation changes the contents, so the static contents flag can't be set; the size still doesn't
+        # change, so that flag can.
         return Gdk.PaintableFlags.STATIC_SIZE
 
 
@@ -79,20 +67,14 @@ def gtk_nuclear_animation_step(data: weakref.ref) -> bool:
     if nuclear is None:
         return GLib.SOURCE_REMOVE
 
-    # Add 1 to the progress and reset it when we've reached
-    # the maximum value.
-    # The animation will rotate by 360 degrees at MAX_PROGRESS
-    # so it will be identical to the original unrotated one.
+    # The progress resets at the maximum value: at MAX_PROGRESS the icon has rotated by 360 degrees, so it looks
+    # identical to the unrotated one.
     nuclear.progress = (nuclear.progress + 1) % MAX_PROGRESS
 
-    # Now we need to tell all listeners that we've changed out contents
-    # so that they can redraw this paintable.
+    # Tells all listeners that the contents changed, so they redraw the paintable.
     nuclear.invalidate_contents()
 
-    # We want this timeout function to be called repeatedly,
-    # so we return this value here.
-    # If this was a single-shot timeout, we could also
-    # return G_SOURCE_REMOVE here to get rid of it.
+    # Keeps the timeout running. A single-shot timeout would return GLib.SOURCE_REMOVE instead.
     return GLib.SOURCE_CONTINUE
 
 

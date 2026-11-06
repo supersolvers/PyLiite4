@@ -25,7 +25,7 @@ def update_button(object: GObject.Object, pspec: GObject.ParamSpec) -> None:
 def button_pressed(widget: Gtk.Button, win: Gtk.Window) -> None:
     global window
     win.destroy()
-    # C's weak pointer clears itself; this module's reference keeps the window alive, so drop it
+    # C's weak pointer clears itself; this module's reference keeps the window alive, so drop it.
     window = None
 
 

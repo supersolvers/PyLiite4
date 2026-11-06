@@ -27,8 +27,7 @@ class DemoLayout(Gtk.LayoutManager):
                 natural_size = max(natural_size, child_nat)
             child = child.get_next_sibling()
 
-        # A back-of-a-napkin calculation to reserve enough
-        # space for arranging 16 children in a circle.
+        # A back-of-a-napkin calculation, reserving enough space to arrange 16 children in a circle.
         minimum = int(16 * minimum_size / math.pi + minimum_size)
         natural = int(16 * natural_size / math.pi + natural_size)
         return minimum, natural, -1, -1
@@ -48,11 +47,11 @@ class DemoLayout(Gtk.LayoutManager):
                 child_height = max(child_height, child_req.height)
             child = child.get_next_sibling()
 
-        # the center of our layout
+        # The center of the layout.
         x0 = width // 2
         y0 = height // 2
 
-        # the radius for our circle of children
+        # The radius of the circle of children.
         r = 8 * child_width / math.pi
 
         child = widget.get_first_child()
@@ -67,16 +66,13 @@ class DemoLayout(Gtk.LayoutManager):
                 gx = x0 + (i % 4 - 2) * child_width
                 gy = y0 + (i // 4 - 2) * child_height
 
-                # The circle position of child. Note that we
-                # are adjusting the position by half the child size
-                # to place the center of child on a centered circle.
-                # This assumes that the children don't use align flags
-                # or uneven margins that would shift the center.
+                # The circle position of child, adjusted by half the child's size to put the child's center on a
+                # centered circle. This assumes the children don't use align flags or uneven margins that would shift
+                # the center.
                 cx = int(x0 + math.sin(a) * r - child_req.width // 2)
                 cy = int(y0 + math.cos(a) * r - child_req.height // 2)
 
-                # we interpolate between the two layouts according to
-                # the position value that has been set on the layout.
+                # The two layouts are interpolated according to the position set on the layout.
                 x = int(t * cx + (1 - t) * gx)
                 y = int(t * cy + (1 - t) * gy)
 

@@ -167,7 +167,7 @@ class SweeperGame(GObject.Object, Gio.ListModel):
             return
 
         for cell in self.cells:
-            # There's still a non-revealed cell that isn't a mine
+            # There's still a non-revealed cell that isn't a mine.
             if not cell.is_visible and not cell.is_mine:
                 return
 

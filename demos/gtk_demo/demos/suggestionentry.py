@@ -356,8 +356,7 @@ class SuggestionEntry(Gtk.Widget, Gtk.Editable):
         return GLib.SOURCE_REMOVE
 
     def text_changed(self, editable: Gtk.Editable, pspec: GObject.ParamSpec) -> None:
-        # We need to defer to an idle since GtkText sets selection bounds
-        # after notify::text
+        # Deferred to an idle, since GtkText sets the selection bounds after notify::text.
         GLib.idle_add(self.text_changed_idle)
 
     def accept_current_selection(self) -> None:
@@ -403,7 +402,7 @@ class SuggestionEntry(Gtk.Widget, Gtk.Editable):
             return False
         elif keyval in (Gdk.KEY_Tab, Gdk.KEY_KP_Tab, Gdk.KEY_ISO_Left_Tab):
             self.set_popup_visible(False)
-            return False  # don't disrupt normal focus handling
+            return False  # Leaves normal focus handling undisturbed.
 
         matches = self.selection.get_n_items()
         selected = self.selection.get_selected()

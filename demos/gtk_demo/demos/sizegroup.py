@@ -32,9 +32,8 @@ def add_row(table: Gtk.Grid, row: int, size_group: Gtk.SizeGroup, label_text: st
 
 
 def toggle_grouping(check_button: Gtk.CheckButton, size_group: Gtk.SizeGroup) -> None:
-    # GTK_SIZE_GROUP_NONE is not generally useful, but is useful
-    # here to show the effect of GTK_SIZE_GROUP_HORIZONTAL by
-    # contrast.
+    # Gtk.SizeGroupMode.NONE is not generally useful, but here it shows the effect of
+    # Gtk.SizeGroupMode.HORIZONTAL by contrast.
     if check_button.get_active():
         new_mode = Gtk.SizeGroupMode.HORIZONTAL
     else:
@@ -76,7 +75,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
 
         size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-        # Create one frame holding color options
+        # The color options
         frame = Gtk.Frame(label="Color Options")
         vbox.append(frame)
 
@@ -92,7 +91,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         add_row(table, 0, size_group, "_Foreground", color_options)
         add_row(table, 1, size_group, "_Background", color_options)
 
-        # And another frame holding line style options
+        # The line style options
         frame = Gtk.Frame(label="Line Options")
         vbox.append(frame)
 
@@ -108,7 +107,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         add_row(table, 0, size_group, "_Dashing", dash_options)
         add_row(table, 1, size_group, "_Line ends", end_options)
 
-        # And a check button to turn grouping on and off
+        # A check button turns grouping on and off.
         check_button = Gtk.CheckButton.new_with_mnemonic("_Enable grouping")
         vbox.append(check_button)
 

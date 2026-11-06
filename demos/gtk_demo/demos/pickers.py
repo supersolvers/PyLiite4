@@ -15,7 +15,7 @@ app_picker: Gtk.Button
 open_folder_button: Gtk.Button
 print_button: Gtk.Button
 
-# The files the buttons act on, as g_object_set_data (button, "file", ...) keeps them in C
+# The files the buttons act on, as g_object_set_data (button, "file", ...) keeps them in C.
 files: dict[Gtk.Widget, Gio.File] = {}
 
 
@@ -105,7 +105,7 @@ def open_folder(picker: Gtk.Button) -> None:
     launcher.open_containing_folder(parent, None, open_folder_done, None)
 
 
-# The timeouts that cancel the print operations, as g_object_set_data (cancellable, "timeout", ...) keeps them in C
+# The timeouts that cancel the print operations, as g_object_set_data (cancellable, "timeout", ...) keeps them in C.
 timeouts: dict[Gio.Cancellable, int] = {}
 
 

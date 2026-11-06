@@ -23,7 +23,7 @@ window: Gtk.Window | None = None
 def toggle_sensitivity_callback(togglebutton: Gtk.ToggleButton, user_data: Gtk.Widget) -> None:
     child = user_data.get_first_child()
     while child is not None:
-        # don't disable our toggle
+        # The toggle button itself stays sensitive, so it can turn the others back on.
         if child != togglebutton:
             child.set_sensitive(not togglebutton.get_active())
         child = child.get_next_sibling()

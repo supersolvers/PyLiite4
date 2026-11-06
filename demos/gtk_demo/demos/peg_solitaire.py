@@ -25,18 +25,15 @@ class SolitairePeg(GObject.Object, Gdk.Paintable):
         self.x = 0
         self.y = 0
 
-    # Here, we implement the functionality required by the GdkPaintable interface
+    # The GdkPaintable interface
     def do_snapshot(self, snapshot: Gdk.Snapshot, width: float, height: float) -> None:
-        # The snapshot function is the only function we need to implement.
-        # It does the actual drawing of the paintable.
+        # The only function a paintable has to implement: it does the actual drawing.
         snapshot.append_color(Gdk.RGBA(red=0.6, green=0.3, blue=0.0, alpha=1.0),
                               Graphene.Rect().init(0, 0, width, height))
 
     def do_get_flags(self) -> Gdk.PaintableFlags:
-        # The flags are very useful to let GTK know that this image
-        # is never going to change.
-        # This allows many optimizations and should therefore always
-        # be set.
+        # The flags tell GTK that this image never changes. That allows many optimizations, so a paintable should
+        # always set them when they apply.
         return Gdk.PaintableFlags.STATIC_CONTENTS | Gdk.PaintableFlags.STATIC_SIZE
 
     def do_get_intrinsic_width(self) -> int:
@@ -45,9 +42,7 @@ class SolitairePeg(GObject.Object, Gdk.Paintable):
     def do_get_intrinsic_height(self) -> int:
         return 32
 
-    # Add a little setter for the peg's position.
-    # We want to track those so that we can check for legal moves
-    # during drag-and-drop operations.
+    # The peg's position is tracked so that drag-and-drop can check for legal moves.
     def set_position(self, x: int, y: int) -> None:
         self.x = x
         self.y = y
@@ -58,9 +53,9 @@ def solitaire_peg_new() -> SolitairePeg:
     return SolitairePeg()
 
 
-# Helper for finding a win
+# Finding a win
 
-# The sounds that are playing, kept until they end
+# The sounds that are playing, kept until they end.
 playing: set[Gtk.MediaStream] = set()
 
 
@@ -78,8 +73,7 @@ def celebrate(win: bool) -> None:
 
 
 def check_move(grid: Gtk.Grid, x: int, y: int, dx: int, dy: int) -> int:
-    # We have a peg at x, y.
-    # Check if we can move the peg to x + 2*dx, y + 2*dy
+    # There is a peg at x, y. It can move to x + 2*dx, y + 2*dy if it has a peg to jump and a free hole to land in.
     image = grid.get_child_at(x + dx, y + dy)
     if not isinstance(image, Gtk.Image) or not isinstance(image.get_paintable(), SolitairePeg):
         return 0
@@ -114,7 +108,7 @@ def check_for_end(grid: Gtk.Grid) -> None:
         celebrate(False)
 
 
-# DRAG AND DROP
+# Drag and drop
 
 def drag_prepare(source: Gtk.DragSource, x: float, y: float, image: Gtk.Image) -> Gdk.ContentProvider | None:
     """The user tries to start a drag operation.
@@ -131,7 +125,7 @@ def drag_prepare(source: Gtk.DragSource, x: float, y: float, image: Gtk.Image) -
     return Gdk.ContentProvider.new_for_value(value)
 
 
-# The drags in progress and their pegs, as g_object_set_data() on the drag keeps them in C
+# The drags in progress and their pegs, as g_object_set_data() on the drag keeps them in C.
 drag_pegs: dict[Gdk.Drag, SolitairePeg] = {}
 
 
@@ -142,20 +136,16 @@ def drag_begin(source: Gtk.DragSource, drag: Gdk.Drag, image: Gtk.Image) -> None
     """
     paintable = image.get_paintable()
 
-    # We guaranteed in the drag_prepare function above that we
-    # only start a drag if a peg is available.
-    # So let's make sure we did not screw that up.
+    # drag_prepare() above only starts a drag if there is a peg.
     assert isinstance(paintable, SolitairePeg)
 
-    # We use the peg as the drag icon.
+    # The peg is the drag icon.
     source.set_icon(paintable, -2, -2)
 
-    # We also attach it to the drag operation as custom user data,
-    # so that we can get it back later if the drag fails.
+    # The peg is kept with the drag, so it can be put back if the drag fails.
     drag_pegs[drag] = paintable
 
-    # Because we are busy dragging the peg, we want to unset it
-    # on the image.
+    # The peg is being dragged, so the image no longer shows it.
     image.clear()
 
 
@@ -167,15 +157,11 @@ def drag_end(source: Gtk.DragSource, drag: Gdk.Drag, delete_data: bool, image: G
     """
     peg = drag_pegs.pop(drag, None)
 
-    # If the drag was successful, we should now delete the peg.
-    # We did this in drag_begin() above to prepare for the drag, so
-    # there's no need to do anything anymore.
+    # A successful drag deletes the peg, which drag_begin() above already did.
     if delete_data:
         return
 
-    # However, if the drag did not succeed, we need to undo what
-    # we did in drag_begin() and reinsert the peg here.
-    # Because we used it as the drag data
+    # A failed drag undoes drag_begin(): the peg, kept with the drag, goes back into the image.
     image.set_from_paintable(peg)
 
 
@@ -186,11 +172,11 @@ def drop_accept(target: Gtk.DropTarget, drop: Gdk.Drop, image: Gtk.Image) -> boo
     checks the data type. But we also need to check if our image can
     even accept data.
     """
-    # First, check the drop is actually trying to drop a peg
+    # The drop has to be a peg.
     if not drop.get_formats().contain_gtype(SolitairePeg.__gtype__):
         return False
 
-    # If the image already contains a peg, we cannot accept another one
+    # An image that already holds a peg can't accept another one.
     if isinstance(image.get_paintable(), SolitairePeg):
         return False
 
@@ -199,40 +185,30 @@ def drop_accept(target: Gtk.DropTarget, drop: Gdk.Drop, image: Gtk.Image) -> boo
 
 def drop_drop(target: Gtk.DropTarget, value: SolitairePeg, x: float, y: float, image: Gtk.Image) -> bool:
     grid = image.get_parent()
-    # The value contains the data in the type we demanded.
-    # We demanded a SolitairePeg, so that's what we get.
+    # The value holds the data in the type the drop target asked for: a SolitairePeg.
     peg = value
 
-    # Make sure this was a legal move.
-    # First, figure out the image's position in the grid.
+    # Checking the move is legal starts from the image's position in the grid.
     image_x, image_y, _, _ = grid.query_child(image)
 
-    # If the peg was not moved 2 spaces horizontally or vertically,
-    # this was not a valid jump. Reject it.
+    # A peg that didn't move 2 spaces horizontally or vertically didn't make a valid jump.
     if not ((abs(image_x - peg.x) == 2 and image_y == peg.y)
             or (abs(image_y - peg.y) == 2 and image_x == peg.x)):
         return False
 
-    # Get the widget that was jumped over
     jumped = grid.get_child_at((image_x + peg.x) // 2, (image_y + peg.y) // 2)
-    # If the jumped widget does not have a peg in it, this move
-    # isn't valid.
+    # Jumping over an empty hole isn't valid.
     if not isinstance(jumped.get_paintable(), SolitairePeg):
         return False
 
-    # Finally, we know it's a legal move.
-
-    # Clear the peg of the jumped-over image
+    # The move is legal: the jumped-over peg goes, and the dropped one lands here.
     jumped.clear()
 
-    # Add the peg to this image
     peg.set_position(image_x, image_y)
     image.set_from_paintable(peg)
 
-    # Maybe we have something to celebrate
     check_for_end(grid)
 
-    # Success!
     return True
 
 
@@ -242,7 +218,7 @@ def remove_provider(window: Gtk.Window) -> None:
         Gtk.StyleContext.remove_provider_for_display(Gdk.Display.get_default(), provider)
 
 
-# The CSS providers of the windows, as g_object_set_data_full() keeps them in C
+# The CSS providers of the windows, as g_object_set_data_full() keeps them in C.
 providers: dict[Gtk.Window, Gtk.CssProvider] = {}
 
 
@@ -279,12 +255,8 @@ def create_board(window: Gtk.Window) -> None:
 
             grid.attach(image, x, y, 1, 1)
 
-            # Set up the drag source.
-            # This is rather straightforward: Set the supported actions
-            # (in our case, pegs can only be moved) and connect all the
-            # relevant signals.
-            # And because all drag'n'drop handling is done via event controllers,
-            # we need to add the controller to the widget.
+            # The drag source supports only moving pegs, and connects the drag signals. All drag-and-drop handling
+            # is done by event controllers, so the controller is added to the widget.
             source = Gtk.DragSource()
             source.set_actions(Gdk.DragAction.MOVE)
             source.prepare.connect(drag_prepare, image)
@@ -292,16 +264,12 @@ def create_board(window: Gtk.Window) -> None:
             source.drag_end.connect(drag_end, image)
             image.add_controller(source)
 
-            # Set up the drop target.
-            # This is more involved, because the game logic goes here.
+            # The drop target is more involved, because the game logic goes there.
 
-            # First we specify the data we accept: pegs.
-            # And we only want moves.
+            # It accepts only pegs, and only moves.
             target = Gtk.DropTarget.new(SolitairePeg.__gtype__, Gdk.DragAction.MOVE)
-            # Then we connect our signals.
             target.accept.connect(drop_accept, image)
             target.drop.connect(drop_drop, image)
-            # Finally, like above, we add it to the widget.
             image.add_controller(target)
 
     remove_provider(window)

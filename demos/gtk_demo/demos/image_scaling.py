@@ -59,7 +59,7 @@ def open_file_async(file: Gio.File, demo: Gtk.Widget) -> None:
 
     task = Gio.Task.new(demo, cancellable, texture_loaded, demo)
     # g_task_set_task_data() takes a pointer, which PyGObject can't pass, so the thread function gets the file
-    # from a closure instead
+    # from a closure instead.
     task.run_in_thread(lambda task, source, data, cancellable: load_texture(task, source, file, cancellable))
 
 

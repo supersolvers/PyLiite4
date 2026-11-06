@@ -6,7 +6,7 @@ GETTEXT_PACKAGE = "gtk40"
 
 
 def hb_tag(tag: str) -> int:
-    # HB_TAG(): four characters packed in an integer
+    # HB_TAG(): four characters packed in an integer.
     return int.from_bytes(tag.encode("latin-1"), "big")
 
 
@@ -16,7 +16,7 @@ def hb_script_from_iso15924_tag(tag: int) -> int:
     if tag == 0:
         return 0  # HB_SCRIPT_INVALID
 
-    # Be lenient, adjust case (one capital letter followed by three small letters)
+    # Lenient about case: it becomes one capital letter followed by three small letters.
     tag = (tag & 0xDFDFDFDF) | 0x00202020
 
     aliases = {

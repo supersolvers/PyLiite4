@@ -54,7 +54,7 @@ def prepare_drag(source: Gtk.DragSource, x: float, y: float) -> Gdk.ContentProvi
     demo = source.get_widget()
     paintable = get_image_paintable(demo.image)
 
-    # Textures can be serialized, paintables can't, so special case the textures
+    # Textures can be serialized and paintables can't, so textures are a special case.
     # (gdk_content_provider_new_typed() takes varargs; new_for_value() with a typed GValue does the same.)
     if isinstance(paintable, Gdk.Texture):
         return Gdk.ContentProvider.new_for_value(GObject.Value(Gdk.Texture, paintable))
@@ -76,7 +76,7 @@ def copy_image(widget: "DemoImage", action_name: str, parameter: GLib.Variant | 
     demo = widget
     paintable = get_image_paintable(demo.image)
 
-    # Textures can be serialized, paintables can't, so special case the textures
+    # Textures can be serialized and paintables can't, so textures are a special case.
     if isinstance(paintable, Gdk.Texture):
         value = GObject.Value(Gdk.Texture, paintable)
     else:

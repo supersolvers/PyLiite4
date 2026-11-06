@@ -107,7 +107,7 @@ def populate_text(resource: str, kind: int) -> None:
 
     content = Gio.resources_lookup_data(resource, Gio.ResourceLookupFlags.NONE).get_data().decode()
 
-    # GtkSourceView does the highlighting here, so the buffer is a GtkSourceBuffer, a GtkTextBuffer subclass
+    # GtkSourceView does the highlighting here, so the buffer is a GtkSourceBuffer, a GtkTextBuffer subclass.
     buffer = GtkSource.Buffer() if kind == HIGHLIGHTED_TEXT else Gtk.TextBuffer()
     buffer.set_text(content, -1)
 
@@ -541,7 +541,7 @@ def iconscroll_prev_clicked_cb(source: Gtk.Button) -> None:
 def update_fps(label: Gtk.Label) -> bool:
     frame_clock = label.get_frame_clock()
 
-    # C reads the frame clock of an unrealized label too; it is None there in Python
+    # C reads the frame clock of an unrealized label too; it is None there in Python.
     fps = frame_clock.get_fps() if frame_clock else 0.0
     label.set_label(f"{fps:.2f} fps")
 

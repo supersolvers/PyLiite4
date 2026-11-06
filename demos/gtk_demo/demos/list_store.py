@@ -62,10 +62,8 @@ def spinner_timeout() -> bool:
 
 
 def create_model() -> Gtk.TreeModel:
-    # create list store
     store = Gtk.ListStore(bool, GObject.TYPE_UINT, str, str, GObject.TYPE_UINT, str, bool, bool)
 
-    # add data to the list store
     for i, bug in enumerate(bugs):
         if i == 1 or i == 3:
             icon_name = "battery-level-10-charging-symbolic"
@@ -83,54 +81,50 @@ def create_model() -> Gtk.TreeModel:
 def fixed_toggled(cell: Gtk.CellRendererToggle, path_str: str, tree_model: Gtk.ListStore) -> None:
     path = Gtk.TreePath.new_from_string(path_str)
 
-    # get toggled iter
     iter = tree_model.get_iter(path)
     fixed = tree_model.get_value(iter, COLUMN_FIXED)
 
-    # do something with the value
     fixed ^= True
 
-    # set new value
     tree_model.set(iter, COLUMN_FIXED, fixed)
 
 
 def add_columns(treeview: Gtk.TreeView) -> None:
-    # column for fixed toggles
+    # Fixed toggles
     renderer = Gtk.CellRendererToggle()
     renderer.toggled.connect(fixed_toggled, model)
 
     column = Gtk.TreeViewColumn("Fixed?", renderer, active=COLUMN_FIXED)
 
-    # set this column to a fixed sizing (of 50 pixels)
     column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
     column.set_fixed_width(50)
     treeview.append_column(column)
 
-    # column for bug numbers
+    # Bug numbers
     renderer = Gtk.CellRendererText()
     column = Gtk.TreeViewColumn("Bug number", renderer, text=COLUMN_NUMBER)
     column.set_sort_column_id(COLUMN_NUMBER)
     treeview.append_column(column)
 
-    # column for severities
+    # Severities
     renderer = Gtk.CellRendererText()
     column = Gtk.TreeViewColumn("Severity", renderer, text=COLUMN_SEVERITY)
     column.set_sort_column_id(COLUMN_SEVERITY)
     treeview.append_column(column)
 
-    # column for description
+    # Descriptions
     renderer = Gtk.CellRendererText()
     column = Gtk.TreeViewColumn("Description", renderer, text=COLUMN_DESCRIPTION)
     column.set_sort_column_id(COLUMN_DESCRIPTION)
     treeview.append_column(column)
 
-    # column for spinner
+    # Spinners
     renderer = Gtk.CellRendererSpinner()
     column = Gtk.TreeViewColumn("Spinning", renderer, pulse=COLUMN_PULSE, active=COLUMN_ACTIVE)
     column.set_sort_column_id(COLUMN_PULSE)
     treeview.append_column(column)
 
-    # column for symbolic icon
+    # Symbolic icons
     renderer = Gtk.CellRendererPixbuf()
     column = Gtk.TreeViewColumn("Symbolic icon", renderer, icon_name=COLUMN_ICON, sensitive=COLUMN_SENSITIVE)
     column.set_sort_column_id(COLUMN_ICON)
@@ -158,7 +152,6 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
     global window, model, timeout
 
     if window is None:
-        # create window, etc
         window = Gtk.Window()
         window.set_display(do_widget.get_display())
         window.set_title("List Store")
@@ -179,28 +172,24 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         sw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         vbox.append(sw)
 
-        # create tree model
         model = create_model()
 
-        # create tree view
         treeview = Gtk.TreeView.new_with_model(model)
         treeview.set_vexpand(True)
         treeview.set_search_column(COLUMN_DESCRIPTION)
 
         sw.set_child(treeview)
 
-        # add columns to the tree view
         add_columns(treeview)
 
-        # finish & show
         window.set_default_size(280, 250)
-        # A Python reference keeps the window alive past gtk_window_destroy(), so "destroy" would come too late
+        # A Python reference keeps the window alive past gtk_window_destroy(), so "destroy" would come too late.
         window.close_request.connect(close_request)
 
     if not window.get_visible():
         window.set_visible(True)
         if timeout == 0:
-            # FIXME this should use the animation-duration instead
+            # FIXME: This should use the animation-duration instead.
             timeout = GLib.timeout_add(80, spinner_timeout)
     else:
         close_request(window)

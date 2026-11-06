@@ -4,10 +4,8 @@ from PyLiite4 import Gdk, GLib, Gtk
 
 from .demolayout import DemoLayout
 
-# The widget is controlling the transition by calling
-# demo_layout_set_position() in a tick callback.
-#
-# We take half a second to go from one layout to the other.
+# The widget controls the transition by calling DemoLayout.set_position() in a tick callback. The transition from
+# one layout to the other takes half a second.
 
 DURATION = 0.5 * GLib.TIME_SPAN_SECOND
 
@@ -17,14 +15,14 @@ class DemoWidget(Gtk.Widget):
 
     def __init__(self, **properties: object) -> None:
         super().__init__(**properties)
-        # here is where we use our custom layout manager. C sets it with gtk_widget_class_set_layout_manager_type(),
+        # The widget uses the custom layout manager. C sets it with gtk_widget_class_set_layout_manager_type(),
         # but when GTK creates a Python layout manager during the widget's construction, PyGObject gives it the
         # widget's Python wrapper, so it is set per instance instead.
         self.set_layout_manager(DemoLayout())
 
-        self.backward = False  # whether we go 0 -> 1 or 1 -> 0
-        self.start_time = 0    # time the transition started
-        self.tick_id = 0       # our tick cb
+        self.backward = False  # Whether the position goes 0 -> 1 or 1 -> 0.
+        self.start_time = 0    # The time the transition started.
+        self.tick_id = 0       # The tick callback's ID.
 
         gesture = Gtk.GestureClick()
         gesture.pressed.connect(self.clicked)
@@ -44,7 +42,7 @@ class DemoWidget(Gtk.Widget):
         if now - self.start_time >= DURATION:
             self.backward = not self.backward
             demo_layout.set_position(1.0 if self.backward else 0.0)
-            # keep things interesting by shuffling the positions
+            # Back in the grid, the circle positions are shuffled so the children land somewhere new each time.
             if not self.backward:
                 demo_layout.shuffle()
             self.tick_id = 0

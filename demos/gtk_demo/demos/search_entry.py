@@ -51,7 +51,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         searchbar.set_child(entry)
         vbox.append(searchbar)
 
-        # Hook the search bar to key presses
+        # Typing in the window goes to the search bar.
         searchbar.set_key_capture_widget(window)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)

@@ -37,7 +37,7 @@ class Demo4Widget(Gtk.Widget):
         self._progress = 0.5
 
         self.n_stops = 8
-        # The stops' colours; C keeps them in GskColorStops
+        # The stops' colours; C keeps them in GskColorStops.
         self.colors = [rgba(1, 0, 0, 1)]
         self.offsets = [0.0]
 
@@ -75,7 +75,7 @@ class Demo4Widget(Gtk.Widget):
 
         widget.queue_draw()
 
-        return True  # G_SOURCE_CONTINUE
+        return True  # GLib.SOURCE_CONTINUE
 
     def do_dispose(self) -> None:
         if self.tick:

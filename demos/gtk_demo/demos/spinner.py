@@ -70,7 +70,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         button.clicked.connect(on_stop_clicked, spinner)
         vbox.append(button)
 
-        # Start by default to test for:
+        # The spinners start by default, to test for:
         # https://bugzilla.gnome.org/show_bug.cgi?id=598496
         on_play_clicked(None, None)
 

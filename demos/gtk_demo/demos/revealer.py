@@ -51,7 +51,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
     if window is None:
         builder = Gtk.Builder.new_from_resource("/revealer/revealer.ui")
         window = builder.get_object("window")
-        # Where C keeps the revealers as data on the window, keep them in a list
+        # Where C keeps the revealers as data on the window, keep them in a list.
         revealers[:] = [builder.get_object(f"revealer{i}") for i in range(10)]
         window.set_display(do_widget.get_display())
         window.destroy.connect(on_destroy)

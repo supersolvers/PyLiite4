@@ -10,7 +10,7 @@ from PyLiite4 import Gtk, Pango
 
 from .paintable_animated import gtk_nuclear_animation_new
 
-# PANGO_SCALE_XX_SMALL and PANGO_SCALE_X_LARGE are C macros, so not in the bindings
+# PANGO_SCALE_XX_SMALL and PANGO_SCALE_X_LARGE are C macros, so not in the bindings.
 PANGO_SCALE_XX_SMALL = 1 / (1.2 * 1.2 * 1.2)
 PANGO_SCALE_X_LARGE = 1.2 * 1.2
 
@@ -19,23 +19,14 @@ easter_egg_window: Gtk.Window | None = None
 
 
 def create_tags(buffer: Gtk.TextBuffer) -> None:
-    # Create a bunch of tags. Note that it's also possible to
-    # create tags with gtk_text_tag_new() then add them to the
-    # tag table for the buffer, gtk_text_buffer_create_tag() is
-    # just a convenience function. Also note that you don't have
-    # to give tags a name; pass NULL for the name to create an
-    # anonymous tag.
+    # Tags can also be made with Gtk.TextTag() and added to the buffer's tag table: create_tag() is only a
+    # convenience. Tags don't need a name either; a name of None makes an anonymous tag.
     #
-    # In any real app, another useful optimization would be to create
-    # a GtkTextTagTable in advance, and reuse the same tag table for
-    # all the buffers with the same tag set, instead of creating
-    # new copies of the same tags for every buffer.
+    # A real app could also make a GtkTextTagTable in advance and share it between all the buffers with the same
+    # tag set, rather than make new copies of the same tags for every buffer.
     #
-    # Tags are assigned default priorities in order of addition to the
-    # tag table.  That is, tags created later that affect the same text
-    # property affected by an earlier tag will override the earlier
-    # tag.  You can modify tag priorities with
-    # gtk_text_tag_set_priority().
+    # Tags get default priorities in the order they are added to the tag table, so a tag added later overrides an
+    # earlier one that affects the same text property. set_priority() changes a tag's priority.
 
     buffer.create_tag("heading", weight=Pango.Weight.BOLD, size=15 * Pango.SCALE)
 
@@ -43,7 +34,7 @@ def create_tags(buffer: Gtk.TextBuffer) -> None:
 
     buffer.create_tag("bold", weight=Pango.Weight.BOLD)
 
-    # points times the PANGO_SCALE factor
+    # Points times Pango.SCALE.
     buffer.create_tag("big", size=20 * Pango.SCALE)
 
     buffer.create_tag("xx-small", scale=PANGO_SCALE_XX_SMALL)
@@ -106,8 +97,7 @@ def insert_text(view: Gtk.TextView) -> None:
     icon = icon_theme.lookup_icon("drive-harddisk", None, 32, 1, widget.get_direction(), 0)
     nuclear = gtk_nuclear_animation_new(True)
 
-    # get start of buffer; each insertion will revalidate the
-    # iterator to point to just after the inserted text.
+    # The start of the buffer. Each insertion revalidates the iterator to point just after the inserted text.
     iter = buffer.get_iter_at_offset(0)
 
     buffer.begin_irreversible_action()
@@ -287,7 +277,7 @@ def insert_text(view: Gtk.TextView) -> None:
                   "application-drawn areas on the sides of the widget for displaying "
                   "breakpoints and such...")
 
-    # Apply word_wrap tag to whole buffer
+    # The word_wrap tag covers the whole buffer.
     start, end = buffer.get_bounds()
     buffer.apply_tag_by_name("word_wrap", start, end)
 
@@ -352,10 +342,8 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         vpaned = Gtk.Paned.new(Gtk.Orientation.VERTICAL)
         window.set_child(vpaned)
 
-        # For convenience, we just use the autocreated buffer from
-        # the first text view; you could also create the buffer
-        # by itself with gtk_text_buffer_new(), then later create
-        # a view widget.
+        # For convenience, both views use the buffer the first one creates. The buffer could also be made on its
+        # own with Gtk.TextBuffer(), and a view made for it later.
         view1 = Gtk.TextView()
         buffer = view1.get_buffer()
         view2 = Gtk.TextView.new_with_buffer(buffer)
@@ -398,7 +386,7 @@ def recursive_attach_view(depth: int, view: Gtk.TextView, anchor: Gtk.TextChildA
     child_view = Gtk.TextView.new_with_buffer(view.get_buffer())
     child_view.set_size_request(260 - 20 * depth, -1)
 
-    # Frame is to add a black border around each child view
+    # The frame puts a black border around each child view.
     frame = Gtk.Frame()
     frame.set_child(child_view)
 

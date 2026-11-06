@@ -136,7 +136,7 @@ def item_drag_drop(dest: Gtk.DropTarget, value: object, x: float, y: float) -> b
 
 
 def apply_transform(item: CanvasItem) -> None:
-    # Add css padding and margin
+    # The label's bounds cover its CSS padding and border, so it turns about the middle of its whole box.
     ok, bounds = item.label.compute_bounds(item.label)
     if not ok:
         return
@@ -177,21 +177,21 @@ def click_done(gesture: Gtk.GestureClick, n_press: int, x: float, y: float) -> N
         item.insert_after(canvas, last_child)
 
 
-# GtkSettings treats `GTK_THEME=foo:dark` as theme name `foo`, variant `dark`,
-# and our embedded CSS files let `foo-dark` work as an alias for `foo:dark`.
+# GtkSettings treats `GTK_THEME=foo:dark` as theme name `foo`, variant `dark`, and GTK's embedded CSS files let
+# `foo-dark` work as an alias for `foo:dark`.
 def has_dark_suffix(theme: str) -> bool:
     return theme.endswith(":dark") or theme.endswith("-dark")
 
 
-# So we can make a good guess whether the current theme is dark by checking for
-# either: it is suffixed `[:-]dark`, or Settings:…prefer-dark-theme is TRUE.
+# The current theme is probably dark if its name ends in `:dark` or `-dark`, or if Settings:…prefer-dark-theme is
+# True.
 def theme_is_dark() -> bool:
-    # Like GtkSettings, 1st see if theme is overridden by environment variable
+    # Like GtkSettings, this first checks whether the environment variable overrides the theme.
     env_theme = GLib.getenv("GTK_THEME")
     if env_theme is not None:
         return has_dark_suffix(env_theme)
 
-    # If not, test Settings:…theme-name in the same way OR :…prefer-dark-theme
+    # If not, Settings:…theme-name is tested in the same way, or :…prefer-dark-theme.
     settings = Gtk.Settings.get_default()
     theme = settings.get_property("gtk-theme-name") or ""
     prefer_dark = settings.get_property("gtk-application-prefer-dark-theme")

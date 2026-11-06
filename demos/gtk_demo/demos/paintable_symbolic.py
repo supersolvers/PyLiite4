@@ -40,7 +40,7 @@ class GtkNuclearSymbolic(GObject.Object, Gdk.Paintable, Gtk.SymbolicPaintable):
         """Draw the nuclear icon in the given colors."""
         transparent = rgba(0, 0, 0, 0)
 
-        # select the right background color from the warning level
+        # The warning level picks the background color.
         if self.warning_level == WarningLevel.NONE:
             bg_color = transparent
         elif self.warning_level == WarningLevel.ALERT:
@@ -48,28 +48,24 @@ class GtkNuclearSymbolic(GObject.Object, Gdk.Paintable, Gtk.SymbolicPaintable):
         elif self.warning_level == WarningLevel.EMERGENCY:
             bg_color = colors[Gtk.SymbolicColor.ERROR]
         else:
-            # This should never happen, but we better do defensive coding
-            # with this critical icon
+            # This should never happen, but a critical icon calls for defensive coding.
             raise AssertionError("not reached")
 
-        # Draw the icon with the selected warning color
         gtk_nuclear_snapshot(snapshot,
                              colors[Gtk.SymbolicColor.FOREGROUND],
                              bg_color,
                              width, height,
                              0)
 
-    # We need to implement the functionality required by the GdkPaintable interface
+    # The GdkPaintable interface
 
     def do_snapshot(self, snapshot: Gdk.Snapshot, width: float, height: float) -> None:
-        # Calling this function without passing a color is a neat trick
-        # to make GTK use default colors and otherwise forward the call
-        # to the snapshotting function above.
+        # Called without colors, snapshot_symbolic() makes GTK use the default colors and forwards the call to
+        # do_snapshot_symbolic() above.
         self.snapshot_symbolic(snapshot, width, height, [])
 
     def do_get_flags(self) -> Gdk.PaintableFlags:
-        # This image has a static size, but the contents may change:
-        # We draw different things when the warning level changes.
+        # The size is static, but the contents change with the warning level.
         return Gdk.PaintableFlags.STATIC_SIZE
 
 
@@ -80,19 +76,16 @@ def gtk_nuclear_symbolic_new() -> Gdk.Paintable:
 def nuclear_button_clicked(button: Gtk.Button, nuclear: GtkNuclearSymbolic) -> None:
     """Add some fun feature to the button."""
     if nuclear.warning_level >= WarningLevel.EMERGENCY:
-        # On maximum warning level, reset the warning
+        # The maximum warning level resets the warning.
         nuclear.warning_level = WarningLevel.NONE
 
-        # And sometimes (but not always to confuse people)
-        # close the window.
+        # Sometimes, but not always, it also closes the window.
         if random.getrandbits(1):
             window.close()
     else:
-        # Otherwise just increase the warning level
         nuclear.warning_level = WarningLevel(nuclear.warning_level + 1)
 
-    # Don't forget to emit the signal causing the paintable to redraw.
-    # Changing the warning level changes the background color after all.
+    # The warning level sets the background color, so the paintable needs to redraw.
     nuclear.invalidate_contents()
 
 

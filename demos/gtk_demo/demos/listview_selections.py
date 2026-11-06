@@ -235,7 +235,7 @@ def match_func(obj: MatchObject, search: str, user_data: object) -> None:
     tmp1 = GLib.utf8_normalize(obj.get_string(), -1, GLib.NormalizeMode.ALL)
     tmp2 = GLib.utf8_normalize(search, -1, GLib.NormalizeMode.ALL)
 
-    # C's strstr() gives a byte offset
+    # C's strstr() gives a byte offset.
     p = tmp1.encode().find(tmp2.encode())
     if p != -1:
         obj.set_match(p, p + len(search), 1)

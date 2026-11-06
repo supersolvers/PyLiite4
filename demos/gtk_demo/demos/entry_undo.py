@@ -38,7 +38,6 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         label.set_markup("Use Control+z or Control+Shift+z to undo or redo changes")
         vbox.append(label)
 
-        # Create our entry
         entry = Gtk.Entry()
         entry.set_enable_undo(True)
         vbox.append(entry)

@@ -32,7 +32,7 @@ def init_icon_names(theme: Gtk.IconTheme) -> None:
     n_icon_names = len(icon_names)
 
 
-# Also used in iconscroll.py
+# Also used in iconscroll.py.
 def create_icon_by_id(icon_index: int) -> Gtk.Widget:
     image = Gtk.Image()
 
@@ -87,7 +87,7 @@ def create_level_bar() -> Gtk.Widget:
 
     w.set_value(50)
 
-    # Force them to be a bit larger
+    # Level bars are made a bit larger than their natural width.
     w.set_size_request(200, -1)
 
     return w

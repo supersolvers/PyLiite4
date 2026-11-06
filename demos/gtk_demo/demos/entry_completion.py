@@ -13,7 +13,7 @@ from PyLiite4 import Gtk
 window_ref: Callable[[], Gtk.Window | None] = lambda: None
 
 
-# Creates a tree model containing the completions
+# Creates a tree model containing the completions.
 def create_completion_model() -> Gtk.TreeModel:
     strings = [
         "GNOME",
@@ -48,7 +48,6 @@ def create_completion_model() -> Gtk.TreeModel:
     store = Gtk.ListStore(str)
 
     for string in strings:
-        # Append one word
         iter = store.append()
         store.set(iter, 0, string)
 
@@ -77,24 +76,19 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         label.set_markup("Try writing <b>total</b> or <b>gnome</b> for example.")
         vbox.append(label)
 
-        # Create our entry
         entry = Gtk.Entry()
         vbox.append(entry)
 
         entry.update_relation([Gtk.AccessibleRelation.LABELLED_BY], [[label]])
         entry.update_property([Gtk.AccessibleProperty.AUTOCOMPLETE], [Gtk.AccessibleAutocomplete.LIST])
 
-        # Create the completion object
         completion = Gtk.EntryCompletion()
 
-        # Assign the completion to the entry
         entry.set_completion(completion)
 
-        # Create a tree model and use it as the completion model
         completion_model = create_completion_model()
         completion.set_model(completion_model)
 
-        # Use model column 0 as the text column
         completion.set_text_column(0)
 
         completion.set_inline_completion(True)

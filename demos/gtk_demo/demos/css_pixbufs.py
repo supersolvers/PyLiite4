@@ -62,7 +62,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         window.set_child(paned)
 
-        # Need a filler so we get a handle
+        # A filler for the start child, so the paned has a handle.
         child = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         paned.set_start_child(child)
 

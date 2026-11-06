@@ -95,12 +95,11 @@ def do(do_widget: Gtk.Widget) -> Gtk.Widget:
 
         window.close_request.connect(close_request)
 
-        # Create the model and fill it with the contents of the current directory
+        # The model lists the contents of the current directory.
         file = Gio.File.new_for_path(os.getcwd())
         dirlist = builder.get_object("dirlist")
         dirlist.set_file(file)
 
-        # grab focus in the view
         view = builder.get_object("view")
         view.grab_focus()
 

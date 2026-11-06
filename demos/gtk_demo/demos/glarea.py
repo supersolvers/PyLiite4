@@ -72,15 +72,14 @@ glFlush = _gl("glFlush", None)
 
 demo_window: Gtk.Window | None = None
 
-# the GtkGLArea widget
 gl_area: Gtk.GLArea | None = None
 
 X_AXIS, Y_AXIS, Z_AXIS, N_AXIS = range(4)
 
-# Rotation angles on each axis
+# The rotation angle on each axis.
 rotation_angles = [0.0] * N_AXIS
 
-# The object we are drawing
+# The triangle that is drawn: each vertex's coordinates, then its color.
 vertex_data = (ctypes.c_float * 24)(
     # coord                  color
     0.0, 0.5, 0.0, 1.0,      1.0, 0.0, 0.0, 1.0,
@@ -94,11 +93,11 @@ def init_buffers() -> tuple[int, int]:
     vao = GLuint()
     buffer = GLuint()
 
-    # We only use one VAO, so we always keep it bound
+    # Only one VAO is used, so it stays bound.
     glGenVertexArrays(1, ctypes.byref(vao))
     glBindVertexArray(vao)
 
-    # This is the buffer that holds the vertices
+    # The buffer that holds the vertices.
     glGenBuffers(1, ctypes.byref(buffer))
     glBindBuffer(GL_ARRAY_BUFFER, buffer)
     glBufferData(GL_ARRAY_BUFFER, ctypes.sizeof(vertex_data), vertex_data, GL_STATIC_DRAW)
@@ -174,7 +173,6 @@ def init_shaders(vertex_path: str, fragment_path: str) -> tuple[int, int]:
         glDeleteProgram(program)
         program = 0
     else:
-        # Get the location of the "mvp" uniform
         mvp = glGetUniformLocation(program, b"mvp")
 
         glDetachShader(program, vertex)
@@ -208,7 +206,7 @@ def compute_mvp(phi: float, theta: float, psi: float) -> list[float]:
 
     res = [0.0] * 16
 
-    # apply all three rotations using the three matrices:
+    # All three rotations are applied with these three matrices:
     #
     # ⎡  c3 s3 0 ⎤ ⎡ c2  0 -s2 ⎤ ⎡ 1   0  0 ⎤
     # ⎢ -s3 c3 0 ⎥ ⎢  0  1   0 ⎥ ⎢ 0  c1 s1 ⎥
@@ -258,29 +256,25 @@ def unrealize(widget: Gtk.GLArea) -> None:
 
 
 def draw_triangle() -> None:
-    # Compute the model view projection matrix using the
-    # rotation angles specified through the GtkRange widgets
+    # The model view projection matrix comes from the rotation angles set with the GtkRange widgets.
     mvp = (ctypes.c_float * 16)(*compute_mvp(rotation_angles[X_AXIS],
                                              rotation_angles[Y_AXIS],
                                              rotation_angles[Z_AXIS]))
 
-    # Use our shaders
     glUseProgram(program)
 
-    # Update the "mvp" matrix we use in the shader
     glUniformMatrix4fv(mvp_location, 1, GL_FALSE, mvp)
 
-    # Use the vertices in our buffer
+    # Each vertex is 32 bytes: four floats of coordinates, then four of color.
     glBindBuffer(GL_ARRAY_BUFFER, position_buffer)
     glEnableVertexAttribArray(0)
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 32, 0)
     glEnableVertexAttribArray(1)
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 32, 16)
 
-    # Draw the three vertices as a triangle
     glDrawArrays(GL_TRIANGLES, 0, 3)
 
-    # We finished using the buffers and program
+    # Drawing is done, so the buffer and program are unbound.
     glDisableVertexAttribArray(0)
     glBindBuffer(GL_ARRAY_BUFFER, 0)
     glUseProgram(0)
@@ -290,14 +284,11 @@ def render(area: Gtk.GLArea, context: Gdk.GLContext) -> bool:
     if area.get_error() is not None:
         return False
 
-    # Clear the viewport
     glClearColor(0.5, 0.5, 0.5, 1.0)
     glClear(GL_COLOR_BUFFER_BIT)
 
-    # Draw our object
     draw_triangle()
 
-    # Flush the contents of the pipeline
     glFlush()
 
     return True
@@ -306,10 +297,8 @@ def render(area: Gtk.GLArea, context: Gdk.GLContext) -> bool:
 def on_axis_value_change(adjustment: Gtk.Adjustment, axis: int) -> None:
     assert 0 <= axis < N_AXIS
 
-    # Update the rotation angle
     rotation_angles[axis] = adjustment.get_value()
 
-    # Update the contents of the GL drawing area
     gl_area.queue_draw()
 
 
@@ -339,7 +328,6 @@ def create_axis_slider(axis: int) -> Gtk.Widget:
 
 def close_window(widget: Gtk.Widget) -> None:
     global demo_window, gl_area
-    # Reset the state
     demo_window = None
     gl_area = None
 
@@ -361,7 +349,7 @@ def create_glarea_window(do_widget: Gtk.Widget) -> Gtk.Window:
     window.set_display(do_widget.get_display())
     window.set_title("OpenGL Area")
     window.set_default_size(400, 600)
-    # A Python reference keeps the window alive past gtk_window_destroy(), so "destroy" would come too late
+    # A Python reference keeps the window alive past gtk_window_destroy(), so "destroy" would come too late.
     window.close_request.connect(close_request)
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -378,12 +366,11 @@ def create_glarea_window(do_widget: Gtk.Widget) -> Gtk.Window:
     gl_area.set_size_request(100, 200)
     box.append(gl_area)
 
-    # We need to initialize and free GL resources, so we use
-    # the realize and unrealize signals on the widget
+    # GL resources are initialized and freed in the widget's realize and unrealize signals.
     gl_area.realize.connect(realize)
     gl_area.unrealize.connect(unrealize)
 
-    # The main "draw" call for GtkGLArea
+    # The "render" signal is GtkGLArea's main drawing call.
     gl_area.render.connect(render)
 
     controls = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)

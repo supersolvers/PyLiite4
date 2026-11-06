@@ -14,7 +14,6 @@ COL_TEXT, NUM_COLS = range(2)
 def fill_store(store: Gtk.ListStore) -> None:
     text = ["Red", "Green", "Blue", "Yellow"]
 
-    # First clear the store
     store.clear()
 
     for i in range(4):

@@ -52,7 +52,7 @@ def extents_to_pixels(inclusive: Pango.Rectangle | None, nearest: Pango.Rectangl
 
 
 def units_round(d: int) -> int:
-    # PANGO_UNITS_ROUND(), a macro
+    # PANGO_UNITS_ROUND(), a macro in C.
     return (d + (Pango.SCALE >> 1)) & ~(Pango.SCALE - 1)
 
 
@@ -124,13 +124,13 @@ def update_image(*args: object) -> None:
         cr.set_source_rgb(1, 1, 1)
         cr.paint()
 
-        # pango_cairo_show_layout(), as a text node drawn with cairo
+        # pango_cairo_show_layout(), as a text node drawn with cairo.
         snapshot = Gtk.Snapshot()
         snapshot.translate(Graphene.Point().init(10, 10))
         snapshot.append_layout(layout, Gdk.RGBA(red=0, green=0, blue=0, alpha=pixel_alpha))
         draw_node(cr, snapshot)
 
-        # pango_cairo_layout_path(), through a GskPath
+        # pango_cairo_layout_path(), through a GskPath.
         builder = Gsk.PathBuilder.new()
         builder.add_layout(layout)
         cr.translate(10, 10)
@@ -187,7 +187,7 @@ def update_image(*args: object) -> None:
 
         cr.set_source_rgba(0, 0, 0, outline_alpha)
         cr.move_to(scale * 20 - 0.5, scale * 20 - 0.5)
-        # cairo_append_path() of the path with its points scaled
+        # cairo_append_path() of the path, with its points scaled.
         for kind, points in path:
             points = [p * scale for p in points]
             if kind == cairo.PATH_MOVE_TO:
@@ -226,7 +226,7 @@ def update_image(*args: object) -> None:
             run = iter.get_run()
 
             if run.glyphs.num_glyphs < 8:
-                # not a good char to use
+                # The character doesn't give eight glyphs, so it isn't a good one to use: "a" is used instead.
                 ch = "a"
                 continue
             break

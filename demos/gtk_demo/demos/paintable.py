@@ -64,16 +64,13 @@ class GtkNuclearIcon(GObject.Object, Gdk.Paintable):
 
     def __init__(self) -> None:
         super().__init__()
-        # We store this rotation value here.
-        # We are not doing with it here, but it will come in
-        # very useful in the followup demos.
+        # The rotation. Nothing here uses it, but the follow-up demos do.
         self.rotation = 0.0
 
-    # Here, we implement the functionality required by the GdkPaintable interface
+    # The GdkPaintable interface
 
     def do_snapshot(self, snapshot: Gdk.Snapshot, width: float, height: float) -> None:
-        # The snapshot function is the only function we need to implement.
-        # It does the actual drawing of the paintable.
+        # The only function a paintable has to implement: it does the actual drawing.
         gtk_nuclear_snapshot(snapshot,
                              rgba(0, 0, 0, 1),  # black
                              rgba(0.9, 0.75, 0.15, 1.0),  # yellow
@@ -81,10 +78,8 @@ class GtkNuclearIcon(GObject.Object, Gdk.Paintable):
                              self.rotation)
 
     def do_get_flags(self) -> Gdk.PaintableFlags:
-        # The flags are very useful to let GTK know that this image
-        # is never going to change.
-        # This allows many optimizations and should therefore always
-        # be set.
+        # The flags tell GTK that this image never changes. That allows many optimizations, so a paintable should
+        # always set them when they apply.
         return Gdk.PaintableFlags.STATIC_CONTENTS | Gdk.PaintableFlags.STATIC_SIZE
 
 

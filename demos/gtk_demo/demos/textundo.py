@@ -40,7 +40,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window | None:
         buffer = view.get_buffer()
         buffer.set_enable_undo(True)
 
-        # this text cannot be undone
+        # This text can't be undone.
         buffer.begin_irreversible_action()
         iter = buffer.get_start_iter()
         buffer.insert(iter,

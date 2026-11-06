@@ -21,17 +21,16 @@ from PyLiite4 import Gtk, cairo
 
 # The window, held weakly: GTK keeps a window until it is destroyed, and "destroy" comes when it goes away.
 window_ref: Callable[[], Gtk.Window | None] = lambda: None
-# Pixmap for scribble area, to store current scribbles
+# The scribble area's surface, which keeps the current scribbles.
 surface: cairo.ImageSurface | None = None
 
 
-# Create a new surface of the appropriate size to store our scribbles
+# Replaces the surface with a white one of the widget's size, which clears the scribbles.
 def create_surface(widget: Gtk.Widget) -> None:
     global surface
 
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, widget.get_width(), widget.get_height())
 
-    # Initialize the surface to white
     cr = cairo.Context(surface)
 
     cr.set_source_rgb(1, 1, 1)
@@ -42,20 +41,19 @@ def scribble_resize(widget: Gtk.DrawingArea, width: int, height: int) -> None:
     create_surface(widget)
 
 
-# Redraw the screen from the surface
+# Redraws the screen from the surface.
 def scribble_draw(da: Gtk.DrawingArea, cr: cairo.Context, width: int, height: int) -> None:
     cr.set_source_surface(surface, 0, 0)
     cr.paint()
 
 
-# Draw a rectangle on the screen
+# Draws a round dot on the surface, where the scribbles are kept, and queues a redraw.
 def draw_brush(widget: Gtk.Widget, x: float, y: float) -> None:
     if (surface is None or
             surface.get_width() != widget.get_width() or
             surface.get_height() != widget.get_height()):
         create_surface(widget)
 
-    # Paint to the surface, where we store our state
     cr = cairo.Context(surface)
 
     cr.move_to(x, y)
@@ -105,19 +103,16 @@ def oval_path(cr: cairo.Context, xc: float, yc: float, xr: float, yr: float) -> 
 CHECK_SIZE = 16
 
 
-# Fill the given area with checks in the standard style
-# for showing compositing effects.
+# Fills the given area with checks in the standard style for showing compositing effects.
 #
-# It would make sense to do this as a repeating surface,
-# but most implementations of RENDER currently have broken
-# implementations of repeat + transform, even when the
-# transform is a translation.
+# A repeating surface would make sense here, but most implementations of RENDER have broken repeat + transform, even
+# when the transform is a translation.
 def fill_checks(cr: cairo.Context, x: int, y: int, width: int, height: int) -> None:
     cr.rectangle(x, y, width, height)
     cr.set_source_rgb(0.4, 0.4, 0.4)
     cr.fill()
 
-    # Only works for CHECK_SIZE a power of 2
+    # Only works when CHECK_SIZE is a power of 2.
     j = x & (-CHECK_SIZE)
 
     while j < height:
@@ -132,8 +127,7 @@ def fill_checks(cr: cairo.Context, x: int, y: int, width: int, height: int) -> N
     cr.fill()
 
 
-# Draw a red, green, and blue circle equally spaced inside
-# the larger circle of radius r at (xc, yc)
+# Draws a red, a green and a blue circle, equally spaced inside the larger circle of the given radius at (xc, yc).
 def draw_3circles(cr: cairo.Context, xc: float, yc: float, radius: float, alpha: float) -> None:
     subradius = radius * (2 / 3. - 0.1)
 
@@ -160,7 +154,6 @@ def draw_3circles(cr: cairo.Context, xc: float, yc: float, radius: float, alpha:
 
 
 def groups_draw(darea: Gtk.DrawingArea, cr: cairo.Context, width: int, height: int) -> None:
-    # Fill the background
     radius = 0.5 * (width if width < height else height) - 10
     xc = width / 2.
     yc = height / 2.
@@ -173,14 +166,13 @@ def groups_draw(darea: Gtk.DrawingArea, cr: cairo.Context, width: int, height: i
 
     fill_checks(cr, 0, 0, width, height)
 
-    # Draw a black circle on the overlay
+    # A black circle on the overlay
     overlay_cr = cairo.Context(overlay)
     overlay_cr.set_source_rgb(0., 0., 0.)
     oval_path(overlay_cr, xc, yc, radius, radius)
     overlay_cr.fill()
 
-    # Draw 3 circles to the punch surface, then cut
-    # that out of the main circle in the overlay
+    # Three circles drawn to the punch surface are cut out of the black circle in the overlay.
     punch_cr = cairo.Context(punch)
     draw_3circles(punch_cr, xc, yc, radius, 1.0)
     del punch_cr
@@ -189,9 +181,8 @@ def groups_draw(darea: Gtk.DrawingArea, cr: cairo.Context, width: int, height: i
     overlay_cr.set_source_surface(punch, 0, 0)
     overlay_cr.paint()
 
-    # Now draw the 3 circles in a subgroup again
-    # at half intensity, and use OperatorAdd to join up
-    # without seams.
+    # The three circles are drawn again in a group of their own at half intensity, and OPERATOR_ADD joins them to
+    # the overlay without seams.
     circles_cr = cairo.Context(circles)
 
     circles_cr.set_operator(cairo.OPERATOR_OVER)
@@ -234,7 +225,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         vbox.set_margin_bottom(16)
         window.set_child(vbox)
 
-        # Create the groups area
+        # The groups area
         label = Gtk.Label(label="Knockout groups")
         label.add_css_class("heading")
         vbox.append(label)
@@ -251,7 +242,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         da.set_content_height(100)
         da.set_draw_func(groups_draw)
 
-        # Create the scribble area
+        # The scribble area
         label = Gtk.Label(label="Scribble area")
         label.add_css_class("heading")
         vbox.append(label)

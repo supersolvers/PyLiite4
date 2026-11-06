@@ -53,7 +53,7 @@ def fancy_shape_renderer(cr: cairo.Context, attr: Pango.AttrShape, do_path: bool
 
 
 def create_fancy_attr_list_for_layout(layout: Pango.Layout) -> Pango.AttrList:
-    # Get font metrics and prepare fancy shape size
+    # The font metrics give the size of the fancy shapes.
     metrics = layout.get_context().get_metrics(layout.get_font_description(), None)
     ascent = metrics.get_ascent()
     logical_rect = Pango.Rectangle()
@@ -63,7 +63,7 @@ def create_fancy_attr_list_for_layout(layout: Pango.Layout) -> Pango.AttrList:
     logical_rect.height = ascent
     ink_rect = logical_rect
 
-    # Set fancy shape attributes for all hearts
+    # Every heart gets a shape attribute.
     attrs = Pango.AttrList()
     encoded = text.encode()
     heart = HEART.encode()
@@ -81,26 +81,23 @@ def create_fancy_attr_list_for_layout(layout: Pango.Layout) -> Pango.AttrList:
 
 
 def rotated_text_draw(da: Gtk.DrawingArea, cr: cairo.Context, width: int, height: int) -> None:
-    # Create a cairo context and set up a transformation matrix so that the user
-    # space coordinates for the centered square where we draw are [-RADIUS, RADIUS],
-    # [-RADIUS, RADIUS].
-    # We first center, then change the scale.
+    # A transformation matrix makes the user space coordinates of the centered square drawn in [-RADIUS, RADIUS],
+    # [-RADIUS, RADIUS]: first it centers, then it changes the scale.
     device_radius = min(width, height) / 2.
     cr.translate(device_radius + (width - 2 * device_radius) / 2,
                  device_radius + (height - 2 * device_radius) / 2)
     cr.scale(device_radius / RADIUS, device_radius / RADIUS)
 
-    # Create and a subtle gradient source and use it.
+    # A subtle gradient as the source.
     pattern = cairo.LinearGradient(-RADIUS, -RADIUS, RADIUS, RADIUS)
     pattern.add_color_stop_rgb(0., .5, .0, .0)
     pattern.add_color_stop_rgb(1., .0, .0, .5)
     cr.set_source(pattern)
 
-    # Create a PangoContext and set up our shape renderer
+    # A Pango context that draws shapes with fancy_shape_renderer().
     context = da.create_pango_context()
     PangoCairo.context_set_shape_renderer(context, fancy_shape_renderer)
 
-    # Create a PangoLayout, set the text, font, and attributes
     layout = Pango.Layout.new(context)
     layout.set_text(text, -1)
     desc = Pango.FontDescription.from_string(FONT)
@@ -109,16 +106,16 @@ def rotated_text_draw(da: Gtk.DrawingArea, cr: cairo.Context, width: int, height
     attrs = create_fancy_attr_list_for_layout(layout)
     layout.set_attributes(attrs)
 
-    # Draw the layout N_WORDS times in a circle
+    # The layout is drawn N_WORDS times in a circle.
     for i in range(N_WORDS):
-        # Inform Pango to re-layout the text with the new transformation matrix
+        # Pango lays the text out again for the new transformation matrix.
         PangoCairo.update_layout(cr, layout)
 
         layout_width, layout_height = layout.get_pixel_size()
         cr.move_to(- layout_width / 2, - RADIUS * .9)
         PangoCairo.show_layout(cr, layout)
 
-        # Rotate for the next turn
+        # Rotates for the next turn.
         cr.rotate(math.pi * 2 / N_WORDS)
 
 
@@ -141,18 +138,16 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         box.set_homogeneous(True)
         window.set_child(box)
 
-        # Add a drawing area
         drawing_area = Gtk.DrawingArea()
         box.append(drawing_area)
         drawing_area.add_css_class("view")
 
         drawing_area.set_draw_func(rotated_text_draw)
 
-        # And a label
         label = Gtk.Label(label=text)
         box.append(label)
 
-        # Set up fancy stuff on the label
+        # The label draws the hearts the same way.
         layout = label.get_layout()
         PangoCairo.context_set_shape_renderer(layout.get_context(), fancy_shape_renderer)
         attrs = create_fancy_attr_list_for_layout(layout)

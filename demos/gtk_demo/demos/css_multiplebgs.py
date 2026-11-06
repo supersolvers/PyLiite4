@@ -62,8 +62,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         window.set_child(overlay)
 
         child = Gtk.DrawingArea()
-        # Don't set a draw_func, since we are only interested in CSS drawing,
-        # which happens automatically.
+        # No draw function: only the CSS drawing matters here, and that happens automatically.
         child.set_name("canvas")
         overlay.set_child(child)
 
@@ -77,7 +76,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         paned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         overlay.add_overlay(paned)
 
-        # Need a filler so we get a handle
+        # A filler for the start child, so the paned has a handle.
         child = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         paned.set_start_child(child)
 

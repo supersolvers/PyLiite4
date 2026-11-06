@@ -7,7 +7,7 @@ from collections.abc import Callable
 
 from PyLiite4 import Gdk, Gio, Gtk
 
-# These are the available blend modes.
+# The available blend modes.
 blend_modes = [
     ("Color", "color"),
     ("Color (burn)", "color-burn"),
@@ -50,7 +50,6 @@ def setup_listbox(builder: Gtk.Builder, provider: Gtk.StyleProvider) -> None:
 
     listbox.row_activated.connect(row_activated, provider)
 
-    # Add a row for each blend mode available
     for name, id in blend_modes:
         row = Gtk.ListBoxRow()
         label = Gtk.Label(label=name, xalign=0.0)
@@ -58,11 +57,10 @@ def setup_listbox(builder: Gtk.Builder, provider: Gtk.StyleProvider) -> None:
         row.set_child(label)
         listbox.insert(row, -1)
 
-        # The first selected row is "normal"
+        # The row selected first is "normal".
         if id == "normal":
             normal_row = row
 
-    # Select the "normal" row
     listbox.select_row(normal_row)
     normal_row.activate.emit()
 
@@ -83,7 +81,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         window.set_transient_for(do_widget)
         window_ref = window.weak_ref()
 
-        # Setup the CSS provider for window
+        # The CSS provider for the window
         provider = Gtk.CssProvider()
 
         Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider,

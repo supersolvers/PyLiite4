@@ -48,15 +48,12 @@ def add_items() -> None:
 def create_items_model() -> Gtk.TreeModel:
     global articles
 
-    # create array
     articles = []
 
     add_items()
 
-    # create list store
     model = Gtk.ListStore(int, str, int)
 
-    # add items
     for item in articles:
         iter = model.append()
 
@@ -72,10 +69,8 @@ N_NUMBERS = 10
 
 
 def create_numbers_model() -> Gtk.TreeModel:
-    # create list store
     model = Gtk.ListStore(str, int)
 
-    # add numbers
     for i in range(N_NUMBERS):
         str_ = chr(ord("0") + i)
 
@@ -92,7 +87,7 @@ def add_item(button: Gtk.Button, treeview: Gtk.TreeView) -> None:
     foo = Item(0, "Description here", 50)
     articles.append(foo)
 
-    # Insert a new row below the current one
+    # The new row goes below the current one.
     path, _column = treeview.get_cursor()
     model = treeview.get_model()
     if path:
@@ -101,13 +96,12 @@ def add_item(button: Gtk.Button, treeview: Gtk.TreeView) -> None:
     else:
         iter = model.insert(-1)
 
-    # Set the data for the new row
     model.set(iter,
               COLUMN_ITEM_NUMBER, foo.number,
               COLUMN_ITEM_PRODUCT, foo.product,
               COLUMN_ITEM_YUMMY, foo.yummy)
 
-    # Move focus to the new row
+    # Focus moves to the new row.
     path = model.get_path(iter)
     column = treeview.get_column(0)
     treeview.set_cursor(path, column, False)
@@ -149,7 +143,7 @@ def cell_edited(cell: Gtk.CellRendererText, path_string: str, new_text: str, mod
         try:
             articles[i].number = int(new_text)
         except ValueError:
-            # As atoi()
+            # As with atoi(), text that isn't a number gives 0.
             articles[i].number = 0
 
         model.set(iter, column, articles[i].number)
@@ -165,7 +159,7 @@ def cell_edited(cell: Gtk.CellRendererText, path_string: str, new_text: str, mod
 
 
 def add_columns(treeview: Gtk.TreeView, items_model: Gtk.TreeModel, numbers_model: Gtk.TreeModel) -> None:
-    # number column
+    # The number column
     renderer = Gtk.CellRendererCombo(model=numbers_model,
                                      text_column=COLUMN_NUMBER_TEXT,
                                      has_entry=False,
@@ -176,14 +170,14 @@ def add_columns(treeview: Gtk.TreeView, items_model: Gtk.TreeModel, numbers_mode
 
     treeview.insert_column_with_attributes(-1, "Number", renderer, text=COLUMN_ITEM_NUMBER)
 
-    # product column
+    # The product column
     renderer = Gtk.CellRendererText(editable=True)
     renderer.edited.connect(cell_edited, items_model)
     renderer.column = COLUMN_ITEM_PRODUCT
 
     treeview.insert_column_with_attributes(-1, "Product", renderer, text=COLUMN_ITEM_PRODUCT)
 
-    # yummy column
+    # The yummy column
     renderer = Gtk.CellRendererProgress()
     renderer.column = COLUMN_ITEM_YUMMY
 
@@ -219,11 +213,9 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
         sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         vbox.append(sw)
 
-        # create models
         items_model = create_items_model()
         numbers_model = create_numbers_model()
 
-        # create tree view
         treeview = Gtk.TreeView.new_with_model(items_model)
         treeview.set_vexpand(True)
         treeview.get_selection().set_mode(Gtk.SelectionMode.SINGLE)
@@ -232,7 +224,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Window:
 
         sw.set_child(treeview)
 
-        # some buttons
+        # The buttons
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         hbox.set_homogeneous(True)
         vbox.append(hbox)

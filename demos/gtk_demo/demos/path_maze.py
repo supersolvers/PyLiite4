@@ -227,15 +227,13 @@ def add_point_to_maze(maze: Gtk.Bitset, builder: Gsk.PathBuilder, x: int, y: int
 def create_path_for_maze(widget: Gtk.Widget) -> Gsk.Path:
     builder = Gsk.PathBuilder.new()
     maze = Gtk.Bitset.new_empty()
-    # make sure the outer lines are unreachable:
-    # Set the full range, then remove the center again.
+    # The outer lines are made unreachable by setting the full range, then removing the center again.
     maze.add_range(0, MAZE_WIDTH * MAZE_HEIGHT)
     maze.remove_rectangle(MAZE_WIDTH + 1, MAZE_WIDTH - 2, MAZE_HEIGHT - 2, MAZE_WIDTH)
 
-    # Fill the maze
     add_point_to_maze(maze, builder, MAZE_WIDTH // 2, MAZE_HEIGHT // 2)
 
-    # Add start and stop lines
+    # The start and stop lines
     builder.move_to(1.5 * MAZE_GRID_SIZE, -0.5 * MAZE_GRID_SIZE)
     builder.line_to(1.5 * MAZE_GRID_SIZE, 1.5 * MAZE_GRID_SIZE)
     builder.move_to((MAZE_WIDTH - 1.5) * MAZE_GRID_SIZE, (MAZE_HEIGHT - 1.5) * MAZE_GRID_SIZE)
@@ -263,7 +261,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Widget:
         window.set_title("Follow the maze with the mouse")
         window.close_request.connect(close_request)
 
-        # C has the alternative, disabled with #if 0, of Gtk.MediaFile.new_for_resource("/images/gtk-logo.webm")
+        # C has the alternative, disabled with #if 0, of Gtk.MediaFile.new_for_resource("/images/gtk-logo.webm").
         stream = gtk_nuclear_media_stream_new()
         stream.play()
         stream.set_loop(True)

@@ -18,7 +18,7 @@ class GtkFishbowlChild:
 
 
 def new_speed() -> float:
-    # 5s to 50s to cross screen seems fair
+    # 5 to 50 seconds to cross the screen.
     return GLib.random_double_range(0.02, 0.2)
 
 
@@ -235,7 +235,7 @@ class GtkFishbowl(Gtk.Widget):
         do_update = frame_time // self._update_delay != self.last_frame_time // self._update_delay
         self.last_frame_time = frame_time
 
-        # last frame was 0, so we're just starting to animate
+        # The last frame time was 0, so the animation is only starting.
         if elapsed == frame_time:
             return GLib.SOURCE_CONTINUE
 

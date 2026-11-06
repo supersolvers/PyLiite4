@@ -173,7 +173,7 @@ class GtkShadertoy(Gtk.GLArea):
         # Animation data
         self.first_frame_time = 0
         self.first_frame = 0
-        # An unbound function, so the callback doesn't keep the widget alive
+        # An unbound function, so the callback doesn't keep the widget alive.
         self.tick = self.add_tick_callback(GtkShadertoy.gtk_shadertoy_tick)
 
         drag = Gtk.GestureDrag()
@@ -208,13 +208,12 @@ class GtkShadertoy(Gtk.GLArea):
         self.mouse[2] = -self.mouse[2]
         self.mouse[3] = -self.mouse[3]
 
-    # new window size or exposure
+    # Called for a new window size or exposure.
     def do_resize(self, width: int, height: int) -> None:
         self.resolution[0] = width
         self.resolution[1] = height
-        self.resolution[2] = 1.0  # screen aspect ratio
+        self.resolution[2] = 1.0  # The pixel aspect ratio, which Shadertoy keeps in iResolution.z.
 
-        # Set the viewport
         glViewport(0, 0, width, height)
 
     def init_shaders(self, vertex_source: str, fragment_source: str) -> None:
@@ -261,7 +260,7 @@ class GtkShadertoy(Gtk.GLArea):
             glDetachShader(program, vertex)
             glDetachShader(program, fragment)
         finally:
-            # These are now owned by the program and can be deleted
+            # The program owns these now, so they can be deleted.
             glDeleteShader(vertex)
             glDeleteShader(fragment)
 
@@ -277,7 +276,7 @@ class GtkShadertoy(Gtk.GLArea):
             self.error_set = True
             self.set_error(error)
 
-        # Start new shader at time zero
+        # A new shader starts at time zero.
         self.first_frame_time = 0
         self.first_frame = 0
 
@@ -290,13 +289,11 @@ class GtkShadertoy(Gtk.GLArea):
         if self.image_shader_dirty:
             self.realize_shader()
 
-        # Clear the viewport
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
 
         glUseProgram(self.program)
 
-        # Update uniforms
         if self.resolution_location != -1:
             glUniform3fv(self.resolution_location, 1, self.resolution)
         if self.time_location != -1:
@@ -308,19 +305,17 @@ class GtkShadertoy(Gtk.GLArea):
         if self.mouse_location != -1:
             glUniform4fv(self.mouse_location, 1, self.mouse)
 
-        # Use the vertices in our buffer
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, None)
 
         glDrawArrays(GL_TRIANGLES, 0, 6)
 
-        # We finished using the buffers and program
+        # Drawing is done, so the buffer and program are unbound.
         glDisableVertexAttribArray(0)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glUseProgram(0)
 
-        # Flush the contents of the pipeline
         glFlush()
 
         return True
@@ -331,14 +326,14 @@ class GtkShadertoy(Gtk.GLArea):
     def set_image_shader(self, shader: str) -> None:
         self.image_shader = shader
 
-        # Don't override error we didn't set it ourselves
+        # Only an error that this widget set is cleared, not one set by someone else.
         if self.error_set:
             self.set_error(None)
             self.error_set = False
         self.image_shader_dirty = True
 
     def do_realize(self) -> None:
-        # Draw two triangles across whole screen
+        # Two triangles that cover the whole screen.
         vertex_data = (GLfloat * 24)(
             -1.0, -1.0, 0.0, 1.0,
             -1.0, 1.0, 0.0, 1.0,

@@ -26,7 +26,7 @@ class ImageView(Gtk.Widget):
         self.start_angle = 0.0
         super().__init__(**properties)
 
-    # Named so that it doesn't hide the widget's query-tooltip signal
+    # Named so that it doesn't hide the widget's query-tooltip signal.
     @Gtk.Template.Callback("query_tooltip")
     def query_tooltip_cb(self, widget: Gtk.Widget, x: int, y: int, keyboard_mode: bool, tooltip: Gtk.Tooltip) -> bool:
         filter = ["Linear", "Nearest", "Trilinear"]
@@ -121,9 +121,7 @@ class ImageView(Gtk.Widget):
         return minimum, natural, -1, -1
 
     def do_size_allocate(self, width: int, height: int, baseline: int) -> None:
-        # Since we are not using a layout manager (who would do this
-        # for us), we need to allocate a size for our menu by calling
-        # gtk_popover_present().
+        # Without a layout manager to do it, the menu gets its size only from present().
         self.menu.present()
 
     @GObject.Property(type=Gdk.Texture)
@@ -172,8 +170,7 @@ class ImageView(Gtk.Widget):
 
     @Gtk.Template.Callback()
     def pressed_cb(self, gesture: Gtk.GestureClick, n_press: int, x: float, y: float) -> None:
-        # We are placing our menu at the point where
-        # the click happened, before popping it up.
+        # The menu points at where the click happened before it pops up.
         rect = Gdk.Rectangle()
         rect.x, rect.y, rect.width, rect.height = int(x), int(y), 1, 1
         self.menu.set_pointing_to(rect)
@@ -220,7 +217,7 @@ class ImageView(Gtk.Widget):
         self.set_property("angle", math.fmod(self.start_angle + a, 360))
 
 
-# These are the actions that we are using in the menu
+# The actions the menu uses.
 ImageView.install_action("zoom.in", None, ImageView.zoom_cb)
 ImageView.install_action("zoom.out", None, ImageView.zoom_cb)
 ImageView.install_action("zoom.reset", None, ImageView.zoom_cb)

@@ -218,7 +218,7 @@ def display_text(format: str | None, resource: str, label: Gtk.Widget) -> Gtk.Wi
     textview.set_bottom_margin(20)
     textview.set_editable(False)
     textview.set_cursor_visible(False)
-    # Make it a bit nicer for text.
+    # Word wrapping and some space between lines make the text easier to read.
     textview.set_wrap_mode(Gtk.WrapMode.WORD)
     textview.set_pixels_above_lines(2)
     textview.set_pixels_below_lines(2)
@@ -348,7 +348,7 @@ def load_file(demoname: str, filename: str) -> None:
         body_start = module.body[0].end_lineno or 0
 
     title, _, rest = docstring.partition("\n")
-    # Of a title like "Lists/Weather", show only the last part
+    # Of a title like "Lists/Weather", show only the last part.
     title = title.rsplit("/", 1)[-1].partition("::")[0].strip()
 
     start = info_buffer.get_start_iter()
@@ -369,7 +369,7 @@ def load_file(demoname: str, filename: str) -> None:
             info_buffer.insert(start, "\n")
             in_para = False
 
-    # Skip blank lines after the docstring, then read the program body
+    # Skip blank lines after the docstring, then read the program body.
     body = lines[body_start:]
     while body and not body[0].strip():
         body.pop(0)
@@ -414,7 +414,7 @@ def selection_cb(sel: Gtk.SingleSelection, pspec: GObject.ParamSpec | None) -> N
 
 
 def filter_demo(demo: GtkDemo) -> bool:
-    # Show only if the name matches every needle
+    # A demo shows only if every needle matches its title or one of its keywords.
     for needle in search_needle or []:
         if not demo.title:
             return False
@@ -431,18 +431,18 @@ def filter_demo(demo: GtkDemo) -> bool:
 
 
 def demo_filter_by_name(row: Gtk.TreeListRow) -> bool:
-    # Show all items if search is empty
+    # An empty search shows every row.
     if not search_needle or not search_needle[0]:
         return True
 
-    # Show a row if itself of any parent matches
+    # A row shows if it or any of its parents matches.
     parent = row
     while parent is not None:
         if filter_demo(parent.get_item()):
             return True
         parent = parent.get_parent()
 
-    # Show a row if any child matches
+    # It also shows if any of its children matches.
     children = row.get_children()
     if children is not None:
         for demo in children:

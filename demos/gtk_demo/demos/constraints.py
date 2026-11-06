@@ -77,8 +77,7 @@ SimpleGrid.set_layout_manager_type(Gtk.ConstraintLayout)
 #   child3.height = child2.height
 #   child3.bottom = super.bottom - 8
 #
-# To add some flexibility, we make the space
-# stretchable:
+# For some flexibility, the space is stretchable:
 #
 #   space.width >= 10
 #   space.width = 100

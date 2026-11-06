@@ -65,7 +65,7 @@ def item_value_changed(label: Gtk.EditableLabel, pspec: GObject.ParamSpec, cell:
 
         GLib.log_default_handler(None, GLib.LogLevelFlags.LEVEL_WARNING, f"Not a valid value for {name}")
 
-    # revert
+    # Invalid text rings the error bell and reverts to the setting's current value.
     label.error_bell()
 
     value = self.get_property("value")

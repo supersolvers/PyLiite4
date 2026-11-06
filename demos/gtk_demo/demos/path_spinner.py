@@ -187,7 +187,7 @@ def do(do_widget: Gtk.Widget) -> Gtk.Widget:
         picture.add_tick_callback(tick_cb, paintable)
         timeout_id = GLib.timeout_add(100, progress_timeout, paintable)
 
-        # C removes the timeout with g_object_set_data_full() when the picture goes away
+        # C removes the timeout with g_object_set_data_full() when the picture goes away.
         picture.weak_ref(unset_timeout, timeout_id)
 
         window.set_child(picture)

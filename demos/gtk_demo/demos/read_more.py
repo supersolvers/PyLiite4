@@ -74,14 +74,14 @@ class ReadMore(Gtk.Widget):
         label_min, label_nat, label_min_baseline, label_nat_baseline = self.label.measure(orientation, for_size)
         box_min, box_nat, box_min_baseline, box_nat_baseline = self.box.measure(orientation, for_size)
 
-        # FIXME: Figure out baselines!
+        # FIXME: Baselines aren't worked out yet.
         return min(label_min, box_min), min(label_nat, box_nat), -1, -1
 
     def do_size_allocate(self, width: int, height: int, baseline: int) -> None:
         if self.show_more:
             show_more = True
         else:
-            # check to see if we have enough space to show all text
+            # Whether there is enough space to show all the text.
             needed = self.label.measure(Gtk.Orientation.VERTICAL, width)[0]
 
             show_more = needed <= height

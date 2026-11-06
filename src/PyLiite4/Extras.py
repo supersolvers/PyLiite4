@@ -1,4 +1,6 @@
-"""What Qt has and GTK lacks, built from GTK's public pieces and used the way GTK's own API is.
+"""A few application widgets and helpers built from GTK's public API.
+
+If you're coming from Qt, the equivalents below should help you find your way.
 
 - ``register_font()``: make a font from memory, a GResource or a file usable by the application, like
   ``QFontDatabase.addApplicationFont``.
@@ -217,7 +219,7 @@ class Tip(Gtk.Popover):
         if self.get_parent() is not widget:
             self._leave_parent()
             self.set_parent(widget)
-            # A popover must leave its parent before the parent goes, shown or not.
+            # Unparent even hidden popovers before their parent goes away. Hiding isn't cleanup.
             self._parent_handler = (widget, widget.connect("unrealize", lambda _widget: self._leave_parent()))
         if rect is not None and not isinstance(rect, Gdk.Rectangle):
             x, y, width, height = (*rect, 1, 1) if len(rect) == 2 else rect
@@ -264,7 +266,7 @@ class Tip(Gtk.Popover):
             self._timer = 0
         watched, self._watched = self._watched, []
 
-        # Later: the tip usually hides from one of these controllers' own handlers, mid-event.
+        # Defer cleanup: we're usually inside one of these controllers' handlers, still handling the event.
         def remove() -> bool:
             for controller in watched:
                 owner = controller.get_widget()

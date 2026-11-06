@@ -1,6 +1,6 @@
 """Compile a .gresource.xml file to a Python module.
 
-Importing the generated module registers its resources with GIO, so that
+Import the generated module once to register its resources with GIO. Then
 Gtk.Template(resource_path=...), Gtk.Builder.new_from_resource() and
 Gio.File.new_for_uri("resource://...") find them.
 """

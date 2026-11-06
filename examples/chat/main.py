@@ -110,7 +110,7 @@ def on_activate(app: Gio.Application) -> None:
 
 
 if __name__ == "__main__":
-    # Before run(), so the replies' coroutines run on GLib's main loop.
+    # Set this up before run(): the streaming replies need GLib's main loop to run their coroutines.
     use_asyncio()
     application = Adw.Application(application_id="org.example.PyLiite4Chat")
     application.activate.connect(on_activate)

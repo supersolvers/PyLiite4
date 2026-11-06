@@ -52,7 +52,7 @@ def on_activate(app: Gio.Application) -> None:
         greetings += 1
         # ngettext picks the plural form for the language: some have one form, others three or more.
         count = ngettext("You greeted {count} time", "You greeted {count} times", greetings).format(count=greetings)
-        # Keep _() out of f-strings: xgettext doesn't look inside them.
+        # Translate first, then format. xgettext won't find _() calls inside f-strings.
         hello = _("Hello, world!")
         ui.greeting.set_label(f"{hello} {count}")
 

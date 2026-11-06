@@ -24,7 +24,7 @@ LARGE = 5_000_000
 class City(GObject.Object):
     __gtype_name__ = "ExampleCity"
 
-    # Properties, rather than plain attributes, so that expressions such as the sorters' can read them.
+    # The sorters read these through GTK expressions, so plain Python attributes won't do.
     name = GObject.Property(type=str, default="")
     country = GObject.Property(type=str, default="")
     population = GObject.Property(type=int, default=0)

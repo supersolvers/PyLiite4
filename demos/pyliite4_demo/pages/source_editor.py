@@ -1,4 +1,4 @@
-"""GtkSourceView, which the wheel bundles: an editor showing this page's own source, coloured for Python."""
+"""Read this page's own source in GtkSourceView, with Python syntax highlighting."""
 
 from pathlib import Path
 from typing import Any
@@ -56,7 +56,7 @@ def build(window: Any) -> Gtk.Widget:
     try:
         return Page(window)
     except (ImportError, ValueError):
-        # GtkSourceView isn't there: a PyLiite4 on a system GTK without it. Bundled wheels have it.
+        # System-GTK installs may not have GtkSourceView. Keep the page usable without it; wheels include it.
         return Adw.StatusPage(icon_name=ICON, title="GtkSourceView Isn't Available",
                               description="This PyLiite4 uses a GTK without GtkSourceView 5. The bundled wheels "
                               "include it.")

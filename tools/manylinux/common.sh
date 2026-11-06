@@ -9,7 +9,7 @@ fetch() { # url -> prints the unpacked directory
     local archive="/src/archives/${1##*/}"
     [ -f "$archive" ] || curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 --max-time 300 -o "$archive" "$1"
     local directory
-    # tar may die of SIGPIPE once head has its line, which pipefail would treat as a failure.
+    # head stops after one line; tar may then get SIGPIPE. Don't let pipefail turn that into a failed fetch.
     directory=$(tar tf "$archive" | head -1 | cut -d/ -f1 || true)
     [ -d "/src/$directory" ] || tar xf "$archive" -C /src --no-same-owner
     echo "/src/$directory"

@@ -1,7 +1,8 @@
 # Demos
 
-Four collections of GTK demos: three ported to Python with PyLiite4, and PyLiite4's own. Run them from the
-repository root, with a PyLiite4 that has the libraries they use, such as a bundled wheel:
+Start here if you'd rather open a window and explore. There are four collections: three GTK demo ports and
+PyLiite4's own tour. Run them from the repository root with a PyLiite4 installation that includes the libraries
+they need, such as a bundled wheel:
 
 ```bash
 python -m demos.gtk_demo
@@ -40,8 +41,9 @@ GStreamer's GL thread, with the system's GTK and GStreamer too.
 
 ## How the ports are written
 
-A port does what the original does, in the same structure and with the same names, so the two can be read side by side.
-Only what C or JavaScript needs and Python doesn't is dropped: reference counting, casts, `G_DEFINE_TYPE` boilerplate.
+Keep the original close enough to read beside the Python version. That's more useful here than giving every demo
+a makeover. Preserve its structure and names; drop the bits Python doesn't need, such as reference counting,
+casts and `G_DEFINE_TYPE` boilerplate.
 
 - Import from PyLiite4, never from `gi.repository`: `from PyLiite4 import Gtk, Adw, Gio`.
 - Use PyLiite4's signal objects and keyword constructors: `button.clicked.connect(handler)`,

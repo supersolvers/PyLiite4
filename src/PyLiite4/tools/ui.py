@@ -16,8 +16,8 @@ the wrong parent, name or handlers. The template is embedded in the module, or
 with --resource loaded from that GResource path, as Gtk.Template(resource_path=)
 does.
 
-Any other file becomes a class that builds its objects with ``Gtk.Builder``
-and has one typed attribute per object id.
+Without a template, you get a class that builds the objects with ``Gtk.Builder``
+and exposes a typed attribute for each object id.
 """
 
 import argparse

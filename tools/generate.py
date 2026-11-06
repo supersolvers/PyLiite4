@@ -436,7 +436,7 @@ def core(element, name):
 
 def escape(name):
     name = name.replace("-", "_")
-    # PyGObject still treats "print" as a keyword, from Python 2.
+    # PyGObject still treats "print" as a Python 2 keyword. That one has a long memory.
     if keyword.iskeyword(name) or name == "print":
         return f"{name}_"
     return f"_{name}" if name[:1].isdigit() else name

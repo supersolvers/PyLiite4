@@ -2,8 +2,9 @@
 
 Complete, typed Python bindings for GTK 4 and libadwaita, packaged with GTK itself.
 
-PyLiite4 gives Python developers what PySide6 gives them for Qt: one install, typed APIs and the tools to build an
-application. The toolkit is GTK, used the GTK way. GTK's concepts and names are kept; this isn't a Qt emulation layer.
+PyLiite4 brings typed APIs, a bundled toolkit and application tools to Python GTK development. If you're coming
+from PySide6, the setup should feel familiar. You still write GTK, with its names and concepts, so the GTK docs
+remain useful when you get stuck.
 
 ```python
 from PyLiite4.Gtk import Application, ApplicationWindow, Button
@@ -23,6 +24,9 @@ app = Application(application_id="org.example.Hello")
 app.activate.connect(on_activate)
 app.run([])
 ```
+
+Run this and click Hello: the button changes to Clicked.
+See [Installing](#installing) for the wheel and system-GTK options.
 
 ## What you get
 
@@ -63,6 +67,12 @@ PyLiite4 also corrects APIs that crash, corrupt memory or can't be called throug
 - A `.ui` file can name any class of a namespace that has been imported, such as `WebKitWebView`, which GtkBuilder
   otherwise can't find.
 
+## What it doesn't do
+
+PyLiite4 isn't a Qt compatibility layer or a new widget toolkit. It extends PyGObject's classes, so GTK's object
+model and main-loop rules still apply. Windows and macOS support aren't implemented. The bundled stack also leaves
+out patent-encumbered codecs such as H.264 and AAC; see [Platform support](#platform-support) for the details.
+
 ## Signals
 
 ```python
@@ -74,7 +84,7 @@ with button.clicked.blocked(handler):           # g_signal_handler_block
 entry.notify["text"].connect(on_text_changed)   # a signal detail
 ```
 
-Callbacks receive the emitting object first: `def on_click(button): ...`. Declare signals on your own classes with
+The emitting object comes first in your callback: `def on_click(button): ...`. Declare signals on your own classes with
 `changed = Signal(int)` on a `GObject.Object` subclass; `Signal` is `GObject.Signal`, and takes its `flags`,
 `return_type` and `accumulator`.
 
@@ -97,8 +107,8 @@ first to keep it as a plain attribute.
 
 ### The main loop, threads and asyncio
 
-GTK runs on one thread. A worker thread hands results back with `GLib.idle_add`, which runs a function on the main
-loop:
+Keep GTK work on the main thread. If a worker computes something, hand the result back with `GLib.idle_add`
+so the UI update runs on the main loop:
 
 ```python
 def finished(text: str) -> bool:
@@ -151,7 +161,8 @@ Text is laid out with Pango: `self.create_pango_layout(text)` gives a layout to 
 ### Lists
 
 Keep the data in a `Gio.ListStore` of `GObject.Object` items, and show it with `Gtk.ListView`, `Gtk.GridView` or
-`Gtk.ColumnView`. A factory makes and binds a widget for each visible row:
+`Gtk.ColumnView`. A factory makes and binds widgets for the visible rows. You supply the data; the view handles
+which rows need widgets:
 
 ```python
 store: Gio.ListStore[Fruit] = Gio.ListStore(item_type=Fruit)
@@ -240,7 +251,8 @@ recorder.notify["accelerator"].connect(
 
 ### UI files and templates
 
-Describe a composite widget in a `.ui` file with a `<template>`, then let `pyliite4-ui` type it:
+Keep the layout in a `.ui` file and let `pyliite4-ui` handle the typing. For a composite widget, start with a
+`<template>`:
 
 ```bash
 pyliite4-ui window.ui -o window_ui.py
@@ -269,6 +281,8 @@ Ship `.ui` files, CSS and icons as GResources, compiled with `pyliite4-resources
 and load them by resource path.
 
 ### Testing
+
+Let the tests click the buttons. It's less repetitive than doing the same little UI dance after every change.
 
 `PyLiite4.testing` is a pytest plugin, installed with PyLiite4 and off until `pytest --gtk` or `gtk = true` under
 `[tool.pytest.ini_options]` turns it on. Each run then gets a private Xvfb display and D-Bus session, no portals,
@@ -367,8 +381,8 @@ properties, asyncio with libsoup, and GtkSourceView. Run `python -m demos.gtk_de
 `python -m demos.workbench` or `python -m demos.pyliite4_demo` from the repository root; see `demos/README.md`.
 `tests/test_demos.py` opens each, and `tests/test_pyliite4_demo.py` drives PyLiite4 Demo's pages with real input.
 
-`examples/` holds small applications to start from, each run and type checked with `mypy --strict` by
-`tests/test_examples.py`:
+For something smaller to take apart, start in `examples/`. Copy a piece, change it, see what the window does.
+`tests/test_examples.py` runs these applications and type checks them with `mypy --strict`:
 
 | Example | Shows |
 | --- | --- |
@@ -398,7 +412,7 @@ wheel of the same version and Python, whose libraries it shares:
 pip install PyLiite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl PyLiite4_Addons-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
 ```
 
-It is separate because WebKit alone is larger than the rest of GTK. WebKit runs pages in helper processes from the
+WebKit alone is larger than the rest of GTK, so it gets its own wheel. WebKit runs pages in helper processes from the
 wheel, without its bubblewrap sandbox, which would need `bwrap` and `xdg-dbus-proxy` on the user's system: show web
 content you trust. Spell checking uses the system's Hunspell dictionaries, from `/usr/share/hunspell`.
 
@@ -480,6 +494,9 @@ next to the wheels.
 
 ## Development
 
+The generated bindings aren't the place to hand-edit an API. Change the generator or runtime code, then
+regenerate what depends on it. These are the commands you'll need:
+
 ```bash
 python3 tools/generate.py
 ```
@@ -527,7 +544,7 @@ tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_wheels.sh 
 tools/manylinux/verify_in_root.sh /path/to/root dist/PyLiite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl cp314
 ```
 
-The stack build records finished packages, so running it again resumes after a failure.
+The stack build records finished packages. If it fails, run it again to pick up where it stopped.
 
 ```bash
 tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_addons.sh

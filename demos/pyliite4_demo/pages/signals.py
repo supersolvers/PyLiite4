@@ -1,4 +1,4 @@
-"""PyLiite4's signals and properties: declared on a class of our own, bound, followed, emitted and blocked."""
+"""Try property bindings and signal handlers on a model of our own."""
 
 from typing import Any
 

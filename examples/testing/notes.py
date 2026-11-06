@@ -1,4 +1,4 @@
-"""A small notes window, the application that tests/test_notes.py tests."""
+"""A notes window for tests/test_notes.py to drive."""
 
 from PyLiite4 import Adw, Gio, Gtk
 

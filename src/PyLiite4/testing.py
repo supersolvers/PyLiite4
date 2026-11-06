@@ -1,6 +1,6 @@
 """Test GTK applications with pytest: an isolated session, fixtures, waiting, simulated input and failing on errors.
 
-The equivalent of Qt's QTest and pytest-qt. Use it as a pytest plugin::
+If you've used Qt's QTest or pytest-qt, this fills the same role. Enable the pytest plugin with::
 
     pytest --gtk
 
@@ -18,9 +18,9 @@ PyLiite4 doesn't change other projects' test runs. When enabled, before GTK init
 The helpers also work without the plugin, in any process where GTK has a display: ``wait_until``, ``wait_signal``,
 ``click``, ``type_text``, ``press_key``, ``find`` and ``collect_problems``.
 
-Objects that outlive the tests, such as a window kept in a module global, are freed while Python shuts down, when
-Python classes they use (a list model, a callback's object) may already be half-gone; GTK can abort then. Release
-such objects in the test's teardown, while GTK and Python are both whole.
+Release long-lived objects in teardown, including windows kept in module globals. If they survive until Python
+shuts down, the classes they depend on (a list model or a callback's object) may already be partly torn down.
+GTK can abort at that point, so don't leave this cleanup to interpreter shutdown.
 
 Input comes two ways:
 
@@ -125,7 +125,7 @@ def wait_until(condition: Callable[[], T], timeout: float = DEFAULT_TIMEOUT, *, 
 
     context = GLib.MainContext.default()
     deadline = time.monotonic() + timeout
-    # Wakes iteration() at least this often, so a condition that no event changes is still polled.
+    # Wake iteration() even without events, or a condition changed outside GTK might never get checked.
     tick = GLib.timeout_add(10, lambda: True)
     last_error: AssertionError | None = None
     try:

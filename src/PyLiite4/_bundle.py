@@ -78,7 +78,7 @@ def setup() -> None:
     _prepend("XDG_DATA_DIRS", BUNDLE / "share", "/usr/local/share:/usr/share")
     _prepend("PATH", BUNDLE / "bin")
     os.environ["GSETTINGS_SCHEMA_DIR"] = str(BUNDLE / "share" / "glib-2.0" / "schemas")
-    # System GIO and GTK modules link the system's libraries, so keep them out.
+    # Keep system modules out: they link against the system stack, not the libraries in this wheel.
     os.environ["GIO_MODULE_DIR"] = str(BUNDLE / "lib" / "gio" / "modules")
     os.environ["GTK_EXE_PREFIX"] = str(BUNDLE)
     os.environ["GTK_DATA_PREFIX"] = str(BUNDLE)

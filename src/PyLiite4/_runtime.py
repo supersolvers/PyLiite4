@@ -1,8 +1,8 @@
 """Signal objects, and the glue between generated modules and PyGObject.
 
-Classes are PyGObject's own, extended in place rather than subclassed. Objects
-that GTK creates itself, such as those from Gtk.Builder, therefore get the same
-API, and existing PyGObject code keeps working.
+We extend PyGObject's classes in place. That way, objects GTK creates for you
+(including Gtk.Builder objects) get the same API as objects you create in Python.
+Existing PyGObject code keeps working with those same classes.
 """
 
 from __future__ import annotations
@@ -190,7 +190,7 @@ def _properties(cls: type) -> dict[str, Any]:
 
 
 def _object_getattr(self: GObject.Object, name: str) -> Any:
-    # Only reached when normal lookup fails, so methods and Python attributes win.
+    # Normal lookup has already failed, so methods and Python attributes keep priority.
     if not name.startswith("_"):
         if GObject.signal_lookup(name.replace("_", "-"), type(self).__gtype__):
             return BoundSignal(self, name.replace("_", "-"))

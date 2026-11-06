@@ -1,4 +1,6 @@
-"""Parse the HTML subset RichView shows into blocks of styled runs. No GTK here; Extras.RichView renders them.
+"""Parse RichView's HTML subset into blocks of styled runs.
+
+Keep GTK out of this module: parsing produces the blocks, and Extras.RichView draws them.
 
 The subset is Qt's rich text, roughly, plus Pango markup's own tags and span attributes:
 

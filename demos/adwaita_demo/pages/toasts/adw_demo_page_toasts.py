@@ -52,7 +52,7 @@ class AdwDemoPageToasts(AdwDemoPageToastsChildren, Adw.Bin):
 
             self.undo_toast.set_title(title)
 
-            # Bump the toast timeout
+            # Adding the toast again restarts its timeout.
             self.add_toast(self.undo_toast)
         else:
             self.undo_toast = Adw.Toast.new(_("‘%s’ deleted") % "Lorem Ipsum")

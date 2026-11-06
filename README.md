@@ -25,7 +25,20 @@ app.activate.connect(on_activate)
 app.run([])
 ```
 
-Run this and click Hello: the button changes to Clicked.
+The window has one button, labelled Hello. Click it and the label changes to Clicked.
+
+<div aria-hidden="true">
+
+```text
++-------------------+
+|                   |
+|     [ Hello ]     |
+|                   |
++-------------------+
+```
+
+</div>
+
 See [Installing](#installing) for the wheel and system-GTK options.
 
 ## What you get
@@ -381,7 +394,8 @@ properties, asyncio with libsoup, and GtkSourceView. Run `python -m demos.gtk_de
 `python -m demos.workbench` or `python -m demos.pyliite4_demo` from the repository root; see `demos/README.md`.
 `tests/test_demos.py` opens each, and `tests/test_pyliite4_demo.py` drives PyLiite4 Demo's pages with real input.
 
-For something smaller to take apart, start in `examples/`. Copy a piece, change it, see what the window does.
+For something smaller to take apart, start in `examples/`. It's dangerous to go alone; take a working example.
+Copy a piece, change it, see what the window does.
 `tests/test_examples.py` runs these applications and type checks them with `mypy --strict`:
 
 | Example | Shows |

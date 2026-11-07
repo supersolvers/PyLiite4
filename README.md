@@ -412,28 +412,30 @@ Copy a piece, change it, see what the window does.
 
 ## Installing
 
-Bundled wheels contain GTK, libadwaita, PyGObject and the Adwaita icons, and need nothing else from the system except
-glibc, the C++ runtime and graphics drivers:
+PyLiite4 is on PyPI:
 
 ```bash
-pip install pyliite4-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl
+pip install PyLiite4
 ```
 
-The PyLiite4-Addons wheel adds WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette. It needs the PyLiite4
-wheel of the same version and Python, whose libraries it shares:
+pip picks the wheel for your Python and architecture. It comes with GTK, libadwaita, PyGObject and the Adwaita
+icons. Your system supplies glibc, the C++ runtime and graphics drivers.
+
+PyLiite4-Addons adds WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette. It pulls in the matching PyLiite4
+wheel and shares its libraries:
 
 ```bash
-pip install pyliite4-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl pyliite4_addons-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl
+pip install PyLiite4-Addons
 ```
 
 WebKit alone is larger than the rest of GTK, so it gets its own wheel. WebKit runs pages in helper processes from the
 wheel, without its bubblewrap sandbox, which would need `bwrap` and `xdg-dbus-proxy` on the user's system: show web
 content you trust. Spell checking uses the system's Hunspell dictionaries, from `/usr/share/hunspell`.
 
-The PyLiite4-Poppler wheel adds Poppler, for PDF documents, and likewise needs the matching PyLiite4 wheel:
+For PDF documents, install PyLiite4-Poppler. It pulls in the matching PyLiite4 wheel too:
 
 ```bash
-pip install pyliite4-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl pyliite4_poppler-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl
+pip install PyLiite4-Poppler
 ```
 
 ```python
@@ -450,7 +452,10 @@ Poppler is GPL, unlike the rest of PyLiite4, and is a wheel of its own so that a
 built without poppler-data, so PDFs that use CJK fonts without embedding them may not show their text, and without
 signature checking.
 
-The plain package uses the system's GTK and PyGObject instead:
+You can also download the wheels from the [GitHub releases](https://github.com/supersolvers/PyLiite4/releases)
+if you're installing without PyPI.
+
+To use your system's GTK and PyGObject, install from a checkout of this repository:
 
 ```bash
 pip install .
@@ -461,7 +466,7 @@ pip install .
 | | Status |
 | --- | --- |
 | Linux x86-64, bundled | Python 3.10 to 3.14, glibc 2.34 or newer (Ubuntu 22.04, Debian 12, RHEL 9 and later) |
-| Linux aarch64, bundled | The build scripts support it; no wheels have been built yet |
+| Linux aarch64, bundled | Python 3.10 to 3.14, glibc 2.34 or newer; tested under emulation, not yet on ARM hardware |
 | Linux, system GTK | Python 3.10 or newer; PyGObject must be installable |
 | Windows, macOS | Not implemented |
 

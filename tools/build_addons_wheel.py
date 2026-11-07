@@ -68,7 +68,7 @@ def bundled_libraries(output):
     """The libraries the PyLiite4 wheel of this version, for this Python, already bundles."""
     version = build_wheel.tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
     python = f"cp{sys.version_info.major}{sys.version_info.minor}"
-    wheel = output / f"PyLiite4-{version}-{python}-{python}-{build_wheel.glibc_tag()}.whl"
+    wheel = output / f"{build_wheel.distribution_name('PyLiite4')}-{version}-{python}-{python}-{build_wheel.glibc_tag()}.whl"
     if not wheel.exists():
         sys.exit(f"{wheel} is needed: build the PyLiite4 wheel first")
     with zipfile.ZipFile(wheel) as archive:

@@ -15,6 +15,11 @@ dependencies = ["PyGObject>=3.50"]
 [project.optional-dependencies]
 dev = ["pytest", "mypy", "patchelf"]
 
+[project.urls]
+Homepage = "https://github.com/supersolvers/PyLiite4"
+Issues = "https://github.com/supersolvers/PyLiite4/issues"
+Releases = "https://github.com/supersolvers/PyLiite4/releases"
+
 [project.scripts]
 pyliite4-ui = "PyLiite4.tools.ui:main"
 pyliite4-resources = "PyLiite4.tools.resources:main"

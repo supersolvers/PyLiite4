@@ -284,6 +284,12 @@ def glibc_tag():
     return f"manylinux_{major}_{minor}_{platform.machine()}"
 
 
+def distribution_name(name):
+    """A project name as wheel filenames and .dist-info folders spell it, which PyPI insists on: PyLiite4-Addons is
+    pyliite4_addons."""
+    return re.sub(r"[-_.]+", "_", name).lower()
+
+
 def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundle="_bundled", entry_points=True,
                 license=None):
     """Pack package_dir as the PyLiite4 package. The add-on wheels pass their own name, summary, bundle and license."""
@@ -291,12 +297,13 @@ def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundl
     name, version = name or project["name"], project["version"]
     python = f"cp{sys.version_info.major}{sys.version_info.minor}"
     tag = f"{python}-{python}-{glibc_tag()}"
-    info = f"{name.replace('-', '_')}-{version}.dist-info"
+    info = f"{distribution_name(name)}-{version}.dist-info"
     license_files = {path: (ROOT / path).read_text() for path in project["license-files"]}
     license_headers = "".join(f"License-File: {path}\n" for path in [*license_files, "THIRD-PARTY-NOTICES.txt"])
     requirements = "".join(f"Requires-Dist: {requirement}\n" for requirement in requires)
+    urls = "".join(f"Project-URL: {label}, {url}\n" for label, url in project.get("urls", {}).items())
     metadata = (f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\nSummary: {summary or project['description']}\n"
-                f"License-Expression: {license or project['license']}\n{license_headers}{requirements}"
+                f"License-Expression: {license or project['license']}\n{license_headers}{urls}{requirements}"
                 f"Requires-Python: =={sys.version_info.major}.{sys.version_info.minor}.*\n"
                 f"Description-Content-Type: text/markdown\n\n{(ROOT / 'README.md').read_text()}")
     extra = {
@@ -311,7 +318,7 @@ def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundl
             f"[{section}]\n" + "".join(f"{k} = {v}\n" for k, v in entries.items()) + "\n"
             for section, entries in sections.items())
     output.mkdir(parents=True, exist_ok=True)
-    wheel = output / f"{name.replace('-', '_')}-{version}-{tag}.whl"
+    wheel = output / f"{distribution_name(name)}-{version}-{tag}.whl"
     record = []
     with zipfile.ZipFile(wheel, "w", zipfile.ZIP_DEFLATED) as archive:
         def add(arcname, data, mode=0o644):

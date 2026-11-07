@@ -4,7 +4,7 @@
 # so only the wheels' copies can satisfy it. The tests get their own D-Bus
 # session and no portals, so they can't reach the desktop.
 #
-# Usage: tools/verify_wheel.sh dist/PyLiite4-*.whl [dist/PyLiite4_Addons-*.whl] [dist/PyLiite4_Poppler-*.whl]
+# Usage: tools/verify_wheel.sh dist/pyliite4-*.whl [dist/pyliite4_addons-*.whl] [dist/pyliite4_poppler-*.whl]
 set -euo pipefail
 wheels=()
 for wheel in "$@"; do wheels+=("$(realpath "$wheel")"); done

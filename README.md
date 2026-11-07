@@ -503,8 +503,10 @@ Apart from that wheel, none of the bundled libraries is GPL-only. Some packages 
 LGPL, BSD or dual-licensed libraries. To keep it that way, the build fails when a project that mentions the GPL isn't
 on a reviewed list in `tools/third_party.py`.
 
-The source archive of every bundled project, at the exact version in the wheels, is published with each release,
-next to the wheels.
+Download the bundled projects' exact source archives and `SHA256SUMS` from the matching release's assets:
+[PyLiite4 0.1.0](https://github.com/supersolvers/PyLiite4/releases/tag/v0.1.0). The filenames in `NOTICES.txt`
+identify the individual archives to download. GitHub's automatic Source code downloads contain this repository,
+rather than the dependency sources.
 
 ## Development
 

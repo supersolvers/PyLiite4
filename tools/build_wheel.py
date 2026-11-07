@@ -274,7 +274,8 @@ def write_licenses(bundle, cache, extra_prefixes=(), gpl=()):
         raise RuntimeError("bundled files without a recorded origin:\n  " + "\n  ".join(sorted(unrecorded)))
     origins = {str(path.relative_to(bundle)): source for path, source in ORIGINS.items()}
     components = third_party.Attribution(PREFIX, cache, extra_prefixes).attribute(origins, gpl)
-    third_party.write_notices(components, bundle / "licenses")
+    version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+    third_party.write_notices(components, bundle / "licenses", version)
     return components
 
 

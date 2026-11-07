@@ -23,6 +23,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from importlib import metadata
 from pathlib import Path
+from urllib.parse import quote
 
 try:
     import tomllib
@@ -381,12 +382,27 @@ def folder(component):
     return re.sub(r"[^\w.+-]", "_", component.name)
 
 
-def write_notices(components, target):
+def notices_header(version):
+    """Point a wheel's source notices at its matching release."""
+    release = f"https://github.com/supersolvers/PyLiite4/releases/tag/{quote('v' + version, safe='')}"
+    return (
+        "PyLiite4 bundles the projects below. Each project's license texts are in the folder of\n"
+        "the same name next to this file, and components.json lists every bundled file by project.\n"
+        "\n"
+        f"Source downloads for PyLiite4 {version}:\n"
+        f"  {release}\n"
+        "\n"
+        "Download the third-party source archives and SHA256SUMS from that release's assets.\n"
+        "The Source: filenames below identify the exact archives to download.\n"
+        "GitHub's automatic Source code downloads contain the PyLiite4 repository, not these\n"
+        "dependency archives.\n"
+    )
+
+
+def write_notices(components, target, version):
     """Write each component's license texts and NOTICES.txt, which lists them all."""
     target.mkdir(parents=True)
-    lines = ["PyLiite4 bundles the projects below. Each project's license texts are in the folder of",
-             "the same name next to this file, and components.json lists every bundled file by project.",
-             "The source archive of each exact version is published with each PyLiite4 release.", ""]
+    lines = [notices_header(version).rstrip("\n"), ""]
 
     def entry(component, directory, indent=""):
         for name, text in component.texts.items():

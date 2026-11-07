@@ -32,6 +32,15 @@ class Demo:
     title: str
     description: str
     keywords: list[str] = field(default_factory=list)
+    requires: list[str] = field(default_factory=list)
+
+    @property
+    def missing(self) -> list[str]:
+        """Required namespaces that PyLiite4 can't load.
+
+        System-GTK installs may need extra packages, such as GtkSourceView.
+        """
+        return [namespace for namespace in self.requires if not _loads(namespace)]
 
     @property
     def filename(self) -> str:
@@ -39,6 +48,14 @@ class Demo:
 
     def run(self, parent: Gtk.Widget) -> Gtk.Widget | None:
         return import_module(f"{__name__}.demos.{self.name}").do(parent)
+
+
+def _loads(namespace: str) -> bool:
+    try:
+        import_module(f"PyLiite4.{namespace}")
+    except (ImportError, ValueError):
+        return False
+    return True
 
 
 def _keywords(title: str, description: str) -> list[str]:
@@ -66,7 +83,9 @@ def all_demos() -> list[Demo]:
             else:
                 lines.append(line)
         description = "\n".join(lines).strip()
-        found.append(Demo(path.stem, title.strip(), description, keywords + _keywords(title, description)))
+        requires = sorted({alias.name for node in tree.body if isinstance(node, ast.ImportFrom)
+                           and node.module == "PyLiite4" for alias in node.names})
+        found.append(Demo(path.stem, title.strip(), description, keywords + _keywords(title, description), requires))
     return sorted(found, key=lambda demo: demo.title.lower())
 
 

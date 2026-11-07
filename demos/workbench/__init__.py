@@ -14,7 +14,6 @@ domain under CC0. Each one is a folder in ``library/``:
 """
 
 import importlib
-import importlib.util
 import json
 import runpy
 import shutil
@@ -31,8 +30,19 @@ CATEGORIES = {"user_interface": "User Interface", "controls": "Controls", "layou
               "network": "Network", "tools": "Tools"}
 # Namespaces PyLiite4 doesn't provide; demos that need one are listed but can't run.
 UNAVAILABLE = {"Gly"}
-# Namespaces from the PyLiite4-Addons wheel, which demos can use when it's installed.
-ADDONS = {"WebKit", "Shumate", "Spelling", "Manette", "Gom"}
+
+
+def loads(namespace: str) -> bool:
+    """Check whether PyLiite4 can load ``namespace``.
+
+    Add-on namespaces need PyLiite4-Addons. With system GTK, you may also
+    need packages for libraries such as GtkSourceView and libportal.
+    """
+    try:
+        importlib.import_module(f"PyLiite4.{namespace}")
+    except (ImportError, ValueError):
+        return False
+    return True
 
 
 @dataclass
@@ -48,8 +58,7 @@ class Demo:
 
     @property
     def missing(self) -> list[str]:
-        return [namespace for namespace in self.requires if namespace in UNAVAILABLE
-                or (namespace in ADDONS and importlib.util.find_spec(f"PyLiite4.{namespace}") is None)]
+        return [namespace for namespace in self.requires if namespace in UNAVAILABLE or not loads(namespace)]
 
 
 def demos() -> list[Demo]:

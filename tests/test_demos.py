@@ -53,10 +53,13 @@ KNOWN_CRASHES = {
 }
 
 
-@pytest.mark.parametrize("name", [pytest.param(demo.name, marks=pytest.mark.xfail(reason=KNOWN_CRASHES[demo.name]))
-                                  if demo.name in KNOWN_CRASHES else demo.name for demo in gtk_demo.all_demos()])
-def test_gtk_demo(name):
-    run("gtk_demo", name)
+@pytest.mark.parametrize("demo", [pytest.param(demo, marks=pytest.mark.xfail(reason=KNOWN_CRASHES[demo.name]))
+                                  if demo.name in KNOWN_CRASHES else demo for demo in gtk_demo.all_demos()],
+                         ids=lambda demo: demo.name)
+def test_gtk_demo(demo):
+    if demo.missing:
+        pytest.skip(f"needs {', '.join(demo.missing)}")
+    run("gtk_demo", demo.name)
 
 
 @pytest.mark.parametrize("demo", workbench.demos(), ids=lambda demo: demo.name)

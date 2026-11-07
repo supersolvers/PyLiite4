@@ -304,7 +304,7 @@ def build_wheel(package_dir, output, name=None, summary=None, requires=(), bundl
     urls = "".join(f"Project-URL: {label}, {url}\n" for label, url in project.get("urls", {}).items())
     metadata = (f"Metadata-Version: 2.4\nName: {name}\nVersion: {version}\nSummary: {summary or project['description']}\n"
                 f"License-Expression: {license or project['license']}\n{license_headers}{urls}{requirements}"
-                f"Requires-Python: =={sys.version_info.major}.{sys.version_info.minor}.*\n"
+                f"Requires-Python: {project['requires-python']}\n"
                 f"Description-Content-Type: text/markdown\n\n{(ROOT / 'README.md').read_text()}")
     extra = {
         f"{info}/METADATA": metadata,

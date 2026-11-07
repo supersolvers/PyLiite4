@@ -416,14 +416,14 @@ Bundled wheels contain GTK, libadwaita, PyGObject and the Adwaita icons, and nee
 glibc, the C++ runtime and graphics drivers:
 
 ```bash
-pip install pyliite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
+pip install pyliite4-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl
 ```
 
 The PyLiite4-Addons wheel adds WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette. It needs the PyLiite4
 wheel of the same version and Python, whose libraries it shares:
 
 ```bash
-pip install pyliite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl pyliite4_addons-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
+pip install pyliite4-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl pyliite4_addons-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl
 ```
 
 WebKit alone is larger than the rest of GTK, so it gets its own wheel. WebKit runs pages in helper processes from the
@@ -433,7 +433,7 @@ content you trust. Spell checking uses the system's Hunspell dictionaries, from 
 The PyLiite4-Poppler wheel adds Poppler, for PDF documents, and likewise needs the matching PyLiite4 wheel:
 
 ```bash
-pip install pyliite4-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl pyliite4_poppler-0.1.0-cp313-cp313-manylinux_2_34_x86_64.whl
+pip install pyliite4-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl pyliite4_poppler-0.1.1-cp313-cp313-manylinux_2_34_x86_64.whl
 ```
 
 ```python
@@ -504,7 +504,7 @@ LGPL, BSD or dual-licensed libraries. To keep it that way, the build fails when 
 on a reviewed list in `tools/third_party.py`.
 
 Download the bundled projects' exact source archives and `SHA256SUMS` from the matching release's assets:
-[PyLiite4 0.1.0](https://github.com/supersolvers/PyLiite4/releases/tag/v0.1.0). The filenames in `NOTICES.txt`
+[PyLiite4 0.1.1](https://github.com/supersolvers/PyLiite4/releases/tag/v0.1.1). The filenames in `NOTICES.txt`
 identify the individual archives to download. GitHub's automatic Source code downloads contain this repository,
 rather than the dependency sources.
 
@@ -557,7 +557,7 @@ tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_wheels.sh 
 ```
 
 ```bash
-tools/manylinux/verify_in_root.sh /path/to/root dist/pyliite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl cp314
+tools/manylinux/verify_in_root.sh /path/to/root dist/pyliite4-0.1.1-cp314-cp314-manylinux_2_34_x86_64.whl cp314
 ```
 
 The stack build records finished packages. If it fails, run it again to pick up where it stopped.
@@ -583,14 +583,14 @@ reviewed. `build_wheels.sh` also copies every project's source archive, with `SH
 which is published with the release. Downloaded source RPMs and sdists are kept in `build/third-party/`.
 
 ```bash
-tools/verify_wheel.sh dist/pyliite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl
+tools/verify_wheel.sh dist/pyliite4-0.1.1-cp314-cp314-manylinux_2_34_x86_64.whl
 ```
 
 installs that wheel in a clean venv and runs the tests in a `bwrap` sandbox with the system's GTK stack hidden, on a
 D-Bus session of their own.
 
 ```bash
-dbus-run-session -- tools/verify_wayland.sh dist/pyliite4-0.1.0-cp314-cp314-manylinux_2_34_x86_64.whl
+dbus-run-session -- tools/verify_wayland.sh dist/pyliite4-0.1.1-cp314-cp314-manylinux_2_34_x86_64.whl
 ```
 
 does the same on Wayland, with a headless `kwin_wayland` as the compositor.

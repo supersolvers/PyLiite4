@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Build the PyLiite4-Addons wheel (WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette) or, with --poppler,
-the PyLiite4-Poppler wheel.
+"""Build the PyLiite4-Addons wheel (WebKitGTK, libshumate, libspelling, VTE, Gom, libmanette and glycin) or, with
+--poppler, the PyLiite4-Poppler wheel.
 
 The libraries come from --addons-prefix (tools/manylinux/build_addons.sh or build_poppler.sh), built on the stack in
 --prefix. The wheel installs PyLiite4/_addons or PyLiite4/_poppler, whose libraries find the rest in the PyLiite4
@@ -43,13 +43,17 @@ class Wheel:
 
 
 WHEELS = {
-    "addons": Wheel("PyLiite4-Addons", "WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette for PyLiite4",
-                    "_addons",
+    "addons": Wheel("PyLiite4-Addons",
+                    "WebKitGTK, libshumate, libspelling, VTE, Gom, libmanette and glycin for PyLiite4", "_addons",
                     ["libwebkitgtk-6.0.so.4", "libjavascriptcoregtk-6.0.so.1", "libshumate-1.0.so.1",
-                     "libspelling-1.so.2", "libvte-2.91-gtk4.so.0", "libgom-1.0.so.0", "libmanette-0.2.so.0"],
+                     "libspelling-1.so.2", "libvte-2.91-gtk4.so.0", "libgom-1.0.so.0", "libmanette-0.2.so.0",
+                     "libglycin-2.so.0", "libglycin-gtk4-2.so.0"],
                     ["JavaScriptCore-6.0", "WebKit-6.0", "Shumate-1.0", "Spelling-1", "Vte-3.91", "Gom-1.0",
-                     "Manette-0.2"],
-                    ["WebKitGTK-6.0", "vte-2.91", "shumate1", "libspelling"]),
+                     "Manette-0.2", "Gly-2", "GlyGtk4-2"],
+                    ["WebKitGTK-6.0", "vte-2.91", "shumate1", "libspelling"],
+                    # glycin's JPEG XL loader compiles in jpegxl-rs and jpegxl-sys, which are GPL, so that program is.
+                    # It's a separate process that glycin talks to over a socket, so it doesn't make applications GPL.
+                    "LGPL-3.0-only AND GPL-3.0-or-later", ("jpegxl-rs", "jpegxl-sys")),
     # Its own generated module is PyLiite4's, under the LGPL; Poppler is GPL.
     "poppler": Wheel("PyLiite4-Poppler", "Poppler, for reading and drawing PDF documents, for PyLiite4 (GPL)",
                      "_poppler", ["libpoppler-glib.so.8"], ["Poppler-0.18"], [],
@@ -113,6 +117,21 @@ def build_addons(wheel, addons, prefix, gtk, bundled, bundled_typelibs):
             helpers.append(bring(webkit / process, lib / "webkitgtk-6.0"))
         for module in (webkit / "injected-bundle").glob("*.so"):
             helpers.append(bring(module, lib / "webkitgtk-6.0" / "injected-bundle"))
+        # The sandbox's D-Bus filter, which a patch lets WebKit find next to its processes.
+        if (prefix / "bin" / "xdg-dbus-proxy").exists():
+            helpers.append(bring(prefix / "bin" / "xdg-dbus-proxy", lib / "webkitgtk-6.0"))
+    # Loader configs need absolute paths. Save templates here; fill in the installed paths at startup.
+    for loaders in (prefix / "libexec" / "glycin-loaders").glob("*"):
+        target = addons / "libexec" / "glycin-loaders" / loaders.name
+        target.mkdir(parents=True)
+        for loader in loaders.iterdir():
+            helpers.append(bring(loader, target))
+        configs = addons / "share" / "glycin-loaders" / loaders.name / "conf.d"
+        configs.mkdir(parents=True)
+        for config in (prefix / "share" / "glycin-loaders" / loaders.name / "conf.d").glob("*.conf"):
+            template = configs / f"{config.name}.in"
+            template.write_text(config.read_text().replace(f"{prefix}/", "@BUNDLE@/"))
+            build_wheel.ORIGINS[template] = config
     # Enchant is built relocatable: it finds its providers and data next to its library.
     if (prefix / "lib" / "enchant-2").is_dir():
         (lib / "enchant-2").mkdir()

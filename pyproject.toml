@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyLiite4"
-version = "0.1.1"
+version = "0.2.0"
 description = "Complete, typed Python bindings for GTK 4 and libadwaita"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -15,6 +15,9 @@ sys.path.insert(0, str(ROOT))
 
 from demos import gtk_demo, workbench  # noqa: E402
 
+# A session bus that starts no services, so a demo can't start the desktop's portals.
+BUS_CONFIG = Path(__file__).with_name("session-bus.conf")
+
 RUNNER = Path(__file__).with_name("run_demo.py")
 
 
@@ -22,7 +25,7 @@ def run(*arguments):
     # A private bus with portals off: demos must not reach the desktop's portals or other services.
     command = [sys.executable, str(RUNNER), *arguments]
     if shutil.which("dbus-run-session"):
-        command = ["dbus-run-session", "--", *command]
+        command = ["dbus-run-session", f"--config-file={BUS_CONFIG}", "--", *command]
     env = {**os.environ, "GSETTINGS_BACKEND": "memory", "GTK_A11Y": "none", "GDK_DEBUG": "no-portals",
            "ADW_DISABLE_PORTAL": "1"}
     # GDK prefers Wayland, so under xvfb-run an inherited WAYLAND_DISPLAY would put windows on the real desktop.

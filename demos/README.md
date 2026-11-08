@@ -31,8 +31,10 @@ The ports are distributed under PyLiite4's LGPL-3.0-only, as the originals' "or 
 files in `gtk_demo/data/` are GTK's own, unchanged, and the libadwaita demo's `.ui` files, style sheet and icons are
 libadwaita's. The images, sounds and video in Workbench demo folders come from Workbench's demo library.
 
-Demos that use a library PyLiite4 doesn't bundle (WebKit, Shumate, Spelling, Manette, Gom, Gly) are ported but listed
-as unable to run. Workbench's Video demo plays an H.264 file, which bundled wheels can't decode.
+Install PyLiite4-Addons to run demos that need WebKit, Shumate, Spelling, Manette, Gom or Gly. The browser lists a
+demo as unable to run if a required library can't load. This also applies to source checkouts using system GTK,
+where you may need extra library packages. Workbench's Video demo plays an H.264 file, which bundled wheels can't
+decode.
 
 `tests/test_demos.py` opens every demo in its own process and fails on any Python exception or GLib critical. It
 runs them on a private D-Bus session with portals off and forces GDK's X11 backend, so under `xvfb-run` nothing
@@ -84,4 +86,4 @@ casts and `G_DEFINE_TYPE` boilerplate.
   `workbench.resolve()` as Workbench demos do. Like Workbench, the library browser runs each demo in a process of its
   own (`python -m demos.workbench --run NAME`), from a fresh copy of its folder in the user cache directory.
 - `main.json` is Workbench's, plus `"requires"`: the namespaces beyond GTK and libadwaita that the demo needs, such as
-  `["Soup"]`. Demos needing WebKit, Shumate, Spelling, Manette, Gom or Gly are kept, but listed as unable to run.
+  `["Soup"]`. A demo whose namespaces don't load is listed as unable to run.

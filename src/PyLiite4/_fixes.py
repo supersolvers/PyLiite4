@@ -7,6 +7,9 @@ what the C API does.
 from __future__ import annotations
 
 import math
+import os
+import shutil
+import subprocess
 from typing import Any
 
 from gi.repository import GObject  # type: ignore
@@ -302,4 +305,32 @@ def _fix_builder_scope(Gtk: Any) -> None:
     GtkOverrides.Builder.BuilderScope = BuilderScope
 
 
-FIXES = {"Gio": _gio, "Pango": _pango, "Gsk": _gsk, "Gtk": _gtk}
+def _webkit(WebKit: Any) -> None:
+    """Check sandbox support before WebKit starts a page's helpers.
+
+    Bundled WebKit can abort the whole process if bwrap is missing or can't
+    create namespaces. Check early so an import can report the problem.
+    Inside Flatpak, Snap or a container, let WebKit choose how to run.
+    Also honor an application's explicit choice to turn the sandbox off.
+    """
+    if not os.environ.get("WEBKIT_EXEC_PATH") or os.environ.get("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "0") != "0":
+        return
+    if os.path.exists("/.flatpak-info") or os.environ.get("SNAP") or os.path.exists("/run/.containerenv"):
+        return
+    bwrap = shutil.which("bwrap") or "/usr/bin/bwrap"
+    problem = None
+    if not os.path.exists(bwrap):
+        problem = "bwrap isn't installed"
+    else:
+        # The test WebKit itself runs in a container.
+        result = subprocess.run([bwrap, "--ro-bind", "/", "/", "--proc", "/proc", "--dev", "/dev", "--unshare-all",
+                                 "true"], capture_output=True, text=True, timeout=30)
+        if result.returncode != 0:
+            problem = f"bwrap can't run here: {(result.stderr.strip().splitlines() or ['no message'])[-1]}"
+    if problem:
+        raise ImportError(f"WebKit shows pages in a bubblewrap sandbox, but {problem}. Install bubblewrap, or, for "
+                          f"an application that shows only content it trusts, set "
+                          f"WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1 before importing WebKit.")
+
+
+FIXES = {"Gio": _gio, "Pango": _pango, "Gsk": _gsk, "Gtk": _gtk, "WebKit": _webkit}

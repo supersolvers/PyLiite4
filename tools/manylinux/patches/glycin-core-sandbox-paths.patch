@@ -1,0 +1,29 @@
+--- a/src/sandbox.rs
++++ b/src/sandbox.rs
+@@ -141,7 +141,9 @@
+     ),
+ ];
+ 
+-const INHERITED_ENVIRONMENT_VARIABLES: &[&str] = &["RUST_BACKTRACE", "RUST_LOG", "XDG_RUNTIME_DIR"];
++// PyLiite4: FONTCONFIG_FILE too, which points at the wheel's font configuration.
++const INHERITED_ENVIRONMENT_VARIABLES: &[&str] =
++    &["RUST_BACKTRACE", "RUST_LOG", "XDG_RUNTIME_DIR", "FONTCONFIG_FILE"];
+ 
+ pub struct Sandbox {
+     sandbox_mechanism: SandboxMechanism,
+@@ -402,6 +404,15 @@
+             mount(&mut command, "--ro-bind", dir);
+         }
+ 
++        // PyLiite4: the wheel's libraries and data, read-only, wherever it is installed.
++        if let Some(paths) = std::env::var_os("PYLIITE4_SANDBOX_PATHS") {
++            for dir in std::env::split_paths(&paths) {
++                if dir.exists() {
++                    mount(&mut command, "--ro-bind", &dir);
++                }
++            }
++        }
++
+         // Make loader binary available if not in /usr. This is useful for testing and
+         // adding loaders in user (/home) configurations.
+         if !self.exec().starts_with("/usr") {

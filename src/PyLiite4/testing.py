@@ -7,8 +7,9 @@ If you've used Qt's QTest or pytest-qt, this fills the same role. Enable the pyt
 or ``gtk = true`` under ``[tool.pytest.ini_options]``. Until it is enabled the plugin does nothing, so installing
 PyLiite4 doesn't change other projects' test runs. When enabled, before GTK initialises, it
 
-- starts a private Xvfb display and a private D-Bus session, which end with the test run, so windows and services
-  never reach the desktop;
+- starts a private Xvfb display and D-Bus session, both stopped at the end of the test run. Windows stay off the
+  desktop. The bus has no service directories, so requests from a test (including sandboxed WebKit helpers) can't
+  auto-start desktop services such as portals;
 - turns off portals and Wayland, records accessibility in-process (GTK's ``test`` backend, so
   ``Gtk.test_accessible_has_role()`` and its kin work), keeps settings in memory, and points the XDG config, data,
   state and runtime directories at a temporary directory, so tests don't read or write the user's own;
@@ -430,6 +431,22 @@ def press_key(widget: Gtk.Widget, accelerator: str) -> bool:
 
 # Set by the plugin to the Xvfb display it started, the one display RealInput may drive without being allowed to.
 _PRIVATE_DISPLAY = "PYLIITE4_TESTING_DISPLAY"
+# Omit service directories so this bus can't auto-start desktop services. A portal launched by a test could
+# otherwise outlive the bus under the user's service manager.
+_BUS_CONFIG = """<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <keep_umask/>
+  <listen>unix:tmpdir=/tmp</listen>
+  <auth>EXTERNAL</auth>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+"""
 
 # The modifier keys a modifier mask is pressed with, as X keysyms.
 _MODIFIER_KEYS = (("SHIFT_MASK", 0xFFE1), ("CONTROL_MASK", 0xFFE3), ("ALT_MASK", 0xFFE9), ("SUPER_MASK", 0xFFEB),
@@ -1291,8 +1308,8 @@ def isolate_environment(display: str = "xvfb") -> Callable[[], None]:
     """Prepare this process for GTK tests, before GTK initialises, and return a function that undoes it.
 
     ``display`` is ``xvfb``, to start a private Xvfb, or ``inherit``, to use ``$DISPLAY`` as it is, for running
-    under ``xvfb-run`` or watching the tests on a desktop. Either way the process gets a private D-Bus session,
-    ``GDK_BACKEND=x11`` without ``WAYLAND_DISPLAY``, no portals (``GDK_DEBUG=no-portals``, ``ADW_DISABLE_PORTAL``),
+    under ``xvfb-run`` or watching the tests on a desktop. Either way the process gets a private D-Bus session
+    with service activation disabled, ``GDK_BACKEND=x11`` without ``WAYLAND_DISPLAY``, no portals (``GDK_DEBUG=no-portals``, ``ADW_DISABLE_PORTAL``),
     accessibility recorded in-process (``GTK_A11Y=test``), in-memory settings (``GSETTINGS_BACKEND=memory``), and temporary XDG
     config, data, state and runtime directories. With ``display="inherit"`` and ``GDK_BACKEND=wayland`` set, the
     Wayland display and runtime directory are kept, for a headless compositor.
@@ -1338,9 +1355,11 @@ def isolate_environment(display: str = "xvfb") -> Callable[[], None]:
             isolation.set("DISPLAY", f":{number}")
             isolation.set("XAUTHORITY", None)
             isolation.set(_PRIVATE_DISPLAY, f":{number}")
-        # Started last, so services it activates get the environment above.
-        isolation.set("DBUS_SESSION_BUS_ADDRESS",
-                      isolation.start(["dbus-daemon", "--session", "--nofork", "--print-address={fd}"], "dbus-daemon"))
+        bus_config = os.path.join(isolation.directory, "session-bus.conf")
+        with open(bus_config, "w") as file:
+            file.write(_BUS_CONFIG)
+        isolation.set("DBUS_SESSION_BUS_ADDRESS", isolation.start(
+            ["dbus-daemon", f"--config-file={bus_config}", "--nofork", "--print-address={fd}"], "dbus-daemon"))
         isolation.watch()
     except BaseException:
         isolation.stop()

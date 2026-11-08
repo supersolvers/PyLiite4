@@ -1,9 +1,13 @@
-"""PyLiite4-Addons: WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette, from the add-ons wheel.
+"""PyLiite4-Addons: WebKitGTK, libshumate, libspelling, VTE, Gom, libmanette and glycin, from the add-ons wheel.
 
 They need the add-ons wheel installed next to a bundled PyLiite4 wheel, so every test skips without it.
 """
 
 import importlib
+import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -13,9 +17,19 @@ from PyLiite4 import GLib, GObject, Gtk
 from PyLiite4.testing import wait_until
 
 ADDONS = Path(PyLiite4.__file__).parent / "_addons"
-NAMESPACES = ["JavaScriptCore", "WebKit", "Shumate", "Spelling", "Vte", "Gom", "Manette"]
+NAMESPACES = ["JavaScriptCore", "WebKit", "Shumate", "Spelling", "Vte", "Gom", "Manette", "Gly", "GlyGtk4"]
 
 pytestmark = pytest.mark.skipif(not ADDONS.is_dir(), reason="PyLiite4-Addons is not installed")
+
+
+def bubblewrap_works():
+    bwrap = shutil.which("bwrap")
+    return bool(bwrap) and subprocess.run([bwrap, "--ro-bind", "/", "/", "--unshare-all", "true"],
+                                          capture_output=True).returncode == 0
+
+
+# WebKit and glycin run their helper processes in bubblewrap sandboxes, as upstream does.
+needs_bubblewrap = pytest.mark.skipif(not bubblewrap_works(), reason="bubblewrap isn't installed or can't run here")
 
 
 def loaded(library):
@@ -131,3 +145,133 @@ def test_manette_lists_game_controllers():
         devices.append(found[1])
     # A test machine usually has none, so this checks that the monitor works at all.
     assert all(isinstance(device, Manette.Device) for device in devices)
+
+
+@needs_bubblewrap
+def test_webkit_runs_pages_in_its_sandbox():
+    from PyLiite4 import WebKit
+    if os.environ.get("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "0") != "0":
+        pytest.skip("WebKit's sandbox is turned off in this environment")
+    view = WebKit.WebView()
+    window = Gtk.Window(child=view)
+    window.present()
+    events = []
+    view.load_changed.connect(lambda view, event: events.append(event))
+    view.load_html("<p>Sandboxed</p>", None)
+    wait_until(lambda: WebKit.LoadEvent.FINISHED in events, timeout=60)
+
+    def ancestors(pid):
+        names = []
+        while pid > 1 and pid != os.getpid():
+            stat = Path(f"/proc/{pid}/stat").read_text()
+            names.append(stat[stat.index("(") + 1:stat.rindex(")")])
+            pid = int(stat[stat.rindex(")") + 2:].split()[1])
+        return names, pid == os.getpid()
+
+    web_processes = []
+    for entry in Path("/proc").iterdir():
+        try:
+            if entry.name.isdigit() and (entry / "comm").read_text().startswith("WebKitWebProces"):
+                names, ours = ancestors(int(entry.name))
+                if ours:
+                    web_processes.append(names)
+        except (FileNotFoundError, ProcessLookupError):
+            continue
+    # The page's process runs under bwrap, which a patch lets WebKit find on PATH.
+    assert web_processes and all("bwrap" in names for names in web_processes), web_processes
+    window.destroy()
+
+
+def test_webkit_explains_a_sandbox_that_cant_start(tmp_path):
+    # A bwrap that can't create namespaces, as inside another sandbox. WebKit itself would end the program.
+    (tmp_path / "bwrap").write_text("#!/bin/sh\necho 'bwrap: No permissions to create a new namespace' >&2\nexit 1\n")
+    (tmp_path / "bwrap").chmod(0o755)
+    environment = {key: value for key, value in os.environ.items() if key != "WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS"}
+    environment["PATH"] = f"{tmp_path}{os.pathsep}{os.environ.get('PATH', '')}"
+    script = "from PyLiite4 import WebKit"
+    result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, env=environment)
+    assert result.returncode != 0 and "ImportError" in result.stderr, result.stderr
+    assert "No permissions to create a new namespace" in result.stderr
+    assert "WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1" in result.stderr
+    # The opt-out, for an application that shows only its own content.
+    environment["WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS"] = "1"
+    assert subprocess.run([sys.executable, "-c", script], env=environment).returncode == 0
+
+
+# 16x16 images in #3070c0, which the wheel's libheif decodes but can't encode.
+AVIF = ("AAAAHGZ0eXBhdmlmAAAAAG1pZjFhdmlmbWlhZgAAANZtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAAA5w"
+        "aXRtAAAAAAABAAAAImlsb2MAAAAAREAAAQABAAAAAAD6AAEAAAAAAAAAIAAAACNpaW5mAAAAAAABAAAAFWluZmUCAAAAAAEAAGF2MDEA"
+        "AAAAVmlwcnAAAAA4aXBjbwAAAAxhdjFDgQAMAAAAABRpc3BlAAAAAAAAABAAAAAQAAAAEHBpeGkAAAAAAwgICAAAABZpcG1hAAAAAAAA"
+        "AAEAAQOBAgMAAAAobWRhdBIACgkYDP/YICGg0IAyERZABhhhhAAAeJ2iz/wMe7Di")
+HEIF = ("AAAAHGZ0eXBoZWljAAAAAG1pZjFoZWljbWlhZgAAAWhtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAAA5w"
+        "aXRtAAAAAAABAAAAImlsb2MAAAAAREAAAQABAAAAAAGMAAEAAAAAAAAANAAAACNpaW5mAAAAAAABAAAAFWluZmUCAAAAAAEAAGh2YzEA"
+        "AAAA6GlwcnAAAADJaXBjbwAAAHVodmNDAQNwAAAAAAAAAAAAHvAA/P34+AAADwNgAAEAGEABDAH//wNwAAADAJAAAAMAAAMAHroCQGEA"
+        "AQApQgEBA3AAAAMAkAAAAwAAAwAeoCCBBZbqrprm4CGgwIAAAAyAAAADAIRiAAEABkQBwXPBiQAAABRpc3BlAAAAAAAAAEAAAABAAAAA"
+        "KGNsYXAAAAAQAAAAAQAAABAAAAAB////0AAAAAL////QAAAAAgAAABBwaXhpAAAAAAMICAgAAAAXaXBtYQAAAAAAAAABAAEEgQIEgwAA"
+        "ADxtZGF0AAAAMCgBrwnIWZjQOSNXf/+85Tkfj/X/90cbVn8Tr+jsZTrKQ59EsZPOO74MgIeDuF7LcA==")
+GLY_SCRIPT = """
+import base64, sys
+from pathlib import Path
+from PyLiite4 import Gio, GLib, Gly, GlyGtk4
+
+folder = Path(sys.argv[1])
+pixels = GLib.Bytes.new(bytes([0x30, 0x70, 0xc0]) * 16 * 16)
+for mime_type, name in [("image/png", "png"), ("image/jpeg", "jpg"), ("image/webp", "webp"), ("image/jxl", "jxl")]:
+    # Encoding runs in the sandbox too.
+    try:
+        creator = Gly.Creator.new(mime_type)
+        creator.add_frame(16, 16, Gly.MemoryFormat.R8G8B8, pixels)
+        (folder / f"square.{name}").write_bytes(creator.create().get_data().get_data())
+    except GLib.Error as error:
+        print(f".{name}", "error", error.message)
+(folder / "square.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">'
+                                   '<rect width="16" height="16" fill="#3070c0"/></svg>')
+(folder / "square.avif").write_bytes(base64.b64decode(sys.argv[2]))
+(folder / "square.heif").write_bytes(base64.b64decode(sys.argv[3]))
+for path in sorted(folder.iterdir()):
+    loader = Gly.Loader.new(Gio.File.new_for_path(str(path)))
+    loader.set_accepted_memory_formats(Gly.MemoryFormatSelection.R8G8B8)
+    try:
+        image = loader.load()
+    except GLib.Error as error:
+        print(path.suffix, "error", error.message)
+        continue
+    frame = image.next_frame()
+    data, stride = frame.get_buf_bytes().get_data(), frame.get_stride()
+    texture = GlyGtk4.frame_get_texture(frame)
+    print(path.suffix, image.get_mime_type(), texture.get_width(), texture.get_height(),
+          *data[8 * stride + 8 * 3:8 * stride + 8 * 3 + 3])
+"""
+
+
+def run_gly(tmp_path, **environment):
+    images = tmp_path / "images"
+    images.mkdir()
+    result = subprocess.run([sys.executable, "-c", GLY_SCRIPT, str(images), AVIF, HEIF], capture_output=True,
+                            text=True, timeout=120, env={**os.environ, **environment})
+    assert result.returncode == 0, result.stderr
+    return {line.split()[0]: line.split()[1:] for line in result.stdout.splitlines() if line.startswith(".")}, \
+        result.stderr
+
+
+@needs_bubblewrap
+def test_gly_loads_images_in_its_sandbox(tmp_path):
+    loaded, stderr = run_gly(tmp_path)
+    # glycin says when it can't sandbox its loaders.
+    assert "without sandbox" not in stderr, stderr
+    assert set(loaded) == {".png", ".jpg", ".webp", ".jxl", ".svg", ".avif", ".heif"}
+    for suffix, (mime_type, width, height, *pixel) in loaded.items():
+        assert mime_type.startswith("image/") and (width, height) == ("16", "16"), (suffix, loaded[suffix])
+        # The lossy formats come back close to the colour they were given.
+        assert all(abs(int(got) - want) <= 12 for got, want in zip(pixel, (0x30, 0x70, 0xc0))), (suffix, pixel)
+
+
+def test_gly_needs_bubblewrap_or_the_documented_opt_out(tmp_path):
+    # With bwrap nowhere on PATH, glycin won't run its loaders unsandboxed by itself.
+    loaded, _ = run_gly(tmp_path, PATH="/nonexistent")
+    assert all(result[0] == "error" for result in loaded.values()), loaded
+    # Its own switch for applications that accept the risk.
+    shutil.rmtree(tmp_path / "images")
+    loaded, stderr = run_gly(tmp_path, PATH="/nonexistent", GLYCIN_DISABLE_SANDBOX="i-know-the-risks")
+    assert all(result[0] != "error" for result in loaded.values()), loaded
+    assert "without sandbox" in stderr

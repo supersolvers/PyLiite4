@@ -3,7 +3,7 @@
 # KWin compositor, with the system's GTK stack hidden. Run it in its own D-Bus session, so the headless KWin
 # stays apart from the desktop's.
 #
-# Usage: dbus-run-session -- tools/verify_wayland.sh dist/pyliite4-*.whl
+# Usage: dbus-run-session --config-file=tests/session-bus.conf -- tools/verify_wayland.sh dist/pyliite4-*.whl
 set -euo pipefail
 wheel=$(realpath "$1"); project=$(cd "$(dirname "$0")/.." && pwd)
 if [ "${DBUS_SESSION_BUS_ADDRESS:-}" = "unix:path=$XDG_RUNTIME_DIR/bus" ]; then

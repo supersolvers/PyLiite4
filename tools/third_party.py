@@ -32,15 +32,20 @@ except ImportError:  # Python 3.10
 
 SOURCE_TREE = Path("/src")
 TEXTS = Path(__file__).resolve().parent / "license-texts"
+# The patches the build scripts apply; patch_once leaves a .pyliite4-<patch> marker in each source tree it patches.
+PATCHES = Path(__file__).resolve().parent / "manylinux" / "patches"
 LICENSE_NAME = re.compile(r"^(COPYING|LICEN[CS]E|COPYRIGHT|NOTICE|UNLICENSE)([._-].*)?$", re.I)
 ARCHIVE = re.compile(r"\.(tar(\.(gz|xz|bz2|zst))?|tgz|tbz2)$")
 # Meson projects that don't declare a license, or declare an old name for it.
 MESON_LICENSES = {
     "cairo": "LGPL-2.1-only OR MPL-1.1",
+    "dav1d": "BSD-2-Clause",
     "freetype": "FTL OR GPL-2.0-or-later",
     "fribidi": "LGPL-2.1-or-later",
     "glib": "LGPL-2.1-or-later",
     "glib-networking": "LGPL-2.1-or-later",
+    # Its JPEG XL loader compiles in GPL-3.0-or-later crates, which the notices list under it.
+    "glycin": "MPL-2.0 OR LGPL-2.1-or-later",
     "gom": "LGPL-2.1-or-later",
     "gobject-introspection": "LGPL-2.0-or-later AND GPL-2.0-or-later AND MIT",
     "gst-python": "LGPL-2.1-or-later",
@@ -57,6 +62,7 @@ MESON_LICENSES = {
     "pango": "LGPL-2.1-or-later",
     "vte": "LGPL-3.0-or-later AND MIT AND (Apache-2.0 OR BSL-1.0 OR MIT) AND (Apache-2.0 OR MIT)",
     "wayland-protocols": "MIT",
+    "xdg-dbus-proxy": "LGPL-2.1-or-later",
 }
 # Projects that keep their license texts somewhere other than the top of their source tree.
 OTHER_TEXTS = {"freetype": {"LICENSE.TXT", "docs/LICENSE.TXT", "docs/FTL.TXT", "docs/GPLv2.TXT"},
@@ -88,6 +94,11 @@ OTHER_BUILDS = {"ibus": ("LGPL-2.1-or-later", ["lib/libibus-1.0.so*", "lib/gtk-4
                 "hunspell": ("MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later", ["lib/libhunspell-*.so*"]),
                 "enchant": ("LGPL-2.1-or-later", ["lib/libenchant-2.so*", "lib/enchant-2/*.so", "share/enchant-2/*"]),
                 "hidapi": ("BSD-3-Clause OR GPL-3.0-only OR HIDAPI", ["lib/libhidapi-hidraw.so*"]),
+                # glycin's image libraries.
+                "highway": ("Apache-2.0 OR BSD-3-Clause", ["lib/libhwy.so*"]),
+                "libjxl": ("BSD-3-Clause", ["lib/libjxl.so*", "lib/libjxl_threads.so*", "lib/libjxl_cms.so*"]),
+                "libde265": ("LGPL-3.0-or-later", ["lib/libde265.so*"]),
+                "libheif": ("LGPL-3.0-or-later", ["lib/libheif.so*"]),
                 # Its own code, and the third-party code in OTHER_TEXTS.
                 "webkitgtk": ("LGPL-2.1-or-later AND LGPL-2.0-or-later AND BSD-2-Clause AND BSD-3-Clause AND MIT AND "
                               "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 AND Unicode-3.0 AND "
@@ -157,6 +168,11 @@ def archive_texts(data, extra=frozenset()):
     with tarfile.open(fileobj=io.BytesIO(data), mode="r:*") as archive:
         members = [(Path(m.name).parts[1:], m) for m in archive.getmembers() if m.isfile()]
         return license_texts(((parts, lambda m=m: archive.extractfile(m).read()) for parts, m in members), extra)
+
+
+def applied_patches(directory):
+    """The patches the build applied to a source tree."""
+    return [PATCHES / marker.name.removeprefix(".pyliite4-") for marker in sorted(directory.glob(".pyliite4-*.patch"))]
 
 
 def top_directory(archive):
@@ -231,10 +247,12 @@ class Attribution:
         # gst-python is built once for each Python version, as gst-python-cp313 and so on.
         name = {"glib-bootstrap": "glib", "harfbuzz-icu": "harfbuzz"}.get(stamp) or re.sub(r"-cp\d+$", "", stamp)
         license = MESON_LICENSES.get(name) or declared
-        component = Component(name, info["version"], license, "built from source", [self.source_archive(source)],
+        component = Component(name, info["version"], license, "built from source",
+                              [self.source_archive(source), *applied_patches(source)],
                               tree_texts(source, OTHER_TEXTS.get(name, frozenset())))
         if (source / "Cargo.lock").exists():
-            component.parts = self.crates(source / "Cargo.lock")
+            # Some projects, such as glycin, give cargo a home of their own in the build directory.
+            component.parts = self.crates(source / "Cargo.lock", [build / "cargo-home" / "registry"])
         return component
 
     def _other(self, name):
@@ -242,21 +260,27 @@ class Attribution:
         source = next(p for p in [*SOURCE_TREE.glob(f"{name}-*"), SOURCE_TREE / name] if p.is_dir())
         archive = self.source_archive(source)
         version = re.search(r"\d+(?:\.\d+)+", archive.name).group(0)
-        return Component(name, version, OTHER_BUILDS[name][0], "built from source", [archive],
+        return Component(name, version, OTHER_BUILDS[name][0], "built from source", [archive, *applied_patches(source)],
                          tree_texts(source, OTHER_TEXTS.get(name, frozenset())))
 
-    def crates(self, lock):
-        """The crates.io packages a Rust project compiled in: those cargo downloaded for it."""
-        registry = Path.home() / ".cargo" / "registry"
+    def crates(self, lock, registries=()):
+        """Find a Rust project's downloaded crates and patched replacements."""
+        registries = [Path.home() / ".cargo" / "registry", *registries]
         found = []
         for package in tomllib.loads(lock.read_text()).get("package", []):
-            if not package.get("source", "").startswith("registry+"):
-                continue
             name, version = package["name"], package["version"]
-            crate = next(registry.glob(f"cache/*/{name}-{version}.crate"), None)
-            if not crate:
+            patched = SOURCE_TREE / f"{name}-{version}"
+            if package.get("source", "").startswith("registry+"):
+                crate = next((c for r in registries for c in r.glob(f"cache/*/{name}-{version}.crate")), None)
+                if not crate:
+                    continue
+                source = next(s for r in registries for s in r.glob(f"src/*/{name}-{version}"))
+                sources = [crate]
+            elif "source" not in package and (patched / ".cargo_vcs_info.json").exists():
+                source = patched
+                sources = [SOURCE_TREE / "archives" / f"{name}-{version}.crate", *applied_patches(patched)]
+            else:
                 continue
-            source = next(registry.glob(f"src/*/{name}-{version}"))
             manifest = tomllib.loads((source / "Cargo.toml").read_text())["package"]
             license = manifest.get("license", "").replace("/", " OR ")
             texts = tree_texts(source)
@@ -267,7 +291,7 @@ class Attribution:
                          f"Copyright the {name} authors: {authors}\n\n".encode()
                 for spdx in re.findall(r"[\w.-]+", license.replace(" OR ", " ").replace(" AND ", " ")):
                     texts[f"{spdx}.txt"] = header + (TEXTS / f"{spdx}.txt").read_bytes()
-            found.append(Component(name, version, license, "Rust crate from crates.io", [crate], texts))
+            found.append(Component(name, version, license, "Rust crate from crates.io", sources, texts))
         return found
 
     def _rpm(self, source_rpm):

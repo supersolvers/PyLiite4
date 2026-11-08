@@ -33,9 +33,9 @@ FILES = {"GLib": "GLib-2.0", "GObject": "GObject-2.0", "Gio": "Gio-2.0", "GdkPix
          "HarfBuzz": "HarfBuzz-0.0", "PangoCairo": "PangoCairo-1.0", "Rsvg": "Rsvg-2.0",
          "JavaScriptCore": "JavaScriptCore-6.0", "WebKit": "WebKit-6.0", "Shumate": "Shumate-1.0",
          "Spelling": "Spelling-1", "Vte": "Vte-3.91", "Gom": "Gom-1.0", "Manette": "Manette-0.2",
-         "Poppler": "Poppler-0.18"}
+         "Gly": "Gly-2", "GlyGtk4": "GlyGtk4-2", "Poppler": "Poppler-0.18"}
 # In the PyLiite4-Addons wheel (tools/build_addons_wheel.py), after the namespaces above that they use.
-ADDON_NAMESPACES = ["JavaScriptCore", "WebKit", "Shumate", "Spelling", "Vte", "Gom", "Manette"]
+ADDON_NAMESPACES = ["JavaScriptCore", "WebKit", "Shumate", "Spelling", "Vte", "Gom", "Manette", "Gly", "GlyGtk4"]
 # In the PyLiite4-Poppler wheel, which is GPL.
 POPPLER_NAMESPACES = ["Poppler"]
 DEPENDENCIES = {"GObject": ["GLib"], "Gio": ["GLib", "GObject"], "GdkPixbuf": ["GObject", "Gio"],
@@ -47,7 +47,7 @@ DEPENDENCIES = {"GObject": ["GLib"], "Gio": ["GLib", "GObject"], "GdkPixbuf": ["
                 "HarfBuzz": ["GObject"], "PangoCairo": ["Pango"], "Rsvg": ["GdkPixbuf", "Gio"],
                 "JavaScriptCore": ["GObject"], "WebKit": ["Gtk", "Soup", "JavaScriptCore"], "Shumate": ["Gtk"],
                 "Spelling": ["GtkSource"], "Vte": ["Gtk"], "Gom": ["Gio"], "Manette": ["Gio"],
-                "Poppler": ["Gio"]}
+                "Gly": ["Gio"], "GlyGtk4": ["Gly", "Gdk"], "Poppler": ["Gio"]}
 
 CORE = "http://www.gtk.org/introspection/core/1.0"
 C = "http://www.gtk.org/introspection/c/1.0"
@@ -414,6 +414,8 @@ DESCRIPTIONS = {
     "Vte": "VTE, a terminal emulator widget, from PyLiite4-Addons",
     "Gom": "Gom, an object mapper for SQLite, from PyLiite4-Addons",
     "Manette": "libmanette, for game controllers, from PyLiite4-Addons",
+    "Gly": "glycin, which loads images in sandboxed helper programs, from PyLiite4-Addons",
+    "GlyGtk4": "glycin's GTK functions, which turn its frames into textures, from PyLiite4-Addons",
     "Poppler": "Poppler, for reading and drawing PDF documents, from PyLiite4-Poppler, which is GPL",
 }
 # Starts each line of a docstring, so that the GObject stub's renaming leaves doc text alone.

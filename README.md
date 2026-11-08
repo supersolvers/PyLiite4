@@ -59,8 +59,8 @@ See [Installing](#installing) for the wheel and system-GTK options.
 - **`pyliite4-resources`** compiles a `.gresource.xml` file to a Python module. Importing it registers the resources.
 - **`pyliite4-deploy`** freezes an application with PyInstaller, into a folder that runs without Python installed.
 - **PyLiite4-Addons**, a separate wheel: `WebKit` and `JavaScriptCore` (WebKitGTK, a web engine), `Shumate` (maps),
-  `Spelling` (spell checking for GtkSourceView), `Vte` (a terminal), `Gom` (objects stored in SQLite) and `Manette`
-  (game controllers). See [Installing](#installing).
+  `Spelling` (spell checking for GtkSourceView), `Vte` (a terminal), `Gom` (objects stored in SQLite), `Manette`
+  (game controllers) and `Gly` with `GlyGtk4` (glycin, sandboxed image loading). See [Installing](#installing).
 - **PyLiite4-Poppler**, another separate wheel: `Poppler`, for reading and drawing PDF documents. Poppler is GPL, so
   an application that uses it must be too. See [License](#license).
 
@@ -421,16 +421,28 @@ pip install PyLiite4
 pip picks the wheel for your Python and architecture. It comes with GTK, libadwaita, PyGObject and the Adwaita
 icons. Your system supplies glibc, the C++ runtime and graphics drivers.
 
-PyLiite4-Addons adds WebKitGTK, libshumate, libspelling, VTE, Gom and libmanette. It pulls in the matching PyLiite4
-wheel and shares its libraries:
+PyLiite4-Addons adds WebKitGTK, libshumate, libspelling, VTE, Gom, libmanette and glycin. It pulls in the matching
+PyLiite4 wheel and shares its libraries:
 
 ```bash
 pip install PyLiite4-Addons
 ```
 
-WebKit alone is larger than the rest of GTK, so it gets its own wheel. WebKit runs pages in helper processes from the
-wheel, without its bubblewrap sandbox, which would need `bwrap` and `xdg-dbus-proxy` on the user's system: show web
-content you trust. Spell checking uses the system's Hunspell dictionaries, from `/usr/share/hunspell`.
+WebKit alone is larger than the rest of GTK, so it gets its own wheel. Spell checking uses the system's Hunspell
+dictionaries, from `/usr/share/hunspell`.
+
+glycin (`Gly`) loads images in helper programs: PNG, JPEG, GIF, WebP, TIFF, SVG, HEIF, AVIF, JPEG XL and more.
+It decodes HEIF and AVIF but can't encode them.
+
+WebKit and glycin use bubblewrap to sandbox their helper processes. The sandboxes make the required system files
+and the wheel's own files available read-only. You'll need `bwrap` installed on your system; WebKit bundles its
+own `xdg-dbus-proxy`.
+
+If `bwrap` is missing or can't create namespaces (for example, inside another unprivileged sandbox), importing
+`WebKit` raises an `ImportError` explaining the problem, and glycin can't load images. An application that accepts
+the risk, such as one that only shows its own content, can turn off the relevant sandbox. Set
+`WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1` or `GLYCIN_DISABLE_SANDBOX=i-know-the-risks` before the corresponding
+library starts its first helper.
 
 For PDF documents, install PyLiite4-Poppler. It pulls in the matching PyLiite4 wheel too:
 
@@ -474,7 +486,7 @@ Bundled wheels include GStreamer plugins for free formats such as Ogg, Opus, Vor
 patent-encumbered codecs like H.264 or AAC. They also include translations and the IBus input-method client, which
 talks to the IBus daemon on the user's system. HTTPS uses the bundled OpenSSL with the system's CA certificates, found
 at the usual path for Debian, Fedora, openSUSE or Alpine, or wherever `SSL_CERT_FILE` points. SVG images load through
-librsvg. Formats that need glycin, such as HEIF and JPEG XL, aren't supported.
+librsvg. HEIF, AVIF and JPEG XL need glycin, from PyLiite4-Addons.
 
 ### Shipping an application
 
@@ -497,19 +509,26 @@ source archive, and `components.json` lists which bundled file comes from which 
 the same list as `THIRD-PARTY-NOTICES.txt`.
 
 The add-ons wheel lists its own projects the same way, in `PyLiite4/_addons/licenses/`. Among them, VTE is
-LGPL-3.0-or-later, WebKitGTK is LGPL and BSD with the third-party code it compiles in, and Hunspell and HIDAPI are
-used under their non-GPL options.
+LGPL-3.0-or-later, WebKitGTK is LGPL and BSD with the third-party code it compiles in, glycin is MPL-2.0 or
+LGPL-2.1-or-later with the Rust crates it compiles in, libheif and libde265 are LGPL-3.0-or-later, and Hunspell and
+HIDAPI are used under their non-GPL options. WebKit and glycin carry small patches that let their sandboxes find a
+wheel's files. The notices name each patch next to the source archive, and both are published with it.
+
+The add-ons wheel also contains one GPL program: glycin's JPEG XL loader, `glycin-jxl`, compiles in the
+`jpegxl-rs` and `jpegxl-sys` crates, which are GPL-3.0-or-later. glycin runs each loader as a separate process in its
+sandbox, and your program doesn't link to it, so the add-ons wheel's license is `LGPL-3.0-only AND GPL-3.0-or-later`
+to cover that one program. If you redistribute the wheel, its GPL obligations apply to `glycin-jxl` and its sources.
 
 The PyLiite4-Poppler wheel is the exception: Poppler is `GPL-2.0-only OR GPL-3.0-only`, so the wheel's license is
 `LGPL-3.0-only AND (GPL-2.0-only OR GPL-3.0-only)`, and a program that uses it must be distributed under the GPL.
 Its projects are listed in `PyLiite4/_poppler/licenses/`. Install it only if that suits your application.
 
-Apart from that wheel, none of the bundled libraries is GPL-only. Some packages also contain GPL programs, but the wheel takes only their
-LGPL, BSD or dual-licensed libraries. To keep it that way, the build fails when a project that mentions the GPL isn't
-on a reviewed list in `tools/third_party.py`.
+Apart from the Poppler wheel and that loader program, none of the bundled code is GPL-only. Some packages also
+contain GPL programs, but the wheels take only their LGPL, BSD or dual-licensed libraries. To keep it that way, the
+build fails when a project that mentions the GPL isn't on a reviewed list in `tools/third_party.py`.
 
 Download the bundled projects' exact source archives and `SHA256SUMS` from the matching release's assets:
-[PyLiite4 0.1.1](https://github.com/supersolvers/PyLiite4/releases/tag/v0.1.1). The filenames in `NOTICES.txt`
+[PyLiite4 0.2.0](https://github.com/supersolvers/PyLiite4/releases/tag/v0.2.0). The filenames in `NOTICES.txt`
 identify the individual archives to download. GitHub's automatic Source code downloads contain this repository,
 rather than the dependency sources.
 
@@ -562,7 +581,7 @@ tools/manylinux/enter.sh /path/to/root /project/tools/manylinux/build_wheels.sh 
 ```
 
 ```bash
-tools/manylinux/verify_in_root.sh /path/to/root dist/pyliite4-0.1.1-cp314-cp314-manylinux_2_34_x86_64.whl cp314
+tools/manylinux/verify_in_root.sh /path/to/root dist/pyliite4-0.2.0-cp314-cp314-manylinux_2_34_x86_64.whl cp314
 ```
 
 The stack build records finished packages. If it fails, run it again to pick up where it stopped.
@@ -588,14 +607,14 @@ reviewed. `build_wheels.sh` also copies every project's source archive, with `SH
 which is published with the release. Downloaded source RPMs and sdists are kept in `build/third-party/`.
 
 ```bash
-tools/verify_wheel.sh dist/pyliite4-0.1.1-cp314-cp314-manylinux_2_34_x86_64.whl
+tools/verify_wheel.sh dist/pyliite4-0.2.0-cp314-cp314-manylinux_2_34_x86_64.whl
 ```
 
 installs that wheel in a clean venv and runs the tests in a `bwrap` sandbox with the system's GTK stack hidden, on a
 D-Bus session of their own.
 
 ```bash
-dbus-run-session -- tools/verify_wayland.sh dist/pyliite4-0.1.1-cp314-cp314-manylinux_2_34_x86_64.whl
+dbus-run-session --config-file=tests/session-bus.conf -- tools/verify_wayland.sh dist/pyliite4-0.2.0-cp314-cp314-manylinux_2_34_x86_64.whl
 ```
 
 does the same on Wayland, with a headless `kwin_wayland` as the compositor.

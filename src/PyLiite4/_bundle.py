@@ -41,13 +41,13 @@ def _cache_directory() -> Path:
     raise OSError("no writable cache directory for PyLiite4")
 
 
-def _write_config(relative_path: Path, template: Path) -> Path:
-    """Instantiate a config file that must name absolute paths into the bundle.
+def _write_config(relative_path: Path, template: Path, bundle: Path = BUNDLE) -> Path:
+    """Write a config with absolute paths into the main or add-on bundle.
 
-    The install location may be read-only, so these go in a cache directory.
-    Returns the directory that relative_path was created under.
+    The install location may be read-only, so write to the cache instead.
+    Return the directory that relative_path was created under.
     """
-    text = template.read_text().replace("@BUNDLE@", str(BUNDLE))
+    text = template.read_text().replace("@BUNDLE@", str(bundle))
     root = _cache_directory()
     path = root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -96,6 +96,10 @@ def setup() -> None:
             if Path(certificates).exists():
                 os.environ["SSL_CERT_FILE"] = certificates
                 break
+    # The sandbox patches also mount these paths read-only. Helpers need the wheels and their cached configs,
+    # even when the wheels aren't installed in a system directory.
+    _prepend("PYLIITE4_SANDBOX_PATHS", _cache_directory())
+    _prepend("PYLIITE4_SANDBOX_PATHS", BUNDLE.parent)
     launcher = BUNDLE / "libexec" / "gio-launch-desktop"
     if launcher.exists():
         os.environ["GIO_LAUNCH_DESKTOP"] = str(launcher)
@@ -130,6 +134,10 @@ def _setup_addons(addons: Path) -> None:
     if webkit.is_dir():
         os.environ["WEBKIT_EXEC_PATH"] = str(webkit)
         os.environ["WEBKIT_INJECTED_BUNDLE_PATH"] = str(webkit / "injected-bundle")
+    # Use the bundled glycin loaders: system loaders link against the system's libraries.
+    for template in (addons / "share" / "glycin-loaders").glob("*/conf.d/*.conf.in"):
+        relative = Path("glycin") / "glycin-loaders" / template.relative_to(addons / "share" / "glycin-loaders")
+        os.environ["GLYCIN_DATA_DIR"] = str(_write_config(relative.with_suffix(""), template, addons) / "glycin")
     # GObject Introspection reads GI_TYPELIB_PATH once, so a second add-on wheel's typelibs need adding here. It loads
     # a namespace's library by name, which finds only the bundle's own.
     repository = importlib.import_module("gi._gi").Repository.get_default()

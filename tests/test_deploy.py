@@ -12,6 +12,8 @@ import pytest
 from PyLiite4.tools import deploy
 
 EXAMPLE = Path(__file__).parent.parent / "examples" / "hello.py"
+# A session bus that starts no services, so what a test runs can't start the desktop's portals.
+BUS_CONFIG = Path(__file__).with_name("session-bus.conf")
 
 # Runs inside the frozen app before its script: once the window is up, report what loaded it, then quit.
 PROBE = """
@@ -66,7 +68,7 @@ def test_deploy_freezes_and_runs_the_example(tmp_path, monkeypatch):
         env["XAUTHORITY"] = os.environ["XAUTHORITY"]
     command = [str(binary)]
     if shutil.which("dbus-run-session"):
-        command = ["dbus-run-session", "--", *command]
+        command = ["dbus-run-session", f"--config-file={BUS_CONFIG}", "--", *command]
     with open(tmp_path / "output.log", "w") as output:
         process = subprocess.Popen(command, env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         try:

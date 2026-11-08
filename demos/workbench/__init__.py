@@ -29,7 +29,7 @@ CATEGORIES = {"user_interface": "User Interface", "controls": "Controls", "layou
               "feedback": "Feedback", "navigation": "Navigation", "platform": "Platform APIs",
               "network": "Network", "tools": "Tools"}
 # Namespaces PyLiite4 doesn't provide; demos that need one are listed but can't run.
-UNAVAILABLE = {"Gly"}
+UNAVAILABLE: set[str] = set()
 
 
 def loads(namespace: str) -> bool:

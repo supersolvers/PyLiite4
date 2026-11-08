@@ -13,6 +13,9 @@ import pytest
 
 import PyLiite4
 
+# A session bus that starts no services, so what a test runs can't start the desktop's portals.
+BUS_CONFIG = Path(__file__).with_name("session-bus.conf")
+
 ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES = ROOT / "examples"
 RUNNER = Path(__file__).with_name("run_example.py")
@@ -23,7 +26,7 @@ def run(script: Path, **extra_env: str) -> str:
     # As in test_demos.py: a private bus with portals off and GDK on X11, so nothing reaches the desktop.
     command = [sys.executable, str(RUNNER), str(script)]
     if shutil.which("dbus-run-session"):
-        command = ["dbus-run-session", "--", *command]
+        command = ["dbus-run-session", f"--config-file={BUS_CONFIG}", "--", *command]
     env = {**os.environ, "GSETTINGS_BACKEND": "memory", "GTK_A11Y": "none", "GDK_DEBUG": "no-portals",
            "ADW_DISABLE_PORTAL": "1", **extra_env}
     if env.get("GDK_BACKEND") != "wayland":

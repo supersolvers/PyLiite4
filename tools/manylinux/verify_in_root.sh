@@ -12,11 +12,12 @@ for prefix in addons poppler; do
     if [ -d "$root/opt/$prefix" ]; then extra+=(--tmpfs "/opt/$prefix"); fi
 done
 project=$(cd "$(dirname "$0")/../.." && pwd)
-# PyLiite4.testing runs each test session on its own D-Bus and X server, and real input uses libXtst. dbus-daemon's
-# package can't be installed as such here, as its system bus helper belongs to a group the user namespace lacks, so
-# its files are unpacked.
+# The test plugin needs D-Bus, Xvfb and libXtst. AppArmor restrictions on unprivileged bwrap can prevent nested
+# sandboxes here, so WebKit's sandbox is off and glycin falls back. tools/verify_wheel.sh tests both sandboxes
+# outside the outer bwrap. Unpack dbus-daemon's files directly: installing its package needs a system bus group
+# that this user namespace doesn't have.
 "$project/tools/manylinux/enter.sh" "$root" bash -c '
-    dnf -y -q --setopt=install_weak_deps=False install xorg-x11-server-Xvfb libXtst cpio > /dev/null 2>&1 || true
+    dnf -y -q --setopt=install_weak_deps=False install xorg-x11-server-Xvfb libXtst cpio bubblewrap > /dev/null 2>&1 || true
     if [ ! -x /usr/bin/dbus-daemon ]; then
         cd /tmp && dnf -q download dbus-daemon && rpm2cpio dbus-daemon-*.rpm | (cd / && cpio -idm --quiet --no-preserve-owner)
     fi'
@@ -30,6 +31,7 @@ bwrap --bind "$root" / --dev /dev --proc /proc --tmpfs /tmp --tmpfs /opt/gtk --r
     --ro-bind "$project/examples" /tmp/run/examples --ro-bind "$project/demos" /tmp/run/demos \
     --tmpfs /tmp/.X11-unix --ro-bind "/tmp/.X11-unix/X$display" "/tmp/.X11-unix/X$display" \
     --unshare-user --uid 0 --gid 0 --clearenv --setenv HOME /tmp/home --setenv LANG C.UTF-8 \
+    --setenv WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS 1 \
     --setenv PATH /usr/bin:/bin --setenv DISPLAY ":$display" --setenv GDK_BACKEND x11 --setenv NO_AT_BRIDGE 1 \
     --chdir /tmp/run bash -c "ldd --version | head -1
         /opt/python/$tag-$tag/bin/python -m venv /tmp/venv

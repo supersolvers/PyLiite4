@@ -2,7 +2,7 @@
 # Install a bundled wheel, and optionally the matching PyLiite4-Addons and PyLiite4-Poppler wheels,
 # into a clean venv and run the test suite with the system's GTK stack hidden,
 # so only the wheels' copies can satisfy it. The tests get their own D-Bus
-# session and no portals, so they can't reach the desktop.
+# session, which starts no services, and no portals, so they can't reach the desktop.
 #
 # Usage: tools/verify_wheel.sh dist/pyliite4-*.whl [dist/pyliite4_addons-*.whl] [dist/pyliite4_poppler-*.whl]
 set -euo pipefail
@@ -47,10 +47,15 @@ PYTHON
 
 isolated=(env -u WAYLAND_DISPLAY -u GI_TYPELIB_PATH -u XDG_DATA_DIRS GDK_BACKEND=x11 NO_AT_BRIDGE=1
           GDK_DEBUG=no-portals ADW_DISABLE_PORTAL=1 GSETTINGS_BACKEND=memory)
-dbus-run-session -- xvfb-run -a bwrap --dev-bind / / "${hide[@]}" --chdir "$work" "${isolated[@]}" \
-    PYLIITE4_KEEP_RENDER="${PYLIITE4_KEEP_RENDER:-}" \
+bus=(dbus-run-session --config-file="$work/tests/session-bus.conf" --)
+# AppArmor restrictions on unprivileged bwrap can prevent a nested sandbox. Turn off WebKit's sandbox for this
+# run and let glycin use its fallback. The next run checks both sandboxes outside the outer bwrap.
+"${bus[@]}" xvfb-run -a bwrap --dev-bind / / "${hide[@]}" --chdir "$work" "${isolated[@]}" \
+    PYLIITE4_KEEP_RENDER="${PYLIITE4_KEEP_RENDER:-}" WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1 \
     bash -c "'$work/venv/bin/python' -W ignore maps.py && '$work/venv/bin/python' -m pytest -q --no-header -p no:cacheprovider --tb=short -W ignore tests"
 
-# The nested run above can't use glycin's bwrap sandbox, which image loading uses on most systems.
-(cd "$work" && dbus-run-session -- xvfb-run -a "${isolated[@]}" \
-    "$work/venv/bin/python" -m pytest -q --no-header -p no:cacheprovider --tb=short -W ignore tests/test_platform.py)
+# Run outside the outer bwrap, with the system stack visible, to check GdkPixbuf image loading and both helper
+# sandboxes. The add-on tests skip when their wheel isn't installed.
+(cd "$work" && "${bus[@]}" xvfb-run -a "${isolated[@]}" \
+    "$work/venv/bin/python" -m pytest -q --no-header -p no:cacheprovider --tb=short -W ignore tests/test_platform.py \
+    tests/test_addons.py)
